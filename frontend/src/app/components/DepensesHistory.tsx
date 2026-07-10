@@ -1,8 +1,7 @@
 "use client";
 
-import type { Depense } from "../services/depenses.service";
-import { deleteDepense } from "../services/depenses.service";
-
+import type { Depense } from "../services/finance/depenses.service";
+import { deleteDepense } from "../services/finance/depenses.service";
 type Props = {
   depenses: Depense[];
   onDelete: () => void;

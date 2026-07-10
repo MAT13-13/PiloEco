@@ -67,7 +67,7 @@ export default function PiloHero({
         <div className="relative flex justify-center">
 
           <Image
-            src="/images/pilo.png"
+            src="/pilo.png"
             alt="Pilo"
             width={420}
             height={420}

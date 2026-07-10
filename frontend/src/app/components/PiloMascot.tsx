@@ -33,7 +33,7 @@ export default function PiloMascot({
         <div className="absolute inset-0 scale-110 rounded-full bg-green-500/20 blur-3xl" />
 
         <Image
-          src="/images/pilo.png"
+          src="/pilo.png"
           alt="Pilo"
           width={imageSize}
           height={imageSize}

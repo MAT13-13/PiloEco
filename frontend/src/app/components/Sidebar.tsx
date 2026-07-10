@@ -2,10 +2,10 @@ import Link from "next/link";
 
 const mainItems = [
   { label: "🏡 Mon Nid", href: "/dashboard" },
-  { label: "💰 Mes économies", href: "/dashboard" },
+  { label: "💰 Mes économies", href: "/economies" },
   { label: "🎯 Mes missions", href: "/missions" },
-  { label: "📈 Mon évolution", href: "/dashboard" },
-  { label: "🌿 PiloLife ⭐", href: "/dashboard" },
+  { label: "📈 Mon évolution", href: "/evolution" },
+  { label: "🌿 PiloLife ⭐", href: "/pilolife" },
 ];
 
 const universeItems = [
@@ -67,13 +67,19 @@ export default function Sidebar() {
 
         <div className="my-6 border-t border-slate-800"></div>
 
-        <button className="w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-3 text-left font-bold text-purple-300 transition hover:bg-purple-500/20">
+        <Link
+          href="/premium"
+          className="block w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-3 text-left font-bold text-purple-300 transition hover:bg-purple-500/20"
+        >
           💎 Pilo Premium
-        </button>
+        </Link>
 
-        <button className="mt-2 w-full rounded-xl px-4 py-3 text-left font-bold text-slate-300 transition hover:bg-slate-800">
+        <Link
+          href="/compte"
+          className="mt-2 block w-full rounded-xl px-4 py-3 text-left font-bold text-slate-300 transition hover:bg-slate-800"
+        >
           ⚙️ Mon compte
-        </button>
+        </Link>
 
         <div className="mt-8 rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
           <p className="font-bold text-white">🐦 Parle à Pilo</p>
@@ -82,9 +88,12 @@ export default function Sidebar() {
             Une question ? Je suis là pour t'aider 💚
           </p>
 
-          <button className="mt-4 w-full rounded-xl bg-green-500 py-3 font-black text-slate-950 transition hover:bg-green-400">
+          <Link
+            href="/assistant"
+            className="mt-4 block w-full rounded-xl bg-green-500 py-3 text-center font-black text-slate-950 transition hover:bg-green-400"
+          >
             Discuter →
-          </button>
+          </Link>
         </div>
 
         <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">

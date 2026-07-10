@@ -7,7 +7,10 @@ import DepensesSummary from "../components/DepensesSummary";
 import DepenseForm from "../components/DepenseForm";
 import DepensesHistory from "../components/DepensesHistory";
 import AiInsights from "../components/AiInsights";
-import { Depense, getDepenses } from "../services/depenses.service";
+import {
+  type Depense,
+  getDepenses,
+} from "../services/finance/depenses.service";
 import CategoryStats from "../components/CategoryStats";
 import DepensesCharts from "../components/DepensesCharts";
 import DepensesFilters from "../components/DepensesFilters";

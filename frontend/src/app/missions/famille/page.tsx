@@ -8,12 +8,11 @@ export default function FamilleMissionPage() {
       icon="👨‍👩‍👧"
       title="Optimiser ton budget famille"
       subtitle="Pilo analyse les dépenses du foyer et les aides possibles."
-
       basePrice={180}
       recommendedPrice={140}
       recommendedName="Budget Famille Éco"
       advice="Pilo pense que certaines dépenses familiales peuvent être optimisées avec des aides, des abonnements mieux adaptés ou des offres regroupées."
-
+      offerPath="/offres/famille"
       fields={[
         {
           name: "monthlyPrice",

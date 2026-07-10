@@ -16,6 +16,8 @@ export default function StreamingMissionPage() {
 
       advice="Pilo a trouvé plusieurs abonnements redondants. En regroupant tes services, tu pourrais économiser chaque mois."
 
+      offerPath="/offres/streaming"
+
       fields={[
         {
           name: "monthlyPrice",

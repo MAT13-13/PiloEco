@@ -7,25 +7,32 @@ type Entry = {
 
 const entries: Entry[] = [
   {
-    date: "Aujourd'hui",
-    icon: "🪶",
-    title: "Nouvelle découverte",
+    date: "Aujourd'hui • 09:42",
+    icon: "📱",
+    title: "Téléphone vérifié",
     message:
-      "J'ai trouvé une nouvelle opportunité d'économie. Je continue mes recherches avant de te la recommander.",
+      "J'ai trouvé une offre RED à 9,99 €/mois. Économie estimée : 120 €/an.",
   },
   {
-    date: "Hier",
-    icon: "💡",
-    title: "Analyse terminée",
+    date: "Aujourd'hui • 08:15",
+    icon: "⚡",
+    title: "Nouvelle hausse détectée",
     message:
-      "Ton budget est déjà bien optimisé. Quelques petites améliorations restent possibles.",
+      "Les tarifs EDF évoluent. Je te recommande de comparer ton contrat.",
   },
   {
-    date: "Il y a 3 jours",
-    icon: "🎉",
-    title: "Objectif atteint",
+    date: "Hier • 21:18",
+    icon: "📺",
+    title: "Streaming analysé",
     message:
-      "Tes économies potentielles dépassent désormais 450 € par an.",
+      "Disney+ semble inutilisé depuis plusieurs semaines. Une résiliation pourrait te faire économiser 192 €/an.",
+  },
+  {
+    date: "Hier • 18:27",
+    icon: "🏠",
+    title: "Assurance habitation",
+    message:
+      "Ton contrat arrive bientôt à échéance. Je pourrai comparer les offres disponibles.",
   },
 ];
 
@@ -33,11 +40,11 @@ export default function PiloJournal() {
   return (
     <section className="mt-10 rounded-3xl border border-slate-800 bg-slate-900 p-8">
       <h2 className="text-3xl font-black text-white">
-        🪶 Carnet de Pilo
+        🦜 Journal de Pilo
       </h2>
 
       <p className="mt-2 text-slate-400">
-        Chaque jour, Pilo garde une trace de ses découvertes pour toi.
+        Pendant ton absence, j'ai continué à surveiller tes contrats et à rechercher les meilleures économies.
       </p>
 
       <div className="mt-8 space-y-6">

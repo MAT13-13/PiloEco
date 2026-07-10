@@ -8,12 +8,74 @@ const steps = [
   "Vérification Internet",
   "Lecture des assurances",
   "Calcul de l'électricité",
-  "Préparation de ton score Pilo",
+  "Génération du conseil IA de Pilo",
 ];
 
 export default function AnalyseLoadingPage() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    async function lancerAnalyseIA() {
+      const rawValues = localStorage.getItem("pilo-values");
+
+      if (!rawValues) {
+        router.push("/analyse");
+        return;
+      }
+
+      const values = JSON.parse(rawValues);
+
+      try {
+        const response = await fetch("/api/pilo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            score: 75,
+            savings:
+              Math.max(0, Number(values.telephone) - 15) * 12 +
+              Math.max(0, Number(values.internet) - 25) * 12 +
+              Math.max(0, Number(values.assurance) - 40) * 12 +
+              Math.max(0, Number(values.electricite) - 75) * 12,
+            depenses: [
+              {
+                description: "Forfait mobile",
+                category: "mobile",
+                amount: Number(values.telephone),
+              },
+              {
+                description: "Internet",
+                category: "internet",
+                amount: Number(values.internet),
+              },
+              {
+                description: "Assurances",
+                category: "assurance",
+                amount: Number(values.assurance),
+              },
+              {
+                description: "Électricité",
+                category: "electricite",
+                amount: Number(values.electricite),
+              },
+            ],
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem("pilo-ai-advice", data.advice);
+        }
+      } catch (error) {
+        console.error("Erreur conseil IA :", error);
+      }
+    }
+
+    lancerAnalyseIA();
+  }, [router]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -62,11 +124,7 @@ export default function AnalyseLoadingPage() {
               >
                 <span>{step}</span>
 
-                <span
-                  className={
-                    isDone ? "text-green-400" : "text-slate-500"
-                  }
-                >
+                <span className={isDone ? "text-green-400" : "text-slate-500"}>
                   {isDone ? "✓" : "⏳"}
                 </span>
               </div>

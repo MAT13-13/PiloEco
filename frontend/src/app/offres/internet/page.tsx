@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { internetOffers } from "../../data/internetOffers";
 import { supabase } from "../../lib/supabase";
+import { completeMission } from "../../services/missionComplete.service";
 
 export default function InternetOfferPage() {
   const [internet, setInternet] = useState(40);
@@ -17,7 +18,7 @@ export default function InternetOfferPage() {
     }
   }, []);
 
-  const bestOffer = internetOffers.sort((a, b) => a.price - b.price)[0];
+  const bestOffer = [...internetOffers].sort((a, b) => a.price - b.price)[0];
   const monthlySaving = Math.max(0, internet - bestOffer.price);
   const yearlySaving = Math.round(monthlySaving * 12);
 
@@ -31,22 +32,14 @@ export default function InternetOfferPage() {
       return;
     }
 
-    const { error } = await supabase.from("missions").insert({
-      user_id: user.id,
-      mission_id: "internet",
+    const result = await completeMission({
+      user,
+      missionId: "internet",
       title: "Réduire mon abonnement Internet",
-      status: "done",
       saving: yearlySaving,
-      completed_at: new Date().toISOString(),
     });
 
-    if (error) {
-      console.error(error);
-      alert("Erreur lors de la sauvegarde.");
-      return;
-    }
-
-    alert(`🎉 Bravo ! Mission terminée.\nTu économises ${yearlySaving} €/an !`);
+    alert(result.message);
   };
 
   return (
@@ -71,6 +64,7 @@ export default function InternetOfferPage() {
 
           <div className="mt-8 rounded-3xl bg-slate-950/70 p-6">
             <p className="text-slate-400">Prix mensuel</p>
+
             <p className="mt-2 text-5xl font-black text-green-400">
               {bestOffer.price.toFixed(2)} €/mois
             </p>
@@ -96,6 +90,7 @@ export default function InternetOfferPage() {
 
           <div className="mt-8 rounded-3xl bg-green-500/10 p-6">
             <p className="text-green-300">Économie estimée</p>
+
             <p className="mt-2 text-5xl font-black text-green-400">
               {yearlySaving} €/an
             </p>
@@ -109,7 +104,8 @@ export default function InternetOfferPage() {
             <p className="mt-3 leading-8 text-slate-300">
               Ton abonnement Internet actuel est estimé à {internet} €/mois.
               Pilo a trouvé une offre à {bestOffer.price.toFixed(2)} €/mois.
-              Cela représente environ {yearlySaving} €/an d'économies possibles.
+              Cela représente environ {yearlySaving} €/an d&apos;économies
+              possibles.
             </p>
           </div>
 
@@ -118,16 +114,16 @@ export default function InternetOfferPage() {
               href={bestOffer.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full rounded-full bg-green-500 px-8 py-5 text-center text-xl font-black text-slate-950"
+              className="block w-full rounded-full bg-green-500 px-8 py-5 text-center text-xl font-black text-slate-950 transition hover:bg-green-400"
             >
-              Voir l'offre Internet
+              Voir l&apos;offre Internet
             </a>
 
             <button
               onClick={handleMissionCompleted}
               className="w-full rounded-full border border-green-500 px-8 py-5 text-xl font-black text-green-400 transition hover:bg-green-500 hover:text-slate-950"
             >
-              ✅ J'ai changé d'offre Internet
+              ✅ J&apos;ai changé d&apos;offre Internet
             </button>
           </div>
         </section>

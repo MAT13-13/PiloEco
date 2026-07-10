@@ -16,6 +16,8 @@ export default function InternetMissionPage() {
 
       advice="Pilo a trouvé une offre fibre offrant des performances similaires pour un prix inférieur."
 
+      offerPath="/offres/internet"
+
       fields={[
         {
           name: "monthlyPrice",

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 const modules = [
   {
     icon: "📱",
@@ -41,37 +43,37 @@ const modules = [
     icon: "🛡️",
     title: "Assurances",
     status: "🟡 Bientôt",
-    href: "",
+    href: "/assurances",
   },
   {
-  icon: "🚗",
-  title: "Mobilité",
-  status: "🟢 Disponible",
-  href: "/missions/mobilite",
-},
-{
-  icon: "👨‍👩‍👧",
-  title: "Famille",
-  status: "🟢 Disponible",
-  href: "/missions/famille",
-},
+    icon: "🚗",
+    title: "Mobilité",
+    status: "🟢 Disponible",
+    href: "/missions/mobilite",
+  },
   {
-  icon: "📺",
-  title: "Streaming",
-  status: "🟢 Disponible",
-  href: "/missions/streaming",
-},
+    icon: "👨‍👩‍👧",
+    title: "Famille",
+    status: "🟢 Disponible",
+    href: "/missions/famille",
+  },
+  {
+    icon: "📺",
+    title: "Streaming",
+    status: "🟢 Disponible",
+    href: "/missions/streaming",
+  },
   {
     icon: "🌿",
     title: "PiloLife",
     status: "💎 Premium",
-    href: "",
+    href: "/pilolife",
   },
   {
     icon: "🤖",
     title: "IA Pilo",
     status: "💎 Premium",
-    href: "",
+    href: "/pilo",
   },
 ];
 
@@ -95,18 +97,11 @@ export default function PiloModules() {
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {modules.map((module) => (
-          <button
-  key={module.title}
-  type="button"
-  onClick={() => {
-    alert(module.href);
-
-    if (module.href) {
-      window.location.href = module.href;
-    }
-  }}
-  className="relative z-50 h-full cursor-pointer rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-left transition hover:-translate-y-1 hover:border-green-400/40"
->
+          <Link
+            key={module.title}
+            href={module.href}
+            className="relative z-50 block h-full rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-left transition hover:-translate-y-1 hover:border-green-400/40"
+          >
             <div className="text-5xl">{module.icon}</div>
 
             <h3 className="mt-5 text-2xl font-black text-white">
@@ -116,7 +111,7 @@ export default function PiloModules() {
             <p className="mt-5 font-bold text-green-400">
               {module.status}
             </p>
-          </button>
+          </Link>
         ))}
       </div>
     </section>

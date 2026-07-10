@@ -20,6 +20,7 @@ type MissionLayoutProps = {
   recommendedPrice: number;
   recommendedName: string;
   advice: string;
+  offerPath?: string;
 };
 
 export default function MissionLayout({
@@ -31,6 +32,7 @@ export default function MissionLayout({
   recommendedPrice,
   recommendedName,
   advice,
+  offerPath = "/offres/mobile",
 }: MissionLayoutProps) {
   const [values, setValues] = useState<Record<string, string | number>>(
     Object.fromEntries(fields.map((field) => [field.name, field.defaultValue]))
@@ -104,9 +106,12 @@ export default function MissionLayout({
 
             <p className="mt-3 text-slate-300">{advice}</p>
 
-            <button className="mt-8 rounded-xl bg-green-500 px-8 py-3 font-bold text-black hover:bg-green-400">
+            <Link
+              href={offerPath}
+              className="mt-8 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-black hover:bg-green-400"
+            >
               Voir une meilleure offre
-            </button>
+            </Link>
           </div>
         </section>
       </div>

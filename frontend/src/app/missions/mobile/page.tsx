@@ -7,31 +7,27 @@ export default function MobileMissionPage() {
     <MissionLayout
       icon="📱"
       title="Comparer ton forfait mobile"
-      subtitle="Pilo recherche un forfait moins cher."
-
+      subtitle="Pilo analyse ton forfait actuel et estime l’économie possible."
       basePrice={45}
       recommendedPrice={15}
-
       recommendedName="Forfait Mobile Éco"
-
-      advice="Pilo a trouvé un forfait offrant les mêmes services pour un prix inférieur."
-
+      advice="Pilo peut t’aider à repérer un forfait moins cher avec assez de données mobiles, sans payer pour des options inutiles."
       fields={[
         {
           name: "monthlyPrice",
-          label: "Prix actuel",
+          label: "Prix actuel par mois",
           type: "number",
           defaultValue: 45,
         },
         {
           name: "data",
-          label: "Go Internet",
+          label: "Internet inclus en Go",
           type: "number",
           defaultValue: 150,
         },
         {
           name: "operator",
-          label: "Opérateur",
+          label: "Opérateur actuel",
           type: "text",
           defaultValue: "",
         },

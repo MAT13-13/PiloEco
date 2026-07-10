@@ -16,6 +16,8 @@ export default function HabitationMissionPage() {
 
       advice="Pilo pense que ton contrat actuel peut être optimisé tout en conservant un excellent niveau de garanties."
 
+      offerPath="/offres/habitation"
+
       fields={[
         {
           name: "monthlyPrice",

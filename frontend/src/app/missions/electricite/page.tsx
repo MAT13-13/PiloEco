@@ -16,6 +16,8 @@ export default function ElectriciteMissionPage() {
 
       advice="Pilo pense que tu pourrais réduire ta facture avec une offre plus adaptée à ta consommation."
 
+      offerPath="/offres/electricite"
+
       fields={[
         {
           name: "monthlyPrice",

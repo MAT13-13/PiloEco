@@ -7,11 +7,13 @@ import ScoreGauge from "../components/ScoreGauge";
 import PiloAssistant from "../components/PiloAssistant";
 import PiloInsights from "../components/PiloInsights";
 import MissionCard from "../components/MissionCard";
-
-import { getDepenses, type Depense } from "../services/depenses.service";
-import { analyzePilo } from "../services/pilo.service";
+import { getDepenses, type Depense } from "../services/finance/depenses.service";
+import { analyzePilo } from "../services/shared/pilo.service";
 import { generateMissions } from "../services/missions.service";
-
+import MonitoringDashboard from "../components/MonitoringDashboard";
+import PiloJournal from "../components/PiloJournal";
+import { analysePiloEngine } from "../services/pilo-engine/analyse";
+import PiloCommandCenter from "../components/PiloCommandCenter";
 
 const opportunities = [
   {
@@ -43,7 +45,34 @@ const opportunities = [
 export default function PremiumPage() {
   const [depenses, setDepenses] = useState<Depense[]>([]);
   const [loading, setLoading] = useState(true);
+async function checkout() {
+  try {
+    console.log("Clic Stripe OK");
 
+    const response = await fetch("/api/stripe/checkout", {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    console.log("Réponse Stripe :", data);
+
+    if (!response.ok) {
+      alert(data.error || "Erreur Stripe");
+      return;
+    }
+
+    if (!data.url) {
+      alert("Stripe n'a renvoyé aucune URL.");
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error("Erreur checkout :", error);
+    alert("Erreur pendant l'ouverture de Stripe.");
+  }
+}
   useEffect(() => {
     async function loadDepenses() {
       try {
@@ -59,19 +88,22 @@ export default function PremiumPage() {
     loadDepenses();
   }, []);
 
-  const analysis = analyzePilo(depenses);
-  const missions = generateMissions(depenses);
+const fallbackSavings = opportunities.reduce(
+  (total, item) => total + item.saving,
+  0
+);
 
-  const fallbackSavings = opportunities.reduce(
-    (total, item) => total + item.saving,
-    0
-  );
+const analysis = {
+  score: 84,
+  totalSavings: fallbackSavings,
+  insights: [],
+};
 
-  const totalSavings =
-    analysis.totalSavings > 0 ? analysis.totalSavings : fallbackSavings;
+const engine = analysePiloEngine(depenses);
 
-  const score = depenses.length > 0 ? analysis.score : 84;
-
+const totalSavings = engine.yearlySavings;
+const score = engine.score;
+const missions: any[] = [];
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-6xl">
@@ -115,17 +147,22 @@ export default function PremiumPage() {
           ) : (
             <>
               <PiloAssistant score={score} savings={totalSavings} />
+              <div className="mt-8">
+  <PiloCommandCenter
+    notifications={engine.notifications}
+  />
+</div>
 
               <section className="mt-8 space-y-6">
-                <ScoreGauge
-                  score={score}
-                  totalSavings={totalSavings}
-                  level={
-                    score >= 75
-                      ? "Très bon potentiel"
-                      : "Potentiel à améliorer"
-                  }
-                />
+               <ScoreGauge
+  score={score}
+  totalSavings={totalSavings}
+  level={
+    score >= 75
+      ? "Très bon potentiel"
+      : "Potentiel à améliorer"
+  }
+/>
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <div className="rounded-2xl bg-slate-950 p-6">
@@ -152,9 +189,15 @@ export default function PremiumPage() {
                 </div>
               </section>
 
-              <PiloInsights insights={analysis.insights} />
+             <section className="mt-10">
+  <MonitoringDashboard cards={engine.monitoring} />
+</section>
 
-              <MissionCard missions={missions} />
+<PiloJournal />
+
+<PiloInsights insights={analysis.insights} />
+
+<MissionCard missions={missions} />
             </>
           )}
         </section>
@@ -193,9 +236,12 @@ export default function PremiumPage() {
                   </span>
                 </div>
 
-                <button className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400">
-                  Voir les offres
-                </button>
+                <button
+  onClick={checkout}
+  className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400"
+>
+  🚀 Passer Premium
+</button>
               </div>
             ))}
           </div>

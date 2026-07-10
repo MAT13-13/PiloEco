@@ -7,6 +7,10 @@ type Props = {
 };
 
 export default function MissionCard({ missions }: Props) {
+  function handleMissionDone(mission: Mission) {
+    alert(`Mission validée : ${mission.title}`);
+  }
+
   return (
     <section className="mt-8 rounded-3xl border border-green-500/20 bg-slate-900 p-8">
       <p className="text-sm font-bold uppercase text-green-400">
@@ -27,17 +31,24 @@ export default function MissionCard({ missions }: Props) {
             key={mission.title}
             className="rounded-2xl border border-slate-800 bg-slate-950 p-6 transition hover:border-green-500"
           >
-            <h3 className="text-xl font-bold text-white">
-              {mission.title}
-            </h3>
+            <h3 className="text-xl font-bold text-white">{mission.title}</h3>
 
-            <p className="mt-4 text-slate-400">
-              {mission.description}
-            </p>
+            {"subtitle" in mission && (
+              <p className="mt-4 text-slate-400">{String(mission.subtitle)}</p>
+            )}
 
-            <div className="mt-6 rounded-xl bg-green-500/10 p-3 text-center font-bold text-green-400">
-              🎁 {mission.reward}
-            </div>
+            {"saving" in mission && (
+              <div className="mt-6 rounded-xl bg-green-500/10 p-3 text-center font-bold text-green-400">
+                🎁 Économie possible : {String(mission.saving)} €
+              </div>
+            )}
+
+            <button
+              onClick={() => handleMissionDone(mission)}
+              className="mt-5 w-full rounded-xl bg-green-500 px-4 py-3 font-bold text-black transition hover:bg-green-400"
+            >
+              ✅ J’ai réalisé cette mission
+            </button>
           </div>
         ))}
       </div>

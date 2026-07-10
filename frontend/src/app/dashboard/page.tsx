@@ -18,14 +18,14 @@ import FadeIn from "../components/FadeIn";
 import DashboardWelcome from "../components/dashboard/DashboardWelcome";
 import DashboardStats from "../components/dashboard/DashboardStats";
 import DashboardProgress from "../components/dashboard/DashboardProgress";
-import DashboardModules from "../components/DashboardModules";
-import { getPiloCore } from "../services/pilo-core.service";
-import { createPiloBrain } from "../services/pilo.service";
 import PiloJournal from "../components/PiloJournal";
 import HeroPilo from "../components/HeroPilo";
-import { createPiloEngine } from "../services/pilo-engine.service";
-import { createPiloProfile } from "../services/pilo-profile.service";
-
+import { createPiloEngine } from "../services/ai/pilo-engine.service";
+import PiloProfileCard from "../components/PiloProfileCard";
+import PiloPriorityCard from "../components/PiloPriorityCard";
+import PiloModules from "../components/PiloModules";
+import { generateMissions } from "../services/missions.service";
+import MobileMenu from "../components/layout/MobileMenu";
 type Recommandation = {
   categorie: string;
   priorite: string;
@@ -61,6 +61,14 @@ type PiloValues = {
   assurance: string;
   electricite: string;
 };
+type PiloDbProfile = {
+  xp: number;
+  level: number;
+  total_savings: number;
+  completed_missions: number;
+  badges: string[];
+  premium: boolean;
+};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -78,36 +86,40 @@ export default function DashboardPage() {
   const [resultat, setResultat] = useState<ResultatEconomies | null>(null);
   const [analyses, setAnalyses] = useState<Analyse[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
+  const [profile, setProfile] = useState<PiloDbProfile | null>(null);
   const [chargement, setChargement] = useState(false);
   const [message, setMessage] = useState("");
+  const [aiAdvice, setAiAdvice] = useState("");
 
   const analyseLancee = useRef(false);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+ useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user);
 
-      if (data.user) {
-        chargerAnalyses(data.user.id);
-        chargerMissions(data.user.id);
-      }
-    });
+    if (data.user) {
+      chargerAnalyses(data.user.id);
+      chargerMissions(data.user.id);
+      chargerProfil(data.user.id);
+    }
+  });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
 
-      if (session?.user) {
-        chargerAnalyses(session.user.id);
-        chargerMissions(session.user.id);
-      }
-    });
+    if (session?.user) {
+      chargerAnalyses(session.user.id);
+      chargerMissions(session.user.id);
+      chargerProfil(session.user.id);
+    }
+  });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
 
   useEffect(() => {
     if (!user || analyseLancee.current) return;
@@ -145,6 +157,17 @@ export default function DashboardPage() {
       setMissions(data);
     }
   }
+  async function chargerProfil(utilisateurId: string) {
+  const { data, error } = await supabase
+    .from("profils")
+    .select("*")
+    .eq("id", utilisateurId)
+    .single();
+
+  if (!error && data) {
+    setProfile(data as PiloDbProfile);
+  }
+}
 
   async function inscription() {
     setChargement(true);
@@ -221,6 +244,45 @@ export default function DashboardPage() {
       const data = await response.json();
 
       setResultat(data);
+const piloResponse = await fetch("/api/pilo", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+ body: JSON.stringify({
+    name: "Fiona",
+    score: data.scorePilo,
+    savings: data.economieAnnuelle,
+    depenses: [
+      {
+        description: "Téléphone",
+        category: "Téléphone",
+        amount: Number(dataValues.telephone),
+      },
+      {
+        description: "Internet",
+        category: "Internet",
+        amount: Number(dataValues.internet),
+      },
+      {
+        description: "Assurance",
+        category: "Assurance",
+        amount: Number(dataValues.assurance),
+      },
+      {
+        description: "Électricité",
+        category: "Électricité",
+        amount: Number(dataValues.electricite),
+      },
+    ],
+  }),
+});
+
+const piloData = await piloResponse.json();
+
+if (piloData.success) {
+  setAiAdvice(piloData.advice);
+}
 
       const { error } = await supabase.from("analyses").insert({
         utilisateur_id: utilisateurId,
@@ -236,10 +298,48 @@ export default function DashboardPage() {
       if (error) {
         setMessage("Résultat affiché, mais l'analyse n'a pas été enregistrée.");
       } else {
-        setMessage("Analyse enregistrée avec succès.");
-        localStorage.removeItem("pilo-values");
-        chargerAnalyses(utilisateurId);
-      }
+  const nouvellesMissions = generateMissions({
+    telephone: Number(dataValues.telephone),
+    internet: Number(dataValues.internet),
+    assurance: Number(dataValues.assurance),
+    electricite: Number(dataValues.electricite),
+  });
+
+  for (const mission of nouvellesMissions) {
+  const missionExistante = missions.find(
+    (m) => m.mission_id === mission.mission_id
+  );
+
+  if (!missionExistante) {
+    await supabase.from("missions").insert({
+      user_id: utilisateurId,
+      mission_id: mission.mission_id,
+      title: mission.title,
+      saving: mission.saving,
+      status: mission.status,
+    });
+
+    continue;
+  }
+
+  if (missionExistante.status === "Terminée") {
+    continue;
+  }
+
+  await supabase
+    .from("missions")
+    .update({
+      title: mission.title,
+      saving: mission.saving,
+    })
+    .eq("id", missionExistante.id);
+}
+
+  setMessage("Analyse enregistrée et missions créées.");
+  localStorage.removeItem("pilo-values");
+  chargerAnalyses(utilisateurId);
+  chargerMissions(utilisateurId);
+}
     } catch {
       setMessage("Erreur de connexion avec le backend.");
     }
@@ -280,7 +380,7 @@ const scoreProgression = Math.min(
   100,
   60 + missionsTerminees.length * 10
 );
-const piloBrain = createPiloBrain([
+const piloBrain = createPiloEngine([
   {
     id: "mobile",
     name: "Téléphone",
@@ -313,22 +413,89 @@ const piloBrain = createPiloBrain([
   },
 ]);
 
-const piloProfile = createPiloProfile({
+const piloProfile = {
+  level: profile?.level || 1,
+  title:
+    (profile?.level || 1) === 1
+      ? "Débutant"
+      : (profile?.level || 1) === 2
+      ? "Économe"
+      : (profile?.level || 1) === 3
+      ? "Stratège"
+      : (profile?.level || 1) === 4
+      ? "Expert"
+      : "Maître Pilo",
   score: scoreProgression,
-  yearlySaving: totalEconomiesAnnuelles,
-  monthlySaving: totalEconomiesMensuelles,
-  missionsCompleted: missionsTerminees.length,
+  progress: profile?.xp || 0,
+  yearlySaving: Number(profile?.total_savings || totalEconomiesAnnuelles),
+  monthlySaving: Math.round(
+    Number(profile?.total_savings || totalEconomiesAnnuelles) / 12
+  ),
+  missionsCompleted: Number(
+    profile?.completed_missions || missionsTerminees.length
+  ),
   missionsRemaining: missions.length - missionsTerminees.length,
   premium: false,
-});
+  xp: Number(profile?.xp || 0),
+};
 
-const pilo = getPiloCore({
-  name: user?.user_metadata?.first_name,
-  scoreProgression,
-  totalEconomiesAnnuelles,
-  missionsTerminees: missionsTerminees.length,
-  totalMissions: missions.length,
-});
+
+const missionPrioritaire = [...missions]
+  .filter((m) => m.status !== "Terminée")
+  .sort((a, b) => Number(b.saving || 0) - Number(a.saving || 0))[0];
+async function onCompleteMission(mission: any) {
+  if (!user || mission.status === "Terminée") return;
+
+  const nouveauXp = (profile?.xp || 0) + 50;
+  const nouvellesEconomies =
+    (profile?.total_savings || 0) + Number(mission.saving);
+
+  const nouveauNiveau =
+    nouveauXp >= 1200
+      ? 5
+      : nouveauXp >= 700
+      ? 4
+      : nouveauXp >= 300
+      ? 3
+      : nouveauXp >= 100
+      ? 2
+      : 1;
+
+  const missionsTerminees =
+    (profile?.completed_missions || 0) + 1;
+
+  const { error: missionError } = await supabase
+    .from("missions")
+    .update({
+      status: "Terminée",
+    })
+    .eq("id", mission.id);
+
+  if (missionError) {
+    alert("Erreur lors de la validation de la mission.");
+    return;
+  }
+
+  const { error: profileError } = await supabase
+    .from("profils")
+    .update({
+      xp: nouveauXp,
+      level: nouveauNiveau,
+      total_savings: nouvellesEconomies,
+      completed_missions: missionsTerminees,
+    })
+    .eq("id", user.id);
+
+  if (profileError) {
+    alert("Erreur lors de la mise à jour du profil.");
+    return;
+  }
+
+  await chargerMissions(user.id);
+  await chargerProfil(user.id);
+
+  setMessage("🎉 Mission validée !");
+}
 
   if (!user) {
     return (
@@ -390,7 +557,11 @@ const pilo = getPiloCore({
 
   return (
     <>
-      <Sidebar />
+      
+  <Sidebar />
+  <MobileMenu />
+
+  <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64"></main>
 
       <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64">
         <section className="mx-auto w-full max-w-6xl">
@@ -404,14 +575,138 @@ const pilo = getPiloCore({
           </div>
 
           <FadeIn delay={0}>
-            <DashboardWelcome
-  name="Fiona"
-  economieAnnuelle={piloBrain.yearlySaving}
-  piloTitle={`${piloBrain.pilo.emoji} ${piloBrain.pilo.title}`}
-  piloMessage={piloBrain.priorityMessage}
-/>
-          </FadeIn>
+  <DashboardWelcome
+    name="Fiona"
+    economieAnnuelle={piloBrain.yearlySaving}
+    piloTitle={`${piloBrain.pilo.emoji} ${piloBrain.pilo.title}`}
+    piloMessage={piloBrain.pilo.message}
+  />
+</FadeIn>
 
+<FadeIn delay={0.1}>
+  <PiloProfileCard
+  level={piloProfile.level}
+  title={piloProfile.title}
+  score={piloProfile.score}
+  progress={piloProfile.progress}
+  yearlySaving={piloProfile.yearlySaving}
+  monthlySaving={piloProfile.monthlySaving}
+  missionsCompleted={piloProfile.missionsCompleted}
+  missionsRemaining={piloProfile.missionsRemaining}
+  premium={piloProfile.premium}
+  xp={piloProfile.xp}
+/>
+</FadeIn>
+{missionPrioritaire && (
+  <FadeIn delay={0.2}>
+    <PiloPriorityCard
+      title={missionPrioritaire.title}
+      emoji="🐦"
+      saving={missionPrioritaire.saving}
+      time="5 minutes"
+      difficulty="Facile"
+      priority={5}
+      reason={piloBrain.pilo.message}
+      href={`/missions/${missionPrioritaire.mission_id}`}
+    />
+  </FadeIn>
+)}
+<FadeIn delay={0.15}>
+  <section className="mt-8 overflow-hidden rounded-3xl border border-green-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-green-950 p-8 shadow-xl">
+    <div className="flex flex-col items-center gap-8 lg:flex-row">
+      <div className="text-center lg:w-1/4">
+        <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full bg-green-500/10 text-7xl">
+          🐦
+        </div>
+
+        <p className="mt-4 font-bold text-green-300">
+          Pilo IA
+        </p>
+      </div>
+
+      <div className="flex-1">
+        <p className="text-sm uppercase tracking-[0.3em] text-green-400">
+          Assistant intelligent
+        </p>
+
+        <h2 className="mt-3 text-3xl font-black">
+  {aiAdvice || piloBrain.pilo.message}
+</h2>
+        <p className="mt-5 text-lg leading-8 text-slate-300">
+          J'ai analysé tes dépenses et trouvé
+          <span className="font-black text-green-400">
+            {" "}{piloProfile.yearlySaving} € d'économies potentielles par an
+          </span>.
+        </p>
+
+        <p className="mt-4 text-slate-400 whitespace-pre-line">
+  {aiAdvice}
+</p>
+       <div className="mt-8 flex flex-wrap gap-4">
+  <Link
+    href="/monitoring"
+    className="rounded-2xl bg-green-500 px-6 py-3 font-bold text-slate-950 transition hover:scale-105 hover:bg-green-400"
+  >
+    🚀 Voir mes recommandations
+  </Link>
+
+  <Link
+    href="/analyses"
+    className="rounded-2xl border border-slate-700 px-6 py-3 font-bold transition hover:border-green-500"
+  >
+    📊 Voir mes analyses
+  </Link>
+</div>
+      
+      </div>
+    </div>
+  </section>
+</FadeIn>
+<FadeIn delay={0.2}>
+  <div className="mt-8 grid gap-6 lg:grid-cols-3">
+    <div className="rounded-3xl border border-green-500/20 bg-white/5 p-6">
+      <p className="text-sm uppercase tracking-widest text-green-400">
+        💰 Économies détectées
+      </p>
+
+      <p className="mt-4 text-5xl font-black text-green-400">
+        {piloProfile.yearlySaving} €
+      </p>
+
+      <p className="mt-2 text-slate-400">
+        Potentiel annuel actuellement identifié.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-green-500/20 bg-white/5 p-6">
+      <p className="text-sm uppercase tracking-widest text-green-400">
+        🎯 Missions
+      </p>
+
+      <p className="mt-4 text-5xl font-black">
+        {missions.length}
+      </p>
+
+      <p className="mt-2 text-slate-400">
+        Missions disponibles.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-green-500/20 bg-white/5 p-6">
+      <p className="text-sm uppercase tracking-widest text-green-400">
+        📊 Analyses
+      </p>
+
+      <p className="mt-4 text-5xl font-black">
+        {analyses.length}
+      </p>
+
+      <p className="mt-2 text-slate-400">
+        Analyses enregistrées.
+      </p>
+    </div>
+  </div>
+</FadeIn>
           {resultat && (
             <FadeIn delay={0.15}>
               <PiloAdviceGrid recommandations={resultat.recommandations || []} />
@@ -433,10 +728,12 @@ const pilo = getPiloCore({
               totalMissions={missions.length}
             />
 
-            <PiloMissions missions={missions} />
+            
           </FadeIn>
 
-          <DashboardModules />
+          <FadeIn delay={0.45}>
+  <PiloModules />
+</FadeIn>
 
           <FadeIn delay={0.75}>
             <PiloPremiumCard />
@@ -519,7 +816,16 @@ const pilo = getPiloCore({
               <HistoryList analyses={analyses} />
             </div>
           )}
-
+<FadeIn delay={0.3}>
+  <div className="mt-10 flex justify-center">
+    <Link
+      href="/analyse"
+      className="rounded-2xl bg-green-500 px-6 py-4 font-black text-slate-950 transition hover:scale-105 hover:bg-green-400"
+    >
+      🔄 Relancer mon analyse
+    </Link>
+  </div>
+</FadeIn>
           {message && (
             <p className="mt-8 text-center text-sm text-slate-400">
               {message}

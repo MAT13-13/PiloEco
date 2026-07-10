@@ -1,8 +1,9 @@
+import Link from "next/link";
+
 export default function PiloPremiumCard() {
   return (
     <section className="mt-12 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-green-950 via-slate-900 to-slate-950">
       <div className="grid items-center gap-10 p-10 lg:grid-cols-[280px_1fr]">
-
         <div className="flex justify-center">
           <img
             src="/pilo.png"
@@ -21,12 +22,11 @@ export default function PiloPremiumCard() {
           </h2>
 
           <p className="mt-5 max-w-2xl text-xl leading-relaxed text-slate-300">
-            Même lorsque tu n'es pas connecté, je continue de rechercher des
-            économies et je te préviens dès qu'une opportunité apparaît.
+            Même lorsque tu n&apos;es pas connecté, je continue de rechercher des
+            économies et je te préviens dès qu&apos;une opportunité apparaît.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
-
             <div className="rounded-2xl bg-white/5 p-5">
               🔔 Alertes automatiques
             </div>
@@ -42,12 +42,14 @@ export default function PiloPremiumCard() {
             <div className="rounded-2xl bg-white/5 p-5">
               🌿 Accès à PiloLife
             </div>
-
           </div>
 
-          <button className="mt-10 rounded-2xl bg-green-500 px-10 py-5 text-xl font-black text-slate-950 transition hover:bg-green-400">
+          <Link
+            href="/premium"
+            className="mt-10 inline-block rounded-2xl bg-green-500 px-10 py-5 text-xl font-black text-slate-950 transition hover:bg-green-400"
+          >
             Découvrir Pilo Premium
-          </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -16,6 +16,8 @@ export default function BanqueMissionPage() {
 
       advice="Pilo pense qu'une banque en ligne pourrait réduire tes frais tout en conservant les mêmes services."
 
+      offerPath="/offres/banque"
+
       fields={[
         {
           name: "bank",

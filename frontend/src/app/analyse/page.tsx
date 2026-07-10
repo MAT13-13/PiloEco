@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import PiloMascot from "../components/PiloMascot";
 import QuestionCard from "../components/QuestionCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { savePiloMissions } from "../services/pilo-missions.service";
+import { savePiloMissions } from "../services/pilo/pilo-missions.service";
 import { supabase } from "../lib/supabase";
 
 const questions = [

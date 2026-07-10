@@ -43,7 +43,7 @@ export default function HeroPilo({ economie }: Props) {
             <div className="absolute inset-0 rounded-full bg-green-500/20 blur-3xl" />
 
             <Image
-              src="/images/pilo.png"
+              src="/pilo.png"
               alt="Pilo"
               width={340}
               height={340}

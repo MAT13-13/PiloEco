@@ -5,7 +5,7 @@ import {
   addDepense,
   updateDepense,
   type Depense,
-} from "../services/depenses.service";
+} from "../services/finance/depenses.service";
 
 type DepenseFormProps = {
   onDepenseAdded?: () => void;
