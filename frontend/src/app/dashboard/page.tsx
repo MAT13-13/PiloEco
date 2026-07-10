@@ -555,24 +555,21 @@ async function onCompleteMission(mission: any) {
     );
   }
 
-  return (
-    <>
-      
-  <Sidebar />
-  <MobileMenu />
+ return (
+  <>
+    <Sidebar />
+    <MobileMenu />
 
-  <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64"></main>
-
-      <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64">
-        <section className="mx-auto w-full max-w-6xl">
-          <div className="mb-8 flex items-center justify-end">
-            <button
-              onClick={deconnexion}
-              className="rounded-xl bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700"
-            >
-              Déconnexion
-            </button>
-          </div>
+    <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64">
+      <section className="mx-auto w-full max-w-6xl">
+        <div className="mb-8 flex items-center justify-end">
+          <button
+            onClick={deconnexion}
+            className="rounded-xl bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700"
+          >
+            Déconnexion
+          </button>
+        </div>
 
           <FadeIn delay={0}>
   <DashboardWelcome
