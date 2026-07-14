@@ -26,6 +26,9 @@ import PiloPriorityCard from "../components/PiloPriorityCard";
 import PiloModules from "../components/PiloModules";
 import { generateMissions } from "../services/missions.service";
 import MobileMenu from "../components/layout/MobileMenu";
+import PiloNavigation from "../components/PiloNavigation";
+import DashboardNotifications from "../components/dashboard/DashboardNotifications";
+import DashboardQuickActions from "../components/dashboard/DashboardQuickActions";
 type Recommandation = {
   categorie: string;
   priorite: string;
@@ -571,6 +574,8 @@ async function onCompleteMission(mission: any) {
           </button>
         </div>
 
+        <PiloNavigation />
+
           <FadeIn delay={0}>
   <DashboardWelcome
     name="Fiona"
@@ -594,6 +599,15 @@ async function onCompleteMission(mission: any) {
   xp={piloProfile.xp}
 />
 </FadeIn>
+
+<FadeIn delay={0.15}>
+  <DashboardQuickActions />
+</FadeIn>
+
+<FadeIn delay={0.2}>
+  <DashboardNotifications />
+</FadeIn>
+
 {missionPrioritaire && (
   <FadeIn delay={0.2}>
     <PiloPriorityCard

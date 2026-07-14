@@ -1,7 +1,292 @@
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import PremiumGate from "../components/PremiumGate";
 import MonitoringCard from "../components/MonitoringCard";
+import PiloNavigation from "../components/PiloNavigation";
+import EditContractModal, {
+  type EditableContract,
+} from "../components/EditContractModal";
+
+import {
+  getMonitoringAlerts,
+  getMonitoringSummary,
+  deleteMonitoringContract,
+  updateMonitoringContract,
+  validateMonitoringSaving,
+  checkMonitoringContracts,
+  type MonitoringAlert,
+} from "./services/monitoring.service";
 
 function MonitoringDashboard() {
+  const [alerts, setAlerts] = useState<
+    MonitoringAlert[]
+  >([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const [
+    selectedContract,
+    setSelectedContract,
+  ] = useState<MonitoringAlert | null>(
+    null
+  );
+
+  const [editOpen, setEditOpen] =
+    useState(false);
+
+  const [savingEdit, setSavingEdit] =
+    useState(false);
+
+  const [
+    deletingContractId,
+    setDeletingContractId,
+  ] = useState<string | null>(null);
+
+  const [
+    validatingContractId,
+    setValidatingContractId,
+  ] = useState<string | null>(null);
+
+  const loadMonitoring = useCallback(
+    async () => {
+      try {
+        setLoading(true);
+        setErrorMessage("");
+
+        await checkMonitoringContracts();
+
+const data =
+  await getMonitoringAlerts();
+
+        setAlerts(data);
+      } catch (error) {
+        console.error(
+          "Erreur lors du chargement du monitoring :",
+          error
+        );
+
+        setErrorMessage(
+          "Impossible de charger le Monitoring pour le moment."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    loadMonitoring();
+  }, [loadMonitoring]);
+
+  const summary =
+    getMonitoringSummary(alerts);
+
+  function openEditModal(
+    alert: MonitoringAlert
+  ) {
+    setSelectedContract(alert);
+    setEditOpen(true);
+    setErrorMessage("");
+  }
+
+  function closeEditModal() {
+    if (savingEdit) {
+      return;
+    }
+
+    setEditOpen(false);
+    setSelectedContract(null);
+  }
+
+  async function handleSaveContract(
+    contract: EditableContract
+  ) {
+    if (!selectedContract) {
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      setErrorMessage("");
+
+      await updateMonitoringContract(
+        selectedContract.id,
+        {
+          provider: contract.provider,
+          current_offer:
+            contract.offer || null,
+          monthly_price:
+            contract.monthlyPrice,
+          end_date:
+            contract.endDate || null,
+        }
+      );
+
+      await loadMonitoring();
+
+      setEditOpen(false);
+      setSelectedContract(null);
+    } catch (error) {
+      console.error(
+        "Erreur modification contrat :",
+        error
+      );
+
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de modifier le contrat."
+      );
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function handleValidateSaving(
+    contract: MonitoringAlert
+  ) {
+    if (validatingContractId) {
+      return;
+    }
+
+    if (
+      !contract.detectedProvider ||
+      !contract.detectedOffer ||
+      contract.detectedPrice == null
+    ) {
+      window.alert(
+        "Aucune recommandation disponible."
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Confirmer que tu as changé pour ${contract.detectedProvider} ?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setValidatingContractId(contract.id);
+      setErrorMessage("");
+
+      const result =
+        await validateMonitoringSaving(
+          contract.id,
+          {
+            provider:
+              contract.detectedProvider,
+            offer:
+              contract.detectedOffer,
+            monthly_price:
+              contract.detectedPrice,
+            yearly_saving:
+              contract.yearlySaving,
+          }
+        );
+
+      await loadMonitoring();
+
+      window.alert(
+        result.projectTitle
+          ? `🎉 ${result.savingAdded} €/an ont été ajoutés à ton projet "${result.projectTitle}" !`
+          : `🎉 Économie validée (${result.savingAdded} €/an). Aucun projet principal n'a été trouvé.`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur validation économie :",
+        error
+      );
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Impossible de valider cette économie."
+      );
+    } finally {
+      setValidatingContractId(null);
+    }
+  }
+
+  async function handleDeleteContract(
+    contract: MonitoringAlert
+  ) {
+    if (deletingContractId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Supprimer le contrat ${contract.title} du Monitoring ?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingContractId(contract.id);
+      setErrorMessage("");
+
+      await deleteMonitoringContract(
+        contract.id
+      );
+
+      setAlerts((currentAlerts) =>
+        currentAlerts.filter(
+          (currentAlert) =>
+            currentAlert.id !== contract.id
+        )
+      );
+
+      if (
+        selectedContract?.id === contract.id
+      ) {
+        setEditOpen(false);
+        setSelectedContract(null);
+      }
+    } catch (error) {
+      console.error(
+        "Erreur suppression contrat :",
+        error
+      );
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Impossible de supprimer ce contrat."
+      );
+    } finally {
+      setDeletingContractId(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white lg:ml-64">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-green-500/20 border-t-green-400" />
+
+          <p className="mt-4 text-slate-300">
+            Pilo analyse tes contrats...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white lg:ml-64">
       <div className="mx-auto max-w-6xl">
@@ -9,62 +294,194 @@ function MonitoringDashboard() {
           PiloEco Premium
         </p>
 
-        <h1 className="text-4xl font-black">🦜 Pilo Monitoring</h1>
+        <h1 className="text-4xl font-black">
+          🦜 Pilo Monitoring
+        </h1>
 
         <p className="mt-3 text-slate-400">
-          Pilo surveille tes contrats, tes hausses de prix et tes économies.
+          Pilo surveille tes contrats, tes
+          hausses de prix et tes économies.
         </p>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <MonitoringCard
-            icon="📱"
-            title="Téléphone"
-            status="Contrat surveillé"
-            saving="96 €/an"
-            color="green"
-          />
+        <PiloNavigation />
 
-          <MonitoringCard
-            icon="⚡"
-            title="Électricité"
-            status="Meilleure offre trouvée"
-            saving="184 €/an"
-            color="orange"
-          />
+        <section className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="rounded-3xl border border-green-500/20 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-wider text-green-400">
+              Économies détectées
+            </p>
 
-          <MonitoringCard
-            icon="🏠"
-            title="Habitation"
-            status="Échéance proche"
-            saving="132 €/an"
-            color="blue"
-          />
+            <p className="mt-3 text-4xl font-black">
+              {summary.totalSaving.toLocaleString(
+                "fr-FR"
+              )}{" "}
+              €
+            </p>
 
-          <MonitoringCard
-            icon="🚗"
-            title="Assurance auto"
-            status="Hausse détectée"
-            saving="84 €/an"
-            color="red"
-          />
+            <p className="mt-2 text-sm text-slate-400">
+              par an
+            </p>
+          </div>
 
-          <MonitoringCard
-            icon="🏦"
-            title="Banque"
-            status="Frais stables"
-            saving="0 €"
-            color="green"
-          />
+          <div className="rounded-3xl border border-orange-500/20 bg-orange-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-300">
+              Alertes actives
+            </p>
 
-          <MonitoringCard
-            icon="📺"
-            title="Streaming"
-            status="Abonnement oublié"
-            saving="144 €/an"
-            color="orange"
-          />
-        </div>
+            <p className="mt-3 text-4xl font-black">
+              {summary.activeAlerts}
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              action
+              {summary.activeAlerts > 1
+                ? "s"
+                : ""}{" "}
+              à vérifier
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-blue-500/20 bg-blue-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-wider text-blue-300">
+              Contrats surveillés
+            </p>
+
+            <p className="mt-3 text-4xl font-black">
+              {
+                summary.monitoredContracts
+              }
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              univers suivis par Pilo
+            </p>
+          </div>
+        </section>
+
+        {errorMessage && (
+          <div className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
+            {errorMessage}
+
+            <button
+              type="button"
+              onClick={loadMonitoring}
+              className="ml-3 font-bold underline"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+
+        {!errorMessage &&
+          alerts.length === 0 && (
+            <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+              <p className="text-xl font-black">
+                Aucun contrat surveillé
+              </p>
+
+              <p className="mt-2 text-slate-400">
+                Ajoute un contrat pour que
+                Pilo commence sa
+                surveillance.
+              </p>
+            </div>
+          )}
+
+        {!errorMessage &&
+          alerts.length > 0 && (
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {alerts.map((alert) => (
+                <MonitoringCard
+                  key={alert.id}
+                  icon={alert.icon}
+                  title={alert.title}
+                  status={
+                    alert.alert ??
+                    "Aucune alerte détectée"
+                  }
+                  saving={`${alert.yearlySaving.toLocaleString(
+                    "fr-FR"
+                  )} €/an`}
+                  color={alert.color}
+                  href={
+                    alert.href ??
+                    "/recommendations"
+                  }
+                  buttonLabel={
+                    alert.button
+                  }
+                  currentProvider={
+                    alert.currentProvider
+                  }
+                  currentOffer={
+                    alert.currentOffer
+                  }
+                  currentPrice={
+                    alert.currentPrice
+                  }
+                  detectedProvider={
+                    alert.detectedProvider
+                  }
+                  detectedOffer={
+                    alert.detectedOffer
+                  }
+                  detectedPrice={
+                    alert.detectedPrice
+                  }
+                  onEdit={() =>
+                    openEditModal(alert)
+                  }
+                  onDelete={() =>
+                    handleDeleteContract(
+                      alert
+                    )
+                  }
+                  onValidateSaving={() =>
+                    handleValidateSaving(
+                      alert
+                    )
+                  }
+                  validating={
+                    validatingContractId ===
+                    alert.id
+                  }
+                  deleting={
+                    deletingContractId ===
+                    alert.id
+                  }
+                />
+              ))}
+            </div>
+          )}
       </div>
+
+      {selectedContract && (
+        <EditContractModal
+          open={editOpen}
+          categoryLabel={
+            selectedContract.title
+          }
+          saving={savingEdit}
+          initialContract={{
+            provider:
+              selectedContract.currentProvider ??
+              "",
+            offer:
+              selectedContract.currentOffer ??
+              "",
+            monthlyPrice:
+              selectedContract.currentPrice,
+            endDate:
+              selectedContract.updatedAt.includes(
+                "T"
+              )
+                ? ""
+                : selectedContract.updatedAt,
+          }}
+          onClose={closeEditModal}
+          onSave={handleSaveContract}
+        />
+      )}
     </main>
   );
 }

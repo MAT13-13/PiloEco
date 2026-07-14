@@ -96,7 +96,7 @@ export default function CreateProjectModal({
         type: selectedCategory.type,
         target_amount: Number(targetAmount),
         target_date: targetDate || null,
-        is_primary: true,
+        is_primary: false,
       });
 
       setTitle("");
