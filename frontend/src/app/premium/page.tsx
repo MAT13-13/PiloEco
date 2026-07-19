@@ -48,11 +48,64 @@ const opportunities = [
 export default function PremiumPage() {
   const [depenses, setDepenses] = useState<Depense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [premiumLoading, setPremiumLoading] =
+    useState(true);
   const [checkoutLoading, setCheckoutLoading] =
     useState(false);
+  const [isPremium, setIsPremium] =
+    useState(false);
+  const [paymentSuccess, setPaymentSuccess] =
+    useState(false);
+
+  async function loadPremiumStatus() {
+    try {
+      setPremiumLoading(true);
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error(
+          "Erreur récupération utilisateur :",
+          userError
+        );
+        return;
+      }
+
+      if (!user) {
+        setIsPremium(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profils")
+        .select("premium")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error(
+          "Erreur chargement statut Premium :",
+          error
+        );
+        return;
+      }
+
+      setIsPremium(data?.premium === true);
+    } catch (error) {
+      console.error(
+        "Erreur vérification Premium :",
+        error
+      );
+    } finally {
+      setPremiumLoading(false);
+    }
+  }
 
   async function checkout() {
-    if (checkoutLoading) {
+    if (checkoutLoading || isPremium) {
       return;
     }
 
@@ -97,8 +150,6 @@ export default function PremiumPage() {
 
       const data = await response.json();
 
-      console.log("Réponse Stripe :", data);
-
       if (!response.ok) {
         alert(
           data.error ||
@@ -132,13 +183,25 @@ export default function PremiumPage() {
   }
 
   useEffect(() => {
-    async function loadDepenses() {
+    async function loadPage() {
       try {
+        const searchParams =
+          new URLSearchParams(
+            window.location.search
+          );
+
+        const success =
+          searchParams.get("success") === "true";
+
+        setPaymentSuccess(success);
+
+        await loadPremiumStatus();
+
         const data = await getDepenses();
         setDepenses(data);
       } catch (error) {
         console.error(
-          "Erreur chargement dépenses :",
+          "Erreur chargement page Premium :",
           error
         );
       } finally {
@@ -146,7 +209,7 @@ export default function PremiumPage() {
       }
     }
 
-    loadDepenses();
+    loadPage();
   }, []);
 
   const fallbackSavings = opportunities.reduce(
@@ -175,6 +238,35 @@ export default function PremiumPage() {
         >
           ← Retour aux dépenses
         </Link>
+
+        {paymentSuccess && isPremium && (
+          <div className="mt-8 rounded-3xl border border-green-400/40 bg-green-500/15 p-6">
+            <p className="text-2xl font-black text-green-300">
+              🎉 Bienvenue dans Pilo Premium !
+            </p>
+
+            <p className="mt-2 text-slate-200">
+              Ton paiement a bien été validé et ton
+              compte Premium est maintenant actif.
+            </p>
+          </div>
+        )}
+
+        {paymentSuccess &&
+          !isPremium &&
+          !premiumLoading && (
+            <div className="mt-8 rounded-3xl border border-yellow-400/40 bg-yellow-500/15 p-6">
+              <p className="text-xl font-black text-yellow-300">
+                ⏳ Activation de Pilo Premium en cours
+              </p>
+
+              <p className="mt-2 text-slate-200">
+                Ton paiement a été reçu. Actualise la
+                page dans quelques secondes si ton
+                statut Premium ne s'affiche pas encore.
+              </p>
+            </div>
+          )}
 
         <section className="mt-10 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
           <p className="text-sm font-bold uppercase text-green-400">
@@ -209,16 +301,35 @@ export default function PremiumPage() {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={checkout}
-            disabled={checkoutLoading}
-            className="mt-6 rounded-2xl bg-yellow-400 px-7 py-4 text-lg font-black text-slate-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {checkoutLoading
-              ? "Ouverture du paiement..."
-              : "⭐ Passer à Pilo Premium"}
-          </button>
+          {premiumLoading ? (
+            <div className="mt-6 rounded-2xl bg-slate-800 px-7 py-4 text-lg font-bold text-slate-300">
+              Vérification de ton abonnement...
+            </div>
+          ) : isPremium ? (
+            <div className="mt-6 rounded-2xl border border-green-400/40 bg-green-500/20 px-7 py-4">
+              <p className="text-lg font-black text-green-300">
+                ✅ Ton abonnement Pilo Premium est actif
+              </p>
+
+              <Link
+                href="/pilolife"
+                className="mt-3 inline-block rounded-xl bg-green-400 px-5 py-3 font-black text-slate-950 hover:bg-green-300"
+              >
+                🚀 Accéder à PiloLife
+              </Link>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={checkout}
+              disabled={checkoutLoading}
+              className="mt-6 rounded-2xl bg-yellow-400 px-7 py-4 text-lg font-black text-slate-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {checkoutLoading
+                ? "Ouverture du paiement..."
+                : "⭐ Passer à Pilo Premium"}
+            </button>
+          )}
 
           {loading ? (
             <div className="mt-8 rounded-3xl bg-slate-950 p-8 text-slate-400">
@@ -271,11 +382,15 @@ export default function PremiumPage() {
                     </p>
 
                     <p className="mt-3 text-5xl font-black text-green-400">
-                      4,99 €
+                      {isPremium
+                        ? "Actif"
+                        : "4,99 €"}
                     </p>
 
                     <p className="mt-2 text-slate-500">
-                      par mois
+                      {isPremium
+                        ? "abonnement activé"
+                        : "par mois"}
                     </p>
                   </div>
                 </div>
@@ -337,16 +452,28 @@ export default function PremiumPage() {
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={checkout}
-                  disabled={checkoutLoading}
-                  className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {checkoutLoading
-                    ? "Ouverture..."
-                    : "🚀 Passer Premium"}
-                </button>
+                {isPremium ? (
+                  <Link
+                    href="/pilolife"
+                    className="mt-6 block w-full rounded-xl bg-green-500 px-5 py-3 text-center font-bold text-slate-950 hover:bg-green-400"
+                  >
+                    ✅ Premium actif
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={checkout}
+                    disabled={
+                      checkoutLoading ||
+                      premiumLoading
+                    }
+                    className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {checkoutLoading
+                      ? "Ouverture..."
+                      : "🚀 Passer Premium"}
+                  </button>
+                )}
               </div>
             ))}
           </div>
