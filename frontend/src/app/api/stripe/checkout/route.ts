@@ -83,11 +83,14 @@ export async function POST(req: NextRequest) {
       url: session.url,
     });
   } catch (error) {
-    console.error("Erreur Stripe Checkout :", error);
+   console.error("Erreur Stripe Checkout :", error);
 
-    return NextResponse.json(
-      { error: "Impossible de créer la session Stripe" },
-      { status: 500 }
-    );
+return NextResponse.json(
+  {
+    error:
+      error instanceof Error ? error.message : String(error),
+  },
+  { status: 500 }
+);
   }
 }
