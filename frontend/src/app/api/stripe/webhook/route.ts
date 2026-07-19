@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+
 import { stripe } from "@/app/lib/stripe";
 import { supabaseAdmin } from "@/app/lib/supabase-admin";
 
@@ -43,73 +44,117 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    if (event.type === "checkout.session.completed") {
-      const session =
-        event.data.object as Stripe.Checkout.Session;
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session =
+          event.data.object as Stripe.Checkout.Session;
 
-      const userId =
-        session.client_reference_id ??
-        session.metadata?.user_id;
+        const userId =
+          session.client_reference_id ??
+          session.metadata?.user_id;
 
-      const customerId =
-        typeof session.customer === "string"
-          ? session.customer
-          : session.customer?.id;
+        const customerId =
+          typeof session.customer === "string"
+            ? session.customer
+            : session.customer?.id;
 
-      const subscriptionId =
-        typeof session.subscription === "string"
-          ? session.subscription
-          : session.subscription?.id;
+        const subscriptionId =
+          typeof session.subscription === "string"
+            ? session.subscription
+            : session.subscription?.id;
 
-      if (!userId) {
-        console.error(
-          "Aucun user_id trouvé dans la session Stripe"
-        );
+        if (!userId) {
+          console.error(
+            "Aucun user_id trouvé dans la session Stripe"
+          );
 
-        return NextResponse.json(
-          { error: "Utilisateur introuvable" },
-          { status: 400 }
-        );
-      }
+          return NextResponse.json(
+            { error: "Utilisateur introuvable" },
+            { status: 400 }
+          );
+        }
 
-      const { data, error } = await supabaseAdmin
-        .from("profils")
-        .update({
-          premium: true,
-          stripe_customer_id: customerId ?? null,
-          stripe_subscription_id: subscriptionId ?? null,
-        })
-        .eq("id", userId)
-        .select();
+        const { data, error } = await supabaseAdmin
+          .from("profils")
+          .update({
+            premium: true,
+            stripe_customer_id: customerId ?? null,
+            stripe_subscription_id: subscriptionId ?? null,
+          })
+          .eq("id", userId)
+          .select("id");
 
-      if (error) {
-        console.error(
-          "Erreur activation Premium :",
-          error
-        );
+        if (error) {
+          console.error(
+            "Erreur activation Premium :",
+            error
+          );
 
-        return NextResponse.json(
-          { error: "Impossible d'activer Premium" },
-          { status: 500 }
-        );
-      }
+          return NextResponse.json(
+            { error: "Impossible d'activer Premium" },
+            { status: 500 }
+          );
+        }
 
-      if (!data || data.length === 0) {
-        console.error(
-          "Aucun profil trouvé pour l'utilisateur :",
+        if (!data || data.length === 0) {
+          console.error(
+            "Aucun profil trouvé pour l'utilisateur :",
+            userId
+          );
+
+          return NextResponse.json(
+            { error: "Profil introuvable" },
+            { status: 404 }
+          );
+        }
+
+        console.log(
+          "Premium activé pour l'utilisateur :",
           userId
         );
 
-        return NextResponse.json(
-          { error: "Profil introuvable" },
-          { status: 404 }
-        );
+        break;
       }
 
-      console.log(
-        "Premium activé pour l'utilisateur :",
-        userId
-      );
+      case "customer.subscription.deleted": {
+        const subscription =
+          event.data.object as Stripe.Subscription;
+
+        const subscriptionId = subscription.id;
+
+        const { error } = await supabaseAdmin
+          .from("profils")
+          .update({
+            premium: false,
+            stripe_subscription_id: null,
+          })
+          .eq("stripe_subscription_id", subscriptionId);
+
+        if (error) {
+          console.error(
+            "Erreur désactivation Premium :",
+            error
+          );
+
+          return NextResponse.json(
+            { error: "Impossible de désactiver Premium" },
+            { status: 500 }
+          );
+        }
+
+        console.log(
+          "Premium désactivé pour l'abonnement :",
+          subscriptionId
+        );
+
+        break;
+      }
+
+      default:
+        console.log(
+          "Événement Stripe ignoré :",
+          event.type
+        );
     }
 
     return NextResponse.json({
