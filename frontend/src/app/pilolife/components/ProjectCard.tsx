@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import type { FormEvent } from "react";
 
 import {
@@ -13,45 +18,116 @@ import {
 type Props = {
   project: PiloLifeProject;
   onUpdated?: () => void | Promise<void>;
+
+  /**
+   * Total annuel des économies encore détectées
+   * dans le Monitoring.
+   *
+   * Facultatif pour que la carte fonctionne
+   * immédiatement sans casser la page actuelle.
+   */
+  detectedYearlySaving?: number;
 };
 
-type CurrentAction = "primary" | "edit" | "delete" | null;
+type CurrentAction =
+  | "primary"
+  | "edit"
+  | "delete"
+  | null;
+
+function formatMoney(value: number) {
+  return Math.round(value).toLocaleString(
+    "fr-FR"
+  );
+}
+
+function addMonthsToToday(months: number) {
+  const date = new Date();
+
+  date.setDate(1);
+  date.setMonth(date.getMonth() + months);
+
+  return date;
+}
+
+function formatEstimatedDate(
+  months: number | null
+) {
+  if (months === null) {
+    return null;
+  }
+
+  if (months <= 0) {
+    return "Objectif atteint";
+  }
+
+  return addMonthsToToday(
+    months
+  ).toLocaleDateString("fr-FR", {
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default function ProjectCard({
   project,
   onUpdated,
+  detectedYearlySaving = 0,
 }: Props) {
-  const [currentAction, setCurrentAction] =
-    useState<CurrentAction>(null);
+  const menuRef =
+    useRef<HTMLDivElement | null>(null);
 
-  const [editModalOpen, setEditModalOpen] =
+  const [
+    currentAction,
+    setCurrentAction,
+  ] = useState<CurrentAction>(null);
+
+  const [menuOpen, setMenuOpen] =
     useState(false);
 
-  const [deleteModalOpen, setDeleteModalOpen] =
-    useState(false);
+  const [
+    editModalOpen,
+    setEditModalOpen,
+  ] = useState(false);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    deleteModalOpen,
+    setDeleteModalOpen,
+  ] = useState(false);
 
-  const [title, setTitle] = useState(project.title);
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+  const [title, setTitle] = useState(
+    project.title
+  );
 
   const [category, setCategory] =
     useState(project.category);
 
-  const [targetAmount, setTargetAmount] = useState(
+  const [
+    targetAmount,
+    setTargetAmount,
+  ] = useState(
     String(project.target_amount)
   );
 
-  const [targetDate, setTargetDate] = useState(
-    project.target_date
-      ? project.target_date.slice(0, 10)
-      : ""
-  );
+  const [targetDate, setTargetDate] =
+    useState(
+      project.target_date
+        ? project.target_date.slice(0, 10)
+        : ""
+    );
 
   useEffect(() => {
     setTitle(project.title);
     setCategory(project.category);
-    setTargetAmount(String(project.target_amount));
+
+    setTargetAmount(
+      String(project.target_amount)
+    );
 
     setTargetDate(
       project.target_date
@@ -60,17 +136,53 @@ export default function ProjectCard({
     );
   }, [project]);
 
-  const targetAmountNumber = Number(
-    project.target_amount || 0
+  useEffect(() => {
+    function handleOutsideClick(
+      event: MouseEvent
+    ) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "mousedown",
+      handleOutsideClick
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+    };
+  }, []);
+
+  const targetAmountNumber = Math.max(
+    0,
+    Number(project.target_amount) || 0
   );
 
-  const savedAmount = Number(
-    project.saved_amount || 0
+  const savedAmount = Math.max(
+    0,
+    Number(project.saved_amount) || 0
   );
 
-  const monthlySaved = Number(
-    project.monthly_saved || 0
+  const monthlySaved = Math.max(
+    0,
+    Number(project.monthly_saved) || 0
   );
+
+  const safeDetectedYearlySaving =
+    Math.max(
+      0,
+      Number(detectedYearlySaving) || 0
+    );
 
   const remainingAmount = Math.max(
     targetAmountNumber - savedAmount,
@@ -80,54 +192,74 @@ export default function ProjectCard({
   const progress =
     targetAmountNumber > 0
       ? Math.min(
-          Math.round(
-            (savedAmount / targetAmountNumber) * 100
-          ),
-          100
+          100,
+          Math.max(
+            0,
+            Math.round(
+              (savedAmount /
+                targetAmountNumber) *
+                100
+            )
+          )
         )
       : 0;
 
   const estimatedMonths =
-    monthlySaved > 0 && remainingAmount > 0
-      ? Math.ceil(
-          remainingAmount / monthlySaved
+    remainingAmount === 0
+      ? 0
+      : monthlySaved > 0
+        ? Math.ceil(
+            remainingAmount /
+              monthlySaved
+          )
+        : null;
+
+  const monthlySavingWithPilo =
+    monthlySaved +
+    safeDetectedYearlySaving / 12;
+
+  const estimatedMonthsWithPilo =
+    remainingAmount === 0
+      ? 0
+      : monthlySavingWithPilo > 0
+        ? Math.ceil(
+            remainingAmount /
+              monthlySavingWithPilo
+          )
+        : null;
+
+  const estimatedDate =
+    formatEstimatedDate(
+      estimatedMonths
+    );
+
+  const estimatedDateWithPilo =
+    formatEstimatedDate(
+      estimatedMonthsWithPilo
+    );
+
+  const monthsSaved =
+    estimatedMonths !== null &&
+    estimatedMonthsWithPilo !== null
+      ? Math.max(
+          0,
+          estimatedMonths -
+            estimatedMonthsWithPilo
         )
-      : null;
+      : 0;
+
+  const hasPiloProjection =
+    safeDetectedYearlySaving > 0 &&
+    estimatedDateWithPilo !== null &&
+    monthsSaved > 0;
 
   const isUpdating =
     currentAction !== null;
 
-  function formatEstimatedTime(
-    months: number | null
-  ) {
-    if (months === null) {
-      return "Ajoute des économies pour obtenir une estimation";
-    }
-
-    if (months <= 1) {
-      return "Moins d’un mois";
-    }
-
-    if (months < 12) {
-      return `${months} mois`;
-    }
-
-    const years = Math.floor(months / 12);
-    const remainingMonths = months % 12;
-
-    if (remainingMonths === 0) {
-      return `${years} an${
-        years > 1 ? "s" : ""
-      }`;
-    }
-
-    return `${years} an${
-      years > 1 ? "s" : ""
-    } et ${remainingMonths} mois`;
-  }
-
   function openEditModal() {
+    setMenuOpen(false);
     setErrorMessage("");
+
     setTitle(project.title);
     setCategory(project.category);
 
@@ -144,8 +276,15 @@ export default function ProjectCard({
     setEditModalOpen(true);
   }
 
+  function openDeleteModal() {
+    setMenuOpen(false);
+    setErrorMessage("");
+    setDeleteModalOpen(true);
+  }
+
   async function handleSetPrimary() {
-    console.log("CLICK", project.id, project.user_id);
+    setMenuOpen(false);
+
     if (
       project.is_primary ||
       isUpdating
@@ -175,7 +314,7 @@ export default function ProjectCard({
           : "Impossible de définir ce projet comme projet principal.";
 
       setErrorMessage(message);
-      alert(message);
+      window.alert(message);
     } finally {
       setCurrentAction(null);
     }
@@ -186,7 +325,9 @@ export default function ProjectCard({
   ) {
     event.preventDefault();
 
-    if (isUpdating) return;
+    if (isUpdating) {
+      return;
+    }
 
     const normalizedAmount =
       Number(targetAmount);
@@ -208,7 +349,9 @@ export default function ProjectCard({
     }
 
     if (
-      !Number.isFinite(normalizedAmount) ||
+      !Number.isFinite(
+        normalizedAmount
+      ) ||
       normalizedAmount <= 0
     ) {
       setErrorMessage(
@@ -228,8 +371,10 @@ export default function ProjectCard({
         {
           title,
           category,
-          target_amount: normalizedAmount,
-          target_date: targetDate || null,
+          target_amount:
+            normalizedAmount,
+          target_date:
+            targetDate || null,
         }
       );
 
@@ -253,7 +398,9 @@ export default function ProjectCard({
   }
 
   async function handleDelete() {
-    if (isUpdating) return;
+    if (isUpdating) {
+      return;
+    }
 
     try {
       setCurrentAction("delete");
@@ -285,27 +432,88 @@ export default function ProjectCard({
 
   return (
     <>
-      <article className="flex h-full flex-col rounded-3xl border border-green-500/20 bg-slate-900 p-7 shadow-lg shadow-black/10 transition hover:-translate-y-1 hover:border-green-500/40">
+      <article className="relative flex h-full flex-col rounded-[2rem] border border-green-500/20 bg-slate-900 p-6 shadow-lg shadow-black/10 transition hover:-translate-y-1 hover:border-green-500/40">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-wider text-green-400">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-green-400">
               {project.category}
             </p>
 
-            <h2 className="mt-3 text-2xl font-black text-white">
-              {project.title}
+            <h2 className="mt-2 truncate text-2xl font-black text-white">
+              🌳 {project.title}
             </h2>
           </div>
 
-          <div className="rounded-2xl bg-green-500/10 px-3 py-2 text-xl font-black text-green-400">
-            {progress} %
+          <div
+            ref={menuRef}
+            className="relative shrink-0"
+          >
+            <button
+              type="button"
+              onClick={() =>
+                setMenuOpen(
+                  (current) => !current
+                )
+              }
+              disabled={isUpdating}
+              aria-label={`Actions du projet ${project.title}`}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/60 text-2xl font-black text-slate-300 transition hover:border-green-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              ⋮
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-12 z-20 w-60 overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl">
+                {!project.is_primary && (
+                  <button
+                    type="button"
+                    onClick={
+                      handleSetPrimary
+                    }
+                    disabled={isUpdating}
+                    className="w-full rounded-xl px-4 py-3 text-left text-sm font-bold text-green-300 transition hover:bg-green-500/10 disabled:opacity-50"
+                  >
+                    ⭐ Définir comme
+                    principal
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={openEditModal}
+                  disabled={isUpdating}
+                  className="w-full rounded-xl px-4 py-3 text-left text-sm font-bold text-slate-200 transition hover:bg-white/5 disabled:opacity-50"
+                >
+                  ✏️ Modifier
+                </button>
+
+                <button
+                  type="button"
+                  onClick={openDeleteModal}
+                  disabled={isUpdating}
+                  className="w-full rounded-xl px-4 py-3 text-left text-sm font-bold text-red-300 transition hover:bg-red-500/10 disabled:opacity-50"
+                >
+                  🗑️ Supprimer
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="mt-7">
-          <div className="h-4 overflow-hidden rounded-full bg-slate-800">
+          <div className="flex items-end justify-between gap-4">
+            <p className="text-sm font-bold text-slate-400">
+              Progression
+            </p>
+
+            <p className="text-3xl font-black text-green-400">
+              {progress} %
+            </p>
+          </div>
+
+          <div className="mt-3 h-4 overflow-hidden rounded-full border border-white/5 bg-slate-800">
             <div
-              className="h-full rounded-full bg-green-500 transition-all duration-700"
+              className="h-full rounded-full bg-gradient-to-r from-green-600 to-green-400 shadow-[0_0_18px_rgba(34,197,94,0.55)] transition-all duration-700"
               style={{
                 width: `${progress}%`,
               }}
@@ -313,93 +521,97 @@ export default function ProjectCard({
           </div>
 
           <div className="mt-3 flex items-center justify-between gap-4 text-sm">
-            <span className="font-bold text-green-400">
-              {savedAmount.toLocaleString(
-                "fr-FR",
-                {
-                  maximumFractionDigits: 2,
-                }
-              )}{" "}
-              €
+            <span className="font-black text-white">
+              {formatMoney(savedAmount)} €
             </span>
 
             <span className="text-slate-400">
               sur{" "}
-              {targetAmountNumber.toLocaleString(
-                "fr-FR",
-                {
-                  maximumFractionDigits: 2,
-                }
+              {formatMoney(
+                targetAmountNumber
               )}{" "}
               €
             </span>
           </div>
+
+          <p className="mt-4 rounded-2xl border border-green-500/15 bg-green-500/5 px-4 py-3 text-sm font-bold text-green-300">
+            🌱 Tu as déjà financé{" "}
+            {progress} % de ton projet.
+          </p>
         </div>
 
-        <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl bg-slate-950/70 p-4">
-            <p className="text-sm text-slate-400">
-              Encore à économiser
-            </p>
+        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
+          {remainingAmount === 0 ? (
+            <div className="text-center">
+              <p className="text-3xl">
+                🎉
+              </p>
 
-            <p className="mt-2 text-xl font-black text-white">
-              {remainingAmount.toLocaleString(
-                "fr-FR",
-                {
-                  maximumFractionDigits: 2,
-                }
-              )}{" "}
-              €
-            </p>
-          </div>
+              <p className="mt-2 text-xl font-black text-green-300">
+                Objectif atteint !
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-slate-400">
+                Encore à économiser
+              </p>
 
-          <div className="rounded-2xl bg-slate-950/70 p-4">
-            <p className="text-sm text-slate-400">
-              Au rythme actuel
-            </p>
+              <p className="mt-1 text-3xl font-black text-white">
+                {formatMoney(
+                  remainingAmount
+                )}{" "}
+                €
+              </p>
 
-            <p className="mt-2 text-base font-black text-white">
-              {remainingAmount === 0
-                ? "Objectif atteint 🎉"
-                : formatEstimatedTime(
-                    estimatedMonths
-                  )}
-            </p>
-          </div>
+              <div className="mt-5 border-t border-white/10 pt-5">
+                <p className="text-sm text-slate-400">
+                  📅 Fin estimée
+                </p>
+
+                <p className="mt-1 text-lg font-black capitalize text-white">
+                  {estimatedDate ??
+                    "Ajoute des économies pour obtenir une estimation"}
+                </p>
+              </div>
+
+              {hasPiloProjection && (
+                <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
+                  <p className="text-sm font-bold text-green-300">
+                    🚀 Avec les économies
+                    détectées
+                  </p>
+
+                  <p className="mt-1 text-lg font-black capitalize text-white">
+                    {
+                      estimatedDateWithPilo
+                    }
+                  </p>
+
+                  <p className="mt-2 text-sm font-black text-green-400">
+                    ⭐ {monthsSaved} mois
+                    gagné
+                    {monthsSaved > 1
+                      ? "s"
+                      : ""}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </div>
-
-        {project.target_date && (
-          <div className="mt-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <p className="text-sm text-slate-400">
-              Date cible
-            </p>
-
-            <p className="mt-1 font-bold text-slate-200">
-              {new Date(
-                `${project.target_date.slice(
-                  0,
-                  10
-                )}T12:00:00`
-              ).toLocaleDateString("fr-FR", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-        )}
 
         {errorMessage &&
           !editModalOpen &&
           !deleteModalOpen && (
-            <p className="mt-4 text-sm font-medium text-red-300">
+            <p className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm font-medium text-red-300">
               {errorMessage}
             </p>
           )}
 
-        <div className="mt-auto space-y-3 pt-6">
+        <div className="mt-auto pt-5">
           {project.is_primary ? (
-            <div className="inline-flex rounded-full bg-green-500/20 px-4 py-2 text-sm font-bold text-green-400">
+            <div className="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-4 py-2 text-sm font-black text-green-300">
               ⭐ Projet principal
             </div>
           ) : (
@@ -407,41 +619,18 @@ export default function ProjectCard({
               type="button"
               onClick={handleSetPrimary}
               disabled={isUpdating}
-              className="w-full rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 font-bold text-green-300 transition hover:border-green-400 hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="text-sm font-bold text-slate-400 transition hover:text-green-300 disabled:opacity-50"
             >
               {currentAction === "primary"
                 ? "Mise à jour..."
-                : "⭐ Définir comme projet principal"}
+                : "Définir comme projet principal"}
             </button>
           )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={openEditModal}
-              disabled={isUpdating}
-              className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 font-bold text-slate-200 transition hover:border-slate-400 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              ✏️ Modifier
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMessage("");
-                setDeleteModalOpen(true);
-              }}
-              disabled={isUpdating}
-              className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 font-bold text-red-300 transition hover:border-red-400 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              🗑️ Supprimer
-            </button>
-          </div>
         </div>
       </article>
 
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-8 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black/75 px-4 py-8 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-green-500/20 bg-slate-900 p-7 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -490,7 +679,6 @@ export default function ProjectCard({
                   }
                   disabled={isUpdating}
                   className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-green-500 disabled:opacity-60"
-                  placeholder="Maison dans le Var"
                 />
               </div>
 
@@ -513,7 +701,6 @@ export default function ProjectCard({
                   }
                   disabled={isUpdating}
                   className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-green-500 disabled:opacity-60"
-                  placeholder="Maison"
                 />
               </div>
 
@@ -539,7 +726,6 @@ export default function ProjectCard({
                     }
                     disabled={isUpdating}
                     className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 pr-12 text-white outline-none transition focus:border-green-500 disabled:opacity-60"
-                    placeholder="35000"
                   />
 
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
@@ -604,27 +790,31 @@ export default function ProjectCard({
       )}
 
       {deleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-red-500/20 bg-slate-900 p-7 shadow-2xl">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-2xl">
               🗑️
             </div>
 
             <h2 className="mt-5 text-2xl font-black text-white">
-              Supprimer « {project.title} » ?
+              Supprimer «{" "}
+              {project.title} » ?
             </h2>
 
             <p className="mt-3 text-slate-400">
-              Cette action est définitive. La
-              progression de cet objectif sera
-              également supprimée.
+              Cette action est définitive.
+              La progression de cet
+              objectif sera également
+              supprimée.
             </p>
 
             {project.is_primary && (
               <p className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">
-                Ce projet est actuellement ton projet
-                principal. Un autre projet sera
-                automatiquement sélectionné.
+                Ce projet est actuellement
+                ton projet principal. Un
+                autre projet sera
+                automatiquement
+                sélectionné.
               </p>
             )}
 

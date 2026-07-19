@@ -7,13 +7,16 @@ import ScoreGauge from "../components/ScoreGauge";
 import PiloAssistant from "../components/PiloAssistant";
 import PiloInsights from "../components/PiloInsights";
 import MissionCard from "../components/MissionCard";
-import { getDepenses, type Depense } from "../services/finance/depenses.service";
-import { analyzePilo } from "../services/shared/pilo.service";
-import { generateMissions } from "../services/missions.service";
 import MonitoringDashboard from "../components/MonitoringDashboard";
 import PiloJournal from "../components/PiloJournal";
-import { analysePiloEngine } from "../services/pilo-engine/analyse";
 import PiloCommandCenter from "../components/PiloCommandCenter";
+
+import {
+  getDepenses,
+  type Depense,
+} from "../services/finance/depenses.service";
+import { analysePiloEngine } from "../services/pilo-engine/analyse";
+import { supabase } from "../lib/supabase";
 
 const opportunities = [
   {
@@ -45,41 +48,99 @@ const opportunities = [
 export default function PremiumPage() {
   const [depenses, setDepenses] = useState<Depense[]>([]);
   const [loading, setLoading] = useState(true);
-async function checkout() {
-  try {
-    console.log("Clic Stripe OK");
+  const [checkoutLoading, setCheckoutLoading] =
+    useState(false);
 
-    const response = await fetch("/api/stripe/checkout", {
-      method: "POST",
-    });
-
-    const data = await response.json();
-
-    console.log("Réponse Stripe :", data);
-
-    if (!response.ok) {
-      alert(data.error || "Erreur Stripe");
+  async function checkout() {
+    if (checkoutLoading) {
       return;
     }
 
-    if (!data.url) {
-      alert("Stripe n'a renvoyé aucune URL.");
-      return;
-    }
+    try {
+      setCheckoutLoading(true);
 
-    window.location.href = data.url;
-  } catch (error) {
-    console.error("Erreur checkout :", error);
-    alert("Erreur pendant l'ouverture de Stripe.");
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error(
+          "Erreur session Supabase :",
+          sessionError
+        );
+
+        alert(
+          "Impossible de vérifier ta connexion."
+        );
+
+        return;
+      }
+
+      if (!session?.access_token) {
+        alert(
+          "Tu dois être connecté pour passer Premium."
+        );
+
+        return;
+      }
+
+      const response = await fetch(
+        "/api/stripe/checkout",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Réponse Stripe :", data);
+
+      if (!response.ok) {
+        alert(
+          data.error ||
+            "Impossible d'ouvrir le paiement Stripe."
+        );
+
+        return;
+      }
+
+      if (!data.url) {
+        alert(
+          "Stripe n'a renvoyé aucune URL de paiement."
+        );
+
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error(
+        "Erreur checkout :",
+        error
+      );
+
+      alert(
+        "Erreur pendant l'ouverture de Stripe."
+      );
+    } finally {
+      setCheckoutLoading(false);
+    }
   }
-}
+
   useEffect(() => {
     async function loadDepenses() {
       try {
         const data = await getDepenses();
         setDepenses(data);
       } catch (error) {
-        console.error("Erreur chargement dépenses :", error);
+        console.error(
+          "Erreur chargement dépenses :",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -88,26 +149,30 @@ async function checkout() {
     loadDepenses();
   }, []);
 
-const fallbackSavings = opportunities.reduce(
-  (total, item) => total + item.saving,
-  0
-);
+  const fallbackSavings = opportunities.reduce(
+    (total, item) => total + item.saving,
+    0
+  );
 
-const analysis = {
-  score: 84,
-  totalSavings: fallbackSavings,
-  insights: [],
-};
+  const analysis = {
+    score: 84,
+    totalSavings: fallbackSavings,
+    insights: [],
+  };
 
-const engine = analysePiloEngine(depenses);
+  const engine = analysePiloEngine(depenses);
 
-const totalSavings = engine.yearlySavings;
-const score = engine.score;
-const missions: any[] = [];
+  const totalSavings = engine.yearlySavings;
+  const score = engine.score;
+  const missions: any[] = [];
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-6xl">
-        <Link href="/depenses" className="text-green-400 hover:text-green-300">
+        <Link
+          href="/depenses"
+          className="text-green-400 hover:text-green-300"
+        >
           ← Retour aux dépenses
         </Link>
 
@@ -117,28 +182,43 @@ const missions: any[] = [];
           </p>
 
           <h1 className="mt-4 text-5xl font-black leading-tight">
-  ⭐ Pilo Premium
-  <br />
-  Transforme tes économies en projets de vie
-</h1>
+            ⭐ Pilo Premium
+            <br />
+            Transforme tes économies en projets de vie
+          </h1>
 
-         <p className="mt-5 max-w-3xl text-lg text-slate-300">
-  Avec Pilo Premium, tu ne vois pas seulement combien tu peux économiser.
-  Tu débloques PiloLife, le coaching qui transforme chaque euro économisé
-  en objectif concret : maison, voyage, voiture, projet ou épargne.
-</p>
+          <p className="mt-5 max-w-3xl text-lg text-slate-300">
+            Avec Pilo Premium, tu ne vois pas seulement
+            combien tu peux économiser. Tu débloques
+            PiloLife, le coaching qui transforme chaque
+            euro économisé en objectif concret : maison,
+            voyage, voiture, projet ou épargne.
+          </p>
 
-<div className="mt-6 flex flex-wrap gap-3">
-  <span className="rounded-full bg-green-500/20 px-4 py-2 text-sm font-bold text-green-300">
-    🐦 PiloLife inclus
-  </span>
-  <span className="rounded-full bg-yellow-500/20 px-4 py-2 text-sm font-bold text-yellow-300">
-    ⭐ 4,99 €/mois
-  </span>
-  <span className="rounded-full bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300">
-    🔒 Sans engagement
-  </span>
-</div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <span className="rounded-full bg-green-500/20 px-4 py-2 text-sm font-bold text-green-300">
+              🐦 PiloLife inclus
+            </span>
+
+            <span className="rounded-full bg-yellow-500/20 px-4 py-2 text-sm font-bold text-yellow-300">
+              ⭐ 4,99 €/mois
+            </span>
+
+            <span className="rounded-full bg-slate-800 px-4 py-2 text-sm font-bold text-slate-300">
+              🔒 Sans engagement
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={checkout}
+            disabled={checkoutLoading}
+            className="mt-6 rounded-2xl bg-yellow-400 px-7 py-4 text-lg font-black text-slate-950 transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {checkoutLoading
+              ? "Ouverture du paiement..."
+              : "⭐ Passer à Pilo Premium"}
+          </button>
 
           {loading ? (
             <div className="mt-8 rounded-3xl bg-slate-950 p-8 text-slate-400">
@@ -146,27 +226,35 @@ const missions: any[] = [];
             </div>
           ) : (
             <>
-              <PiloAssistant score={score} savings={totalSavings} />
+              <PiloAssistant
+                score={score}
+                savings={totalSavings}
+              />
+
               <div className="mt-8">
-  <PiloCommandCenter
-    notifications={engine.notifications}
-  />
-</div>
+                <PiloCommandCenter
+                  notifications={
+                    engine.notifications
+                  }
+                />
+              </div>
 
               <section className="mt-8 space-y-6">
-               <ScoreGauge
-  score={score}
-  totalSavings={totalSavings}
-  level={
-    score >= 75
-      ? "Très bon potentiel"
-      : "Potentiel à améliorer"
-  }
-/>
+                <ScoreGauge
+                  score={score}
+                  totalSavings={totalSavings}
+                  level={
+                    score >= 75
+                      ? "Très bon potentiel"
+                      : "Potentiel à améliorer"
+                  }
+                />
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <div className="rounded-2xl bg-slate-950 p-6">
-                    <p className="text-slate-400">💰 Économies détectées</p>
+                    <p className="text-slate-400">
+                      💰 Économies détectées
+                    </p>
 
                     <p className="mt-3 text-5xl font-black text-green-400">
                       {totalSavings} €
@@ -178,35 +266,46 @@ const missions: any[] = [];
                   </div>
 
                   <div className="rounded-2xl bg-slate-950 p-6">
-                    <p className="text-slate-400">⭐ Premium</p>
+                    <p className="text-slate-400">
+                      ⭐ Premium
+                    </p>
 
                     <p className="mt-3 text-5xl font-black text-green-400">
                       4,99 €
                     </p>
 
-                    <p className="mt-2 text-slate-500">par mois</p>
+                    <p className="mt-2 text-slate-500">
+                      par mois
+                    </p>
                   </div>
                 </div>
               </section>
 
-             <section className="mt-10">
-  <MonitoringDashboard cards={engine.monitoring} />
-</section>
+              <section className="mt-10">
+                <MonitoringDashboard
+                  cards={engine.monitoring}
+                />
+              </section>
 
-<PiloJournal />
+              <PiloJournal />
 
-<PiloInsights insights={analysis.insights} />
+              <PiloInsights
+                insights={analysis.insights}
+              />
 
-<MissionCard missions={missions} />
+              <MissionCard missions={missions} />
             </>
           )}
         </section>
 
         <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8">
-          <h2 className="text-3xl font-black">🧠 Coffre des économies</h2>
+          <h2 className="text-3xl font-black">
+            🧠 Coffre des économies
+          </h2>
 
           <p className="mt-3 text-slate-400">
-            Pilo détecte les domaines où tu pourrais économiser.
+            Pilo détecte les domaines où tu pourrais
+            économiser.
           </p>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
@@ -217,7 +316,9 @@ const missions: any[] = [];
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-3xl">{item.icon}</p>
+                    <p className="text-3xl">
+                      {item.icon}
+                    </p>
 
                     <h3 className="mt-5 text-2xl font-bold text-white">
                       {item.title}
@@ -237,11 +338,15 @@ const missions: any[] = [];
                 </div>
 
                 <button
-  onClick={checkout}
-  className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400"
->
-  🚀 Passer Premium
-</button>
+                  type="button"
+                  onClick={checkout}
+                  disabled={checkoutLoading}
+                  className="mt-6 w-full rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-950 hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {checkoutLoading
+                    ? "Ouverture..."
+                    : "🚀 Passer Premium"}
+                </button>
               </div>
             ))}
           </div>

@@ -44,15 +44,15 @@ const actions = [
       "from-blue-500/20 to-blue-700/10 border-blue-500/20",
   },
   {
-    icon: "📈",
-    title: "Mes analyses",
-    description:
-      "Consulte l'historique de toutes tes analyses.",
-    href: "/analyses",
-    premium: false,
-    color:
-      "from-purple-500/20 to-purple-700/10 border-purple-500/20",
-  },
+  icon: "📈",
+  title: "Mes analyses",
+  description:
+    "Consulte le résultat de ta dernière analyse.",
+  href: "/analyse-result",
+  premium: false,
+  color:
+    "from-purple-500/20 to-purple-700/10 border-purple-500/20",
+},
   {
     icon: "➕",
     title: "Nouvelle analyse",

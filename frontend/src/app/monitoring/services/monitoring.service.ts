@@ -9,6 +9,13 @@ import type {
 
 import { enrichMonitoringCard } from "./monitoring-engine.service";
 import { addMissionSavingToPrimaryProject } from "../../pilolife/services/pilolife.service";
+import {
+  getPiloLifeSettings,
+} from "../../pilolife/services/pilolife-settings.service";
+
+import {
+  creditPiloLifeWallet,
+} from "../../pilolife/services/pilolife-wallet.service";
 
 export type MonitoringContract = {
   id: string;
@@ -311,17 +318,21 @@ export async function createMonitoringContract(
   input: CreateMonitoringContractInput
 ): Promise<MonitoringContract> {
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (userError) {
-    throw userError;
+  if (sessionError) {
+    throw new Error(
+      "Impossible de vérifier ta connexion."
+    );
   }
+
+  const user = session?.user;
 
   if (!user) {
     throw new Error(
-      "Tu dois être connecté."
+      "Tu dois être connecté pour ajouter ce contrat au Monitoring."
     );
   }
 
@@ -331,6 +342,11 @@ export async function createMonitoringContract(
 
   const monthlyPrice = Number(
     input.monthly_price
+  );
+
+  const yearlySaving = Math.max(
+    0,
+    Number(input.yearly_saving ?? 0)
   );
 
   if (!input.provider.trim()) {
@@ -348,18 +364,35 @@ export async function createMonitoringContract(
     );
   }
 
-const { data: existingContract } = await supabase
-  .from("monitoring_contracts")
-  .select("id")
-  .eq("user_id", user.id)
-  .eq("category", category)
-  .maybeSingle();
+  const {
+    data: existingContract,
+    error: existingContractError,
+  } = await supabase
+    .from("monitoring_contracts")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("category", category)
+    .maybeSingle();
 
-if (existingContract) {
-  throw new Error(
-    "Ce contrat est déjà surveillé."
-  );
-}
+  if (existingContractError) {
+    throw existingContractError;
+  }
+
+  if (existingContract) {
+    throw new Error(
+      "Ce contrat est déjà surveillé."
+    );
+  }
+
+  const now = new Date().toISOString();
+
+  const betterOffer =
+    input.better_offer?.trim() || null;
+
+  const status =
+    betterOffer || yearlySaving > 0
+      ? "Meilleure offre trouvée"
+      : "Contrat surveillé";
 
   const { data, error } = await supabase
     .from("monitoring_contracts")
@@ -368,25 +401,18 @@ if (existingContract) {
       category,
       provider: input.provider.trim(),
       monthly_price: monthlyPrice,
+      previous_price: monthlyPrice,
+      last_checked_at: now,
+      last_price_change_at: null,
+      last_offer_detected_at:
+        betterOffer ? now : null,
       end_date: input.end_date || null,
       current_offer:
-        input.current_offer?.trim() ||
-        null,
-      better_offer:
-  input.better_offer?.trim() ||
-  null,
-
-yearly_saving: Math.max(
-  0,
-  Number(input.yearly_saving ?? 0)
-),
-
-status:
-  Number(input.yearly_saving ?? 0) > 0
-    ? "Meilleure offre trouvée"
-    : "Contrat surveillé",
-      updated_at:
-        new Date().toISOString(),
+        input.current_offer?.trim() || null,
+      better_offer: betterOffer,
+      yearly_saving: yearlySaving,
+      status,
+      updated_at: now,
     })
     .select("*")
     .single();
@@ -397,25 +423,23 @@ status:
 
   return data as MonitoringContract;
 }
-export type UpdateMonitoringContractInput = {
-  provider: string;
-  monthly_price: number;
-  current_offer?: string | null;
-  end_date?: string | null;
-};
 
 export async function updateMonitoringContract(
   contractId: string,
-  input: UpdateMonitoringContractInput
+  input: CreateMonitoringContractInput
 ): Promise<MonitoringContract> {
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (userError) {
-    throw userError;
+  if (sessionError) {
+    throw new Error(
+      "Impossible de vérifier ta connexion."
+    );
   }
+
+  const user = session?.user;
 
   if (!user) {
     throw new Error(
@@ -423,8 +447,17 @@ export async function updateMonitoringContract(
     );
   }
 
+  const category = normalizeCategory(
+    input.category
+  );
+
   const monthlyPrice = Number(
     input.monthly_price
+  );
+
+  const yearlySaving = Math.max(
+    0,
+    Number(input.yearly_saving ?? 0)
   );
 
   if (!input.provider.trim()) {
@@ -461,8 +494,14 @@ export async function updateMonitoringContract(
   );
 
   const now = new Date().toISOString();
+  const betterOffer =
+    input.better_offer?.trim() || null;
 
-  let status = "Contrat surveillé";
+  let status =
+    betterOffer || yearlySaving > 0
+      ? "Meilleure offre trouvée"
+      : "Contrat surveillé";
+
   let lastPriceChangeAt: string | null =
     existingContract.last_price_change_at ??
     null;
@@ -478,17 +517,23 @@ export async function updateMonitoringContract(
   const { data, error } = await supabase
     .from("monitoring_contracts")
     .update({
+      category,
       provider: input.provider.trim(),
       previous_price: previousPrice,
       monthly_price: monthlyPrice,
       current_offer:
-        input.current_offer?.trim() ||
-        null,
+        input.current_offer?.trim() || null,
       end_date: input.end_date || null,
+      better_offer: betterOffer,
+      yearly_saving: yearlySaving,
       status,
       last_checked_at: now,
       last_price_change_at:
         lastPriceChangeAt,
+      last_offer_detected_at:
+        betterOffer
+          ? now
+          : existingContract.last_offer_detected_at,
       updated_at: now,
     })
     .eq("id", contractId)
@@ -502,6 +547,7 @@ export async function updateMonitoringContract(
 
   return data as MonitoringContract;
 }
+
 export async function deleteMonitoringContract(
   contractId: string
 ): Promise<void> {
@@ -536,11 +582,16 @@ export type ValidateMonitoringSavingInput = {
   monthly_price: number;
   yearly_saving: number;
 };
-
 export type ValidateMonitoringSavingResult = {
   contract: MonitoringContract;
   projectTitle: string | null;
   savingAdded: number;
+  previousSavedAmount: number;
+  savedAmount: number;
+  targetAmount: number;
+  previousProgress: number;
+  progress: number;
+  progressGain: number;
 };
 
 export async function validateMonitoringSaving(
@@ -615,6 +666,22 @@ export async function validateMonitoringSaving(
     );
   }
 
+const historyEntry = {
+  user_id: user.id,
+  contract_id: contractId,
+  category: existingContract.category,
+
+  old_provider: existingContract.provider,
+  old_offer: existingContract.current_offer,
+  old_monthly_price: existingContract.monthly_price ?? 0,
+
+  new_provider: input.provider.trim(),
+  new_offer: input.offer.trim() || null,
+  new_monthly_price: monthlyPrice,
+
+  yearly_saving: yearlySaving,
+};
+
   if (
     existingContract.status ===
     "Économie validée"
@@ -624,11 +691,76 @@ export async function validateMonitoringSaving(
     );
   }
 
-  const project =
-    await addMissionSavingToPrimaryProject(
-      user.id,
-      yearlySaving
+  const settings =
+    await getPiloLifeSettings(
+      user.id
     );
+
+  let project:
+    | Awaited<
+        ReturnType<
+          typeof addMissionSavingToPrimaryProject
+        >
+      >
+    | null = null;
+
+  if (
+    settings.investment_mode ===
+    "project"
+  ) {
+    project =
+      await addMissionSavingToPrimaryProject(
+        user.id,
+        yearlySaving
+      );
+
+    if (!project) {
+      await creditPiloLifeWallet({
+        userId: user.id,
+        amount: yearlySaving,
+        source: "monitoring",
+        sourceId: contractId,
+        description:
+          "Économie Monitoring ajoutée à la cagnotte faute de projet principal.",
+      });
+    }
+  }
+
+  if (
+    settings.investment_mode ===
+    "wallet"
+  ) {
+    await creditPiloLifeWallet({
+      userId: user.id,
+      amount: yearlySaving,
+      source: "monitoring",
+      sourceId: contractId,
+      description:
+        "Économie Monitoring conservée dans la cagnotte.",
+    });
+  }
+
+  if (
+    settings.investment_mode ===
+    "auto"
+  ) {
+    project =
+      await addMissionSavingToPrimaryProject(
+        user.id,
+        yearlySaving
+      );
+
+    if (!project) {
+      await creditPiloLifeWallet({
+        userId: user.id,
+        amount: yearlySaving,
+        source: "monitoring",
+        sourceId: contractId,
+        description:
+          "Économie Monitoring placée automatiquement dans la cagnotte par Pilo.",
+      });
+    }
+  }
 
   const {
     data: updatedContract,
@@ -653,21 +785,51 @@ export async function validateMonitoringSaving(
     .select("*")
     .single();
 
+const { error: historyError } =
+  await supabase
+    .from("monitoring_offer_history")
+    .insert(historyEntry);
+
+if (historyError) {
+  console.error(
+    "Erreur historique Monitoring :",
+    historyError
+  );
+}
+
   if (updateError) {
     throw updateError;
   }
 
-  return {
-    contract:
-      updatedContract as MonitoringContract,
+ return {
+  contract:
+    updatedContract as MonitoringContract,
 
-    projectTitle:
-      project?.title ?? null,
+  projectTitle:
+    project?.project.title ?? null,
 
-    savingAdded: yearlySaving,
+  savingAdded: yearlySaving,
+
+  previousSavedAmount:
+    project?.previousSavedAmount ?? 0,
+
+  savedAmount:
+    project?.savedAmount ?? 0,
+
+  targetAmount:
+    project?.targetAmount ?? 0,
+
+  previousProgress:
+    project?.previousProgress ?? 0,
+
+  progress:
+    project?.progress ?? 0,
+
+  progressGain:
+    project?.progressGain ?? 0,
   };
 }
-export async function checkMonitoringContracts() {
+export async function checkMonitoringContracts(): Promise<void> {
   const {
     data: { user },
     error: userError,
@@ -710,17 +872,13 @@ export async function checkMonitoringContracts() {
     };
 
     if (currentPrice > previousPrice) {
-      update.status =
-        "Hausse détectée";
-      update.last_price_change_at =
-        now;
+      update.status = "Hausse détectée";
+      update.last_price_change_at = now;
     } else if (
       currentPrice < previousPrice
     ) {
-      update.status =
-        "Baisse détectée";
-      update.last_price_change_at =
-        now;
+      update.status = "Baisse détectée";
+      update.last_price_change_at = now;
     }
 
     const { error: updateError } =
@@ -734,4 +892,42 @@ export async function checkMonitoringContracts() {
       throw updateError;
     }
   }
+}
+export type MonitoringHistory = {
+  id: string;
+  category: string;
+  old_provider: string | null;
+  old_offer: string | null;
+  old_monthly_price: number;
+  new_provider: string;
+  new_offer: string | null;
+  new_monthly_price: number;
+  yearly_saving: number;
+  changed_at: string;
+};
+
+export async function getMonitoringHistory(): Promise<
+  MonitoringHistory[]
+> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("monitoring_offer_history")
+    .select("*")
+    .eq("user_id", session.user.id)
+    .order("changed_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as MonitoringHistory[];
 }

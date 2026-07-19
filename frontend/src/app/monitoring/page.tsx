@@ -8,24 +8,33 @@ import {
 
 import PremiumGate from "../components/PremiumGate";
 import MonitoringCard from "../components/MonitoringCard";
+import MonitoringHistory from "../components/MonitoringHistory";
 import PiloNavigation from "../components/PiloNavigation";
+import RewardModal from "../components/RewardModal";
+
 import EditContractModal, {
   type EditableContract,
 } from "../components/EditContractModal";
 
 import {
-  getMonitoringAlerts,
-  getMonitoringSummary,
+  checkMonitoringContracts,
   deleteMonitoringContract,
+  getMonitoringAlerts,
+  getMonitoringHistory,
+  getMonitoringSummary,
   updateMonitoringContract,
   validateMonitoringSaving,
-  checkMonitoringContracts,
   type MonitoringAlert,
+  type MonitoringHistory as MonitoringHistoryItem,
 } from "./services/monitoring.service";
 
 function MonitoringDashboard() {
   const [alerts, setAlerts] = useState<
     MonitoringAlert[]
+  >([]);
+
+  const [history, setHistory] = useState<
+    MonitoringHistoryItem[]
   >([]);
 
   const [loading, setLoading] =
@@ -57,6 +66,39 @@ function MonitoringDashboard() {
     setValidatingContractId,
   ] = useState<string | null>(null);
 
+  const [rewardOpen, setRewardOpen] =
+    useState(false);
+
+  const [
+    rewardSaving,
+    setRewardSaving,
+  ] = useState(0);
+
+  const [
+    rewardProject,
+    setRewardProject,
+  ] = useState("");
+
+  const [
+    rewardProgress,
+    setRewardProgress,
+  ] = useState(0);
+
+  const [
+    rewardPreviousProgress,
+    setRewardPreviousProgress,
+  ] = useState(0);
+
+  const [
+    rewardSavedAmount,
+    setRewardSavedAmount,
+  ] = useState(0);
+
+  const [
+    rewardTargetAmount,
+    setRewardTargetAmount,
+  ] = useState(0);
+
   const loadMonitoring = useCallback(
     async () => {
       try {
@@ -65,10 +107,16 @@ function MonitoringDashboard() {
 
         await checkMonitoringContracts();
 
-const data =
-  await getMonitoringAlerts();
+        const [
+          monitoringData,
+          historyData,
+        ] = await Promise.all([
+          getMonitoringAlerts(),
+          getMonitoringHistory(),
+        ]);
 
-        setAlerts(data);
+        setAlerts(monitoringData);
+        setHistory(historyData);
       } catch (error) {
         console.error(
           "Erreur lors du chargement du monitoring :",
@@ -123,6 +171,8 @@ const data =
       await updateMonitoringContract(
         selectedContract.id,
         {
+          category:
+            selectedContract.category,
           provider: contract.provider,
           current_offer:
             contract.offer || null,
@@ -168,6 +218,7 @@ const data =
       window.alert(
         "Aucune recommandation disponible."
       );
+
       return;
     }
 
@@ -180,7 +231,10 @@ const data =
     }
 
     try {
-      setValidatingContractId(contract.id);
+      setValidatingContractId(
+        contract.id
+      );
+
       setErrorMessage("");
 
       const result =
@@ -200,10 +254,45 @@ const data =
 
       await loadMonitoring();
 
-      window.alert(
-        result.projectTitle
-          ? `🎉 ${result.savingAdded} €/an ont été ajoutés à ton projet "${result.projectTitle}" !`
-          : `🎉 Économie validée (${result.savingAdded} €/an). Aucun projet principal n'a été trouvé.`
+      setRewardSaving(
+        result.savingAdded
+      );
+
+      setRewardProject(
+        result.projectTitle ??
+          "Mon projet principal"
+      );
+
+      setRewardPreviousProgress(
+        result.previousProgress
+      );
+
+      setRewardProgress(
+        result.progress
+      );
+
+      setRewardSavedAmount(
+        result.savedAmount
+      );
+
+      setRewardTargetAmount(
+        result.targetAmount
+      );
+
+      setRewardOpen(true);
+
+      window.dispatchEvent(
+        new CustomEvent(
+          "piloeconomy:validated",
+          {
+            detail: {
+              saving:
+                result.savingAdded,
+              projectTitle:
+                result.projectTitle,
+            },
+          }
+        )
       );
     } catch (error) {
       console.error(
@@ -237,7 +326,10 @@ const data =
     }
 
     try {
-      setDeletingContractId(contract.id);
+      setDeletingContractId(
+        contract.id
+      );
+
       setErrorMessage("");
 
       await deleteMonitoringContract(
@@ -247,12 +339,14 @@ const data =
       setAlerts((currentAlerts) =>
         currentAlerts.filter(
           (currentAlert) =>
-            currentAlert.id !== contract.id
+            currentAlert.id !==
+            contract.id
         )
       );
 
       if (
-        selectedContract?.id === contract.id
+        selectedContract?.id ===
+        contract.id
       ) {
         setEditOpen(false);
         setSelectedContract(null);
@@ -299,8 +393,9 @@ const data =
         </h1>
 
         <p className="mt-3 text-slate-400">
-          Pilo surveille tes contrats, tes
-          hausses de prix et tes économies.
+          Pilo surveille tes contrats,
+          tes hausses de prix et tes
+          économies.
         </p>
 
         <PiloNavigation />
@@ -380,8 +475,8 @@ const data =
               </p>
 
               <p className="mt-2 text-slate-400">
-                Ajoute un contrat pour que
-                Pilo commence sa
+                Ajoute un contrat pour
+                que Pilo commence sa
                 surveillance.
               </p>
             </div>
@@ -453,6 +548,12 @@ const data =
               ))}
             </div>
           )}
+
+        {!errorMessage && (
+          <MonitoringHistory
+            history={history}
+          />
+        )}
       </div>
 
       {selectedContract && (
@@ -482,6 +583,23 @@ const data =
           onSave={handleSaveContract}
         />
       )}
+
+      <RewardModal
+        open={rewardOpen}
+        saving={rewardSaving}
+        project={rewardProject}
+        previousProgress={
+          rewardPreviousProgress
+        }
+        progress={rewardProgress}
+        savedAmount={rewardSavedAmount}
+        targetAmount={
+          rewardTargetAmount
+        }
+        onClose={() =>
+          setRewardOpen(false)
+        }
+      />
     </main>
   );
 }

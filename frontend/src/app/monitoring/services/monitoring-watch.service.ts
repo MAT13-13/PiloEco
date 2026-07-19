@@ -5,7 +5,7 @@ import type {
 } from "./monitoring.service";
 
 import { savePriceHistory } from "./monitoring-history.service";
-import { createMonitoringNotification } from "./monitoring-notification.service";
+import { createMonitoringNotification } from "./monitoring-notifications.service";
 
 export async function checkMonitoringContracts(
   userId: string
@@ -51,7 +51,7 @@ async function analyseContract(
     await createMonitoringNotification({
       userId: contract.user_id,
       contractId: contract.id,
-      type: "price_increase",
+      type: "price_up",
       title: "📈 Hausse détectée",
       message: `Ton contrat est passé de ${previousPrice.toFixed(
         2
@@ -66,7 +66,7 @@ async function analyseContract(
     await createMonitoringNotification({
       userId: contract.user_id,
       contractId: contract.id,
-      type: "price_drop",
+      type: "price_down",
       title: "📉 Bonne nouvelle",
       message: `Ton contrat est passé de ${previousPrice.toFixed(
         2

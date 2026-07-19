@@ -32,7 +32,65 @@ type AnalyseCategory =
   | "banque"
   | "streaming";
 
+  const ANALYSIS_HISTORY_KEY =
+  "pilo-analysis-history";
+
+function saveAnalysisToHistory(
+  analysis: Result
+) {
+  try {
+    const rawHistory =
+      localStorage.getItem(
+        ANALYSIS_HISTORY_KEY
+      );
+
+    const parsedHistory = rawHistory
+      ? JSON.parse(rawHistory)
+      : [];
+
+    const history: Result[] =
+      Array.isArray(parsedHistory)
+        ? parsedHistory
+        : [];
+
+    /*
+     * On remplace l’analyse si elle existe déjà.
+     * Cela évite les doublons lorsqu’on recharge
+     * ou qu’on modifie le contrat.
+     */
+    const updatedHistory = [
+      analysis,
+      ...history.filter(
+        (item) =>
+          item.analysisId !==
+          analysis.analysisId
+      ),
+    ].sort((a, b) => {
+      const firstDate = new Date(
+        a.comparisonDate ?? 0
+      ).getTime();
+
+      const secondDate = new Date(
+        b.comparisonDate ?? 0
+      ).getTime();
+
+      return secondDate - firstDate;
+    });
+
+    localStorage.setItem(
+      ANALYSIS_HISTORY_KEY,
+      JSON.stringify(updatedHistory)
+    );
+  } catch (error) {
+    console.error(
+      "Erreur sauvegarde historique analyses :",
+      error
+    );
+  }
+}
+
 type Result = {
+  analysisId: string;
   category: AnalyseCategory;
   categoryLabel: string;
   icon: string;
@@ -146,13 +204,20 @@ export default function AnalyseResultPage() {
         );
       }
 
-      const normalizedResult: Result = {
-        ...(parsed as Result),
-        comparisonDate:
-          typeof parsed.comparisonDate === "string"
-            ? parsed.comparisonDate
-            : new Date().toISOString(),
-      };
+    const normalizedResult: Result = {
+  ...(parsed as Result),
+
+  analysisId:
+    typeof parsed.analysisId === "string" &&
+    parsed.analysisId.trim()
+      ? parsed.analysisId
+      : crypto.randomUUID(),
+
+  comparisonDate:
+    typeof parsed.comparisonDate === "string"
+      ? parsed.comparisonDate
+      : new Date().toISOString(),
+};
 
       setResult(normalizedResult);
 
@@ -160,6 +225,9 @@ export default function AnalyseResultPage() {
         "pilo-analysis-result",
         JSON.stringify(normalizedResult)
       );
+      saveAnalysisToHistory(
+  normalizedResult
+);
     } catch (error) {
       console.error(
         "Erreur lecture résultat :",
@@ -331,6 +399,10 @@ export default function AnalyseResultPage() {
         "pilo-analysis-result",
         JSON.stringify(updatedResult)
       );
+
+      saveAnalysisToHistory(
+  updatedResult
+);
 
       localStorage.setItem(
         "pilo-ai-advice",

@@ -17,6 +17,7 @@ export default function MobileMenu() {
   return (
     <div className="lg:hidden">
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="fixed right-4 top-4 z-50 rounded-2xl border border-green-500/30 bg-slate-900 px-4 py-3 font-black text-green-400 shadow-xl"
       >
@@ -27,11 +28,17 @@ export default function MobileMenu() {
         <div className="fixed inset-0 z-50 bg-slate-950/95 p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-black text-green-400">PiloEco</p>
-              <p className="text-sm text-slate-400">Navigation</p>
+              <p className="text-2xl font-black text-green-400">
+                PiloEco
+              </p>
+
+              <p className="text-sm text-slate-400">
+                Navigation
+              </p>
             </div>
 
             <button
+              type="button"
               onClick={() => setOpen(false)}
               className="rounded-xl bg-slate-800 px-4 py-2 font-bold"
             >
@@ -45,7 +52,7 @@ export default function MobileMenu() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="block rounded-2xl bg-white/5 px-5 py-4 font-bold text-slate-200"
+                className="block rounded-2xl bg-white/5 px-5 py-4 font-bold text-slate-200 transition hover:bg-white/10"
               >
                 {item.label}
               </Link>
@@ -54,15 +61,15 @@ export default function MobileMenu() {
             <Link
               href="/premium"
               onClick={() => setOpen(false)}
-              className="block rounded-2xl border border-purple-500/40 bg-purple-500/10 px-5 py-4 font-black text-purple-300"
+              className="block rounded-2xl border border-purple-500/40 bg-purple-500/10 px-5 py-4 font-black text-purple-300 transition hover:bg-purple-500/20"
             >
               💎 Pilo Premium
             </Link>
 
             <Link
-              href="/compte"
+              href="/parametres"
               onClick={() => setOpen(false)}
-              className="block rounded-2xl bg-white/5 px-5 py-4 font-bold text-slate-200"
+              className="block rounded-2xl bg-white/5 px-5 py-4 font-bold text-slate-200 transition hover:bg-white/10"
             >
               ⚙️ Mon compte
             </Link>
@@ -70,7 +77,7 @@ export default function MobileMenu() {
             <Link
               href="/assistant"
               onClick={() => setOpen(false)}
-              className="block rounded-2xl bg-green-500 px-5 py-4 text-center font-black text-slate-950"
+              className="block rounded-2xl bg-green-500 px-5 py-4 text-center font-black text-slate-950 transition hover:bg-green-400"
             >
               🐦 Discuter avec Pilo
             </Link>

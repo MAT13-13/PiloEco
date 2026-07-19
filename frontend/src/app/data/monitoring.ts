@@ -15,6 +15,7 @@ export const monitoringCards: MonitoringCard[] = [
     button: "Changer maintenant",
     color: "green",
     status: "red",
+    priority: 5,
     updatedAt: "Il y a 2 min",
   },
   {
@@ -31,6 +32,7 @@ export const monitoringCards: MonitoringCard[] = [
     button: "Voir l'offre",
     color: "blue",
     status: "green",
+    priority: 4,
     updatedAt: "Il y a 5 min",
   },
   {
@@ -47,6 +49,7 @@ export const monitoringCards: MonitoringCard[] = [
     button: "Comparer",
     color: "orange",
     status: "yellow",
+    priority: 5,
     updatedAt: "Aujourd'hui",
   },
   {
@@ -63,6 +66,7 @@ export const monitoringCards: MonitoringCard[] = [
     button: "Comparer",
     color: "green",
     status: "green",
+    priority: 4,
     updatedAt: "Aujourd'hui",
   },
   {
@@ -79,6 +83,7 @@ export const monitoringCards: MonitoringCard[] = [
     button: "Résilier",
     color: "red",
     status: "red",
+    priority: 5,
     updatedAt: "Hier",
   },
 ];

@@ -1,4 +1,4 @@
-import { Offer } from "../data/offers";
+import type { Offer } from "../../data/offers";
 
 export function findBestOffer(
   currentPrice: number,

@@ -1,4 +1,5 @@
-import type { Depense } from "../services/depenses.service";
+import type { Depense } from "../services/finance/depenses.service";
+
 
 type CategoryStatsProps = {
   depenses: Depense[];

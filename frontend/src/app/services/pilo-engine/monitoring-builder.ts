@@ -1,5 +1,5 @@
-import { MonitoringCard } from "../../types/monitoring";
-import { PiloAlert } from "./types";
+import type { MonitoringCard } from "../../types/monitoring";
+import type { PiloAlert } from "./types";
 
 export function buildMonitoringCards(
   alerts: PiloAlert[]
@@ -13,14 +13,14 @@ export function buildMonitoringCards(
       alert.category === "telephone"
         ? "📱"
         : alert.category === "internet"
-        ? "🌐"
-        : alert.category === "electricite"
-        ? "⚡"
-        : alert.category === "habitation"
-        ? "🏠"
-        : alert.category === "streaming"
-        ? "📺"
-        : "🦜",
+          ? "🌐"
+          : alert.category === "electricite"
+            ? "⚡"
+            : alert.category === "habitation"
+              ? "🏠"
+              : alert.category === "streaming"
+                ? "📺"
+                : "🦜",
 
     title: alert.title,
 
@@ -42,10 +42,17 @@ export function buildMonitoringCards(
       alert.level === "red"
         ? "red"
         : alert.level === "yellow"
-        ? "orange"
-        : "green",
+          ? "orange"
+          : "green",
 
     status: alert.level,
+
+    priority:
+      alert.level === "red"
+        ? 5
+        : alert.level === "yellow"
+          ? 4
+          : 3,
 
     updatedAt: "À l'instant",
   }));
