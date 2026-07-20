@@ -1,25 +1,53 @@
-import { checkMonitoringContract } from "@/app/monitoring/services/monitoring-check.service";
+import {
+  checkMonitoringContract,
+} from "@/app/monitoring/services/monitoring-check.service";
 
-import { detectMonitoringEmail } from "./email.detector";
-import { getPremiumContracts } from "./email.users";
+import {
+  detectMonitoringEmail,
+} from "./email.detector";
+
+import {
+  detectPiloLifeEmail,
+} from "./email.pilolife";
+
+import {
+  getPremiumContracts,
+  getPremiumUsers,
+} from "./email.users";
 
 export async function runDailyEmailScheduler() {
   console.log(
     "📅 Début du scheduler quotidien Premium..."
   );
 
-  const premiumContracts =
-    await getPremiumContracts();
+  const [
+    premiumContracts,
+    premiumUsers,
+  ] = await Promise.all([
+    getPremiumContracts(),
+    getPremiumUsers(),
+  ]);
 
   console.log(
-    `👑 ${premiumContracts.length} contrat(s) Premium trouvé(s)`
+    `👑 ${premiumUsers.length} utilisateur(s) Premium trouvé(s)`
+  );
+
+  console.log(
+    `📄 ${premiumContracts.length} contrat(s) Premium trouvé(s)`
   );
 
   let checkedContracts = 0;
+  let checkedPiloLifeProjects = 0;
+
   let sentEmails = 0;
   let skippedEmails = 0;
-  let failedContracts = 0;
+  let failedChecks = 0;
 
+  /*
+   * 1. EMAILS MONITORING
+   *
+   * Cette boucle fonctionne par contrat.
+   */
   for (const item of premiumContracts) {
     const {
       userId,
@@ -33,27 +61,13 @@ export async function runDailyEmailScheduler() {
         `🔍 Vérification : ${contract.category} (${contract.provider ?? "Fournisseur inconnu"})`
       );
 
-      /*
-       * Cette fonction doit maintenant vérifier :
-       *
-       * - une meilleure offre ;
-       * - une hausse de prix ;
-       * - une baisse de prix ;
-       * - une échéance proche ;
-       * - les informations PiloLife.
-       */
       const monitoringResult =
-        await checkMonitoringContract(contract);
+        await checkMonitoringContract(
+          contract
+        );
 
       checkedContracts += 1;
 
-      /*
-       * On ne bloque plus le scheduler lorsque
-       * hasBetterOffer est faux.
-       *
-       * Tous les résultats sont transmis au détecteur
-       * afin qu'il puisse choisir le bon type d'email.
-       */
       const emailResult =
         await detectMonitoringEmail({
           userId,
@@ -65,7 +79,8 @@ export async function runDailyEmailScheduler() {
         });
 
       if (emailResult.sent) {
-        sentEmails += 1;
+        sentEmails +=
+          emailResult.sentTypes.length;
       } else {
         skippedEmails += 1;
       }
@@ -74,10 +89,51 @@ export async function runDailyEmailScheduler() {
         `📧 ${emailResult.reason}`
       );
     } catch (error) {
-      failedContracts += 1;
+      failedChecks += 1;
 
       console.error(
-        `❌ Erreur pendant la vérification du contrat ${contract.id} :`,
+        `❌ Erreur contrat ${contract.id} :`,
+        error
+      );
+    }
+  }
+
+  /*
+   * 2. EMAILS PILOLIFE
+   *
+   * Cette boucle fonctionne par utilisateur.
+   * Elle ne dépend pas du nombre de contrats.
+   */
+  for (const user of premiumUsers) {
+    try {
+      console.log(
+        `🌱 Vérification PiloLife : ${user.userId}`
+      );
+
+      const piloLifeResult =
+        await detectPiloLifeEmail({
+          userId: user.userId,
+          email: user.email,
+          firstName:
+            user.firstName,
+        });
+
+      checkedPiloLifeProjects += 1;
+
+      if (piloLifeResult.sent) {
+        sentEmails += 1;
+      } else {
+        skippedEmails += 1;
+      }
+
+      console.log(
+        `🌱 ${piloLifeResult.reason}`
+      );
+    } catch (error) {
+      failedChecks += 1;
+
+      console.error(
+        `❌ Erreur PiloLife ${user.userId} :`,
         error
       );
     }
@@ -87,18 +143,35 @@ export async function runDailyEmailScheduler() {
     [
       "✅ Scheduler Premium terminé",
       `🔍 ${checkedContracts} contrat(s) vérifié(s)`,
+      `🌱 ${checkedPiloLifeProjects} projet(s) PiloLife vérifié(s)`,
       `📧 ${sentEmails} email(s) envoyé(s)`,
-      `⏭️ ${skippedEmails} email(s) ignoré(s)`,
-      `❌ ${failedContracts} erreur(s)`,
+      `⏭️ ${skippedEmails} vérification(s) ignorée(s)`,
+      `❌ ${failedChecks} erreur(s)`,
     ].join(" — ")
   );
 
   return {
-    success: failedContracts === 0,
-    totalContracts: premiumContracts.length,
+    success:
+      failedChecks === 0,
+
+    totalPremiumUsers:
+      premiumUsers.length,
+
+    totalContracts:
+      premiumContracts.length,
+
     checkedContracts,
+
+    checkedPiloLifeProjects,
+
     sentEmails,
+
     skippedEmails,
-    failedContracts,
+
+    failedChecks,
+
+    // Compatibilité avec l’ancien nom
+    failedContracts:
+      failedChecks,
   };
 }

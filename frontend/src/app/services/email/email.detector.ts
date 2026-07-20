@@ -29,123 +29,13 @@ type EmailDetectionResult = {
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ??
-  "http://localhost:3000";
+  "https://pilo-eco.vercel.app";
 
 function formatPrice(value: number) {
   return value.toLocaleString("fr-FR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-}
-
-function createBasicEmailHtml({
-  firstName,
-  title,
-  message,
-}: {
-  firstName: string | null;
-  title: string;
-  message: string;
-}) {
-  const displayedName =
-    firstName?.trim() || "Bonjour";
-
-  return `
-    <!DOCTYPE html>
-    <html lang="fr">
-      <head>
-        <meta charset="UTF-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0"
-        />
-      </head>
-
-      <body
-        style="
-          margin: 0;
-          padding: 0;
-          background: #f1f5f9;
-          font-family: Arial, sans-serif;
-          color: #0f172a;
-        "
-      >
-        <div
-          style="
-            max-width: 620px;
-            margin: 0 auto;
-            padding: 32px 16px;
-          "
-        >
-          <div
-            style="
-              background: #ffffff;
-              border-radius: 24px;
-              padding: 32px;
-              border: 1px solid #e2e8f0;
-            "
-          >
-            <p
-              style="
-                margin: 0 0 16px;
-                font-size: 14px;
-                font-weight: bold;
-                color: #16a34a;
-              "
-            >
-              🌿 PILOECO
-            </p>
-
-            <h1
-              style="
-                margin: 0 0 20px;
-                font-size: 28px;
-                line-height: 1.2;
-              "
-            >
-              ${title}
-            </h1>
-
-            <p
-              style="
-                margin: 0 0 16px;
-                font-size: 16px;
-                line-height: 1.6;
-              "
-            >
-              ${displayedName},
-            </p>
-
-            <p
-              style="
-                margin: 0 0 28px;
-                font-size: 16px;
-                line-height: 1.6;
-                color: #475569;
-              "
-            >
-              ${message}
-            </p>
-
-            <a
-              href="${APP_URL}/monitoring"
-              style="
-                display: inline-block;
-                padding: 14px 22px;
-                border-radius: 12px;
-                background: #16a34a;
-                color: #ffffff;
-                text-decoration: none;
-                font-weight: bold;
-              "
-            >
-              Voir mon Monitoring
-            </a>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
 }
 
 async function hasAlreadySentEmail(
@@ -204,7 +94,7 @@ export async function detectMonitoringEmail({
   } = monitoringResult;
 
   /*
-   * 1. EMAIL MEILLEURE OFFRE
+   * 1. MEILLEURE OFFRE
    */
   const yearlySaving = Math.round(
     Math.max(
@@ -245,6 +135,9 @@ export async function detectMonitoringEmail({
 
           yearlySaving,
 
+          monthlySaving:
+            Math.round(yearlySaving / 12),
+
           actionUrl:
             `${APP_URL}/monitoring`,
         }
@@ -270,6 +163,7 @@ export async function detectMonitoringEmail({
 
       if (result.success) {
         sentTypes.push("better_offer");
+
         reasons.push(
           "Email meilleure offre envoyé."
         );
@@ -287,7 +181,7 @@ export async function detectMonitoringEmail({
   }
 
   /*
-   * 2. EMAIL HAUSSE DE PRIX
+   * 2. HAUSSE DE PRIX
    */
   if (hasPriceUp) {
     const increaseAmount =
@@ -307,27 +201,36 @@ export async function detectMonitoringEmail({
       );
 
     if (!alreadySent) {
-      const html = createBasicEmailHtml({
-        firstName,
-        title: "Une hausse de prix a été détectée 📈",
-        message: `
-          Le prix de ton contrat
-          <strong>${contract.provider ?? contract.category}</strong>
-          est passé de
-          <strong>${formatPrice(previousPrice)} €</strong>
-          à
-          <strong>${formatPrice(currentPrice)} € par mois</strong>.
-          Cela représente une hausse de
-          <strong>${formatPrice(increaseAmount)} € par mois</strong>.
-        `,
-      });
+      const html = generateEmailTemplate(
+        "price_up",
+        {
+          firstName:
+            firstName ?? undefined,
+
+          provider:
+            contract.provider ?? undefined,
+
+          offer:
+            contract.current_offer ??
+            undefined,
+
+          currentPrice: previousPrice,
+
+          newPrice: currentPrice,
+
+          actionUrl:
+            `${APP_URL}/monitoring`,
+        }
+      );
 
       const result = await sendEmail({
         userId,
         to: email,
         type: "price_up",
         subject:
-          `Hausse détectée sur ton contrat ${contract.provider ?? ""} 📈`,
+          contract.provider
+            ? `Hausse détectée chez ${contract.provider} 📈`
+            : "Une hausse de prix a été détectée 📈",
         html,
         metadata: {
           contractId: contract.id,
@@ -342,8 +245,11 @@ export async function detectMonitoringEmail({
 
       if (result.success) {
         sentTypes.push("price_up");
+
         reasons.push(
-          "Email hausse de prix envoyé."
+          `Email hausse de prix envoyé : +${formatPrice(
+            increaseAmount
+          )} €/mois.`
         );
       } else {
         reasons.push(
@@ -359,7 +265,7 @@ export async function detectMonitoringEmail({
   }
 
   /*
-   * 3. EMAIL BAISSE DE PRIX
+   * 3. BAISSE DE PRIX
    */
   if (hasPriceDown) {
     const decreaseAmount =
@@ -379,27 +285,36 @@ export async function detectMonitoringEmail({
       );
 
     if (!alreadySent) {
-      const html = createBasicEmailHtml({
-        firstName,
-        title: "Bonne nouvelle : ton prix a baissé 📉",
-        message: `
-          Le prix de ton contrat
-          <strong>${contract.provider ?? contract.category}</strong>
-          est passé de
-          <strong>${formatPrice(previousPrice)} €</strong>
-          à
-          <strong>${formatPrice(currentPrice)} € par mois</strong>.
-          Tu économises désormais
-          <strong>${formatPrice(decreaseAmount)} € par mois</strong>.
-        `,
-      });
+      const html = generateEmailTemplate(
+        "price_down",
+        {
+          firstName:
+            firstName ?? undefined,
+
+          provider:
+            contract.provider ?? undefined,
+
+          offer:
+            contract.current_offer ??
+            undefined,
+
+          currentPrice: previousPrice,
+
+          newPrice: currentPrice,
+
+          actionUrl:
+            `${APP_URL}/monitoring`,
+        }
+      );
 
       const result = await sendEmail({
         userId,
         to: email,
         type: "price_down",
         subject:
-          `Le prix de ton contrat a baissé 📉`,
+          contract.provider
+            ? `Bonne nouvelle chez ${contract.provider} 📉`
+            : "Le prix de ton contrat a baissé 📉",
         html,
         metadata: {
           contractId: contract.id,
@@ -414,8 +329,11 @@ export async function detectMonitoringEmail({
 
       if (result.success) {
         sentTypes.push("price_down");
+
         reasons.push(
-          "Email baisse de prix envoyé."
+          `Email baisse de prix envoyé : -${formatPrice(
+            decreaseAmount
+          )} €/mois.`
         );
       } else {
         reasons.push(
@@ -431,7 +349,7 @@ export async function detectMonitoringEmail({
   }
 
   /*
-   * 4. EMAIL FIN DE CONTRAT
+   * 4. FIN D’ENGAGEMENT
    */
   if (
     hasContractEnd &&
@@ -451,31 +369,48 @@ export async function detectMonitoringEmail({
       );
 
     if (!alreadySent) {
-      const endMessage =
-        daysBeforeEnd === 0
-          ? "Ton contrat arrive à échéance aujourd’hui."
-          : `Ton contrat arrive à échéance dans ${daysBeforeEnd} jour${daysBeforeEnd > 1 ? "s" : ""}.`;
+      const html = generateEmailTemplate(
+        "contract_end",
+        {
+          firstName:
+            firstName ?? undefined,
 
-      const html = createBasicEmailHtml({
-        firstName,
-        title:
-          "L’échéance de ton contrat approche ⏰",
-        message: `
-          ${endMessage}
-          C’est le bon moment pour vérifier ton offre
-          <strong>${contract.provider ?? contract.category}</strong>
-          et éviter une reconduction peu avantageuse.
-        `,
-      });
+          provider:
+            contract.provider ?? undefined,
+
+          offer:
+            contract.current_offer ??
+            undefined,
+
+          contractEndDate:
+            new Date(
+              contract.end_date
+            ).toLocaleDateString(
+              "fr-FR",
+              {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }
+            ),
+
+          actionUrl:
+            `${APP_URL}/monitoring`,
+        }
+      );
+
+      const subject =
+        daysBeforeEnd === 0
+          ? "Ton contrat arrive à échéance aujourd’hui ⏰"
+          : daysBeforeEnd === 1
+            ? "Ton contrat arrive à échéance demain ⏰"
+            : `Ton contrat arrive à échéance dans ${daysBeforeEnd} jours ⏰`;
 
       const result = await sendEmail({
         userId,
         to: email,
         type: "contract_end",
-        subject:
-          daysBeforeEnd === 0
-            ? "Ton contrat arrive à échéance aujourd’hui ⏰"
-            : `Ton contrat arrive à échéance dans ${daysBeforeEnd} jours ⏰`,
+        subject,
         html,
         metadata: {
           contractId: contract.id,
@@ -488,6 +423,7 @@ export async function detectMonitoringEmail({
 
       if (result.success) {
         sentTypes.push("contract_end");
+
         reasons.push(
           "Email échéance envoyé."
         );
@@ -504,6 +440,9 @@ export async function detectMonitoringEmail({
     }
   }
 
+  /*
+   * Aucun événement détecté
+   */
   if (reasons.length === 0) {
     return {
       sent: false,

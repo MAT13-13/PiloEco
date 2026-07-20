@@ -152,104 +152,103 @@ export default function HomePage() {
       </header>
 
       <section className="relative flex min-h-screen items-center justify-center px-6 pb-20 pt-32">
-        <div className="absolute left-1/2 top-20 h-72 w-72 -translate-x-1/2 rounded-full bg-green-500/20 blur-3xl" />
-        <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-green-400/10 blur-3xl" />
+  <div className="absolute left-1/2 top-20 h-72 w-72 -translate-x-1/2 rounded-full bg-green-500/20 blur-3xl" />
+  <div className="absolute bottom-20 right-10 h-96 w-96 rounded-full bg-green-400/10 blur-3xl" />
 
-        <div className="relative z-10 grid w-full max-w-6xl items-center gap-12 lg:grid-cols-2">
-          <div>
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-green-400">
-              Ton copilote d’économies
+  <div className="relative z-10 grid w-full max-w-6xl items-center gap-12 lg:grid-cols-2">
+    <div>
+      <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+        Ton copilote d’économies
+      </p>
+
+      <h1 className="text-5xl font-black leading-tight md:text-7xl">
+        Pilo cherche où tu peux{" "}
+        <span className="text-green-400">
+          économiser.
+        </span>
+      </h1>
+
+      <p className="mt-6 max-w-xl text-xl leading-relaxed text-slate-300">
+        Réponds à quelques questions. Pilo analyse tes
+        dépenses, détecte les économies possibles et
+        t’aide à les transformer en projets de vie.
+      </p>
+
+      <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+        <Link
+          href="/analyse"
+          className="rounded-2xl bg-green-500 px-8 py-5 text-center text-lg font-black text-slate-950 shadow-lg shadow-green-500/20 transition hover:scale-105 hover:bg-green-400"
+        >
+          💚 Lancer mon analyse gratuite
+        </Link>
+
+        <a
+          href="#comment-ca-marche"
+          className="rounded-2xl border border-white/10 bg-white/5 px-8 py-5 text-center text-lg font-bold text-white transition hover:bg-white/10"
+        >
+          Voir comment ça marche
+        </a>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3 text-sm font-bold text-slate-300">
+        <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+          💚 Analyse gratuite
+        </span>
+
+        <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+          ⏱ Environ 2 minutes
+        </span>
+
+        <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+          🛡 Aucun démarchage imposé
+        </span>
+      </div>
+    </div>
+
+    <div className="relative flex justify-center">
+      <div className="absolute h-80 w-80 rounded-full bg-green-500/20 blur-3xl" />
+
+      <div className="relative rounded-[2rem] border border-green-400/20 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="mb-4 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-slate-900">
+          Salut 👋 Moi, c’est Pilo. On regarde ensemble où
+          tu pourrais payer moins ?
+        </div>
+
+        <div className="relative flex h-80 w-80 items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-green-500/30 blur-3xl" />
+
+          <img
+            src="/pilo.png"
+            alt="Mascotte Pilo"
+            className="relative z-10 h-full w-full animate-pilo object-contain drop-shadow-[0_20px_80px_rgba(34,197,94,0.45)]"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <p className="text-xs font-bold uppercase text-slate-500">
+              Économie potentielle
             </p>
 
-            <h1 className="text-5xl font-black leading-tight md:text-7xl">
-              Pilo cherche où tu peux{" "}
-              <span className="text-green-400">
-                économiser.
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-xl text-xl leading-relaxed text-slate-300">
-              Réponds à quelques questions. Pilo
-              analyse tes dépenses, détecte les
-              économies possibles et t’aide à les
-              transformer en projets de vie.
+            <p className="mt-2 text-2xl font-black text-green-400">
+              387 €/an
             </p>
-
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/analyse"
-                className="rounded-2xl bg-green-500 px-8 py-5 text-center text-lg font-black text-slate-950 shadow-lg shadow-green-500/20 transition hover:scale-105 hover:bg-green-400"
-              >
-                💚 Lancer mon analyse gratuite
-              </Link>
-
-              <a
-                href="#comment-ca-marche"
-                className="rounded-2xl border border-white/10 bg-white/5 px-8 py-5 text-center text-lg font-bold text-white transition hover:bg-white/10"
-              >
-                Voir comment ça marche
-              </a>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3 text-sm font-bold text-slate-300">
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                💚 Analyse gratuite
-              </span>
-
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                ⏱ Environ 2 minutes
-              </span>
-
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                🛡 Aucun démarchage imposé
-              </span>
-            </div>
           </div>
 
-          <div className="relative flex justify-center">
-            <div className="absolute h-80 w-80 rounded-full bg-green-500/20 blur-3xl" />
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <p className="text-xs font-bold uppercase text-slate-500">
+              Temps nécessaire
+            </p>
 
-            <div className="relative rounded-[2rem] border border-green-400/20 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
-              <div className="mb-4 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-slate-900">
-                Salut 👋 Moi, c’est Pilo. On regarde
-                ensemble où tu pourrais payer moins ?
-              </div>
-
-              <div className="relative flex h-80 w-80 items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-green-500/30 blur-3xl" />
-
-                <img
-                  src="/pilo.png"
-                  alt="Mascotte Pilo"
-                  className="relative z-10 h-full w-full animate-pilo object-contain drop-shadow-[0_20px_80px_rgba(34,197,94,0.45)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                  <p className="text-xs font-bold uppercase text-slate-500">
-                    Économie potentielle
-                  </p>
-
-                  <p className="mt-2 text-2xl font-black text-green-400">
-                    387 €/an
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                  <p className="text-xs font-bold uppercase text-slate-500">
-                    Temps nécessaire
-                  </p>
-
-                  <p className="mt-2 text-2xl font-black">
-                    2 min
-                  </p>
-                </div>
-              </div>
-            </div>
+            <p className="mt-2 text-2xl font-black">
+              2 min
+            </p>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="rounded-[2rem] border border-green-500/20 bg-white/5 p-8 shadow-[0_0_80px_rgba(34,197,94,0.08)] backdrop-blur-xl md:p-12">

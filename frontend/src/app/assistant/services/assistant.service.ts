@@ -427,15 +427,27 @@ export async function askPiloAssistant(input: {
   const context =
     await getAssistantContext();
 
+const {
+  data: { session },
+  error: sessionError,
+} = await supabase.auth.getSession();
+
+if (sessionError || !session?.access_token) {
+  throw new Error(
+    "Ta session a expiré. Reconnecte-toi."
+  );
+}
+
   const response = await fetch(
     "/api/assistant",
     {
       method: "POST",
 
       headers: {
-        "Content-Type":
-          "application/json",
-      },
+  "Content-Type": "application/json",
+  Authorization:
+    `Bearer ${session.access_token}`,
+},
 
       body: JSON.stringify({
         question,

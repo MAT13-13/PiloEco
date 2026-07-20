@@ -140,6 +140,15 @@ async function sendPremiumWelcomeEmail(input: {
   );
 }
 
+function hasPremiumAccess(
+  status: Stripe.Subscription.Status
+) {
+  return (
+    status === "active" ||
+    status === "trialing"
+  );
+}
+
 export async function POST(req: NextRequest) {
   const webhookSecret =
     process.env.STRIPE_WEBHOOK_SECRET;
@@ -195,98 +204,166 @@ export async function POST(req: NextRequest) {
   try {
     switch (event.type) {
       case "checkout.session.completed": {
-        const session =
-          event.data
-            .object as Stripe.Checkout.Session;
+  const session =
+    event.data.object as Stripe.Checkout.Session;
 
-        const userId =
-          session.client_reference_id ??
-          session.metadata?.user_id;
+  if (session.mode !== "subscription") {
+    console.log(
+      "Session Stripe ignorée : ce n'est pas un abonnement"
+    );
 
-        const customerId =
-          typeof session.customer === "string"
-            ? session.customer
-            : session.customer?.id;
+    break;
+  }
 
-        const subscriptionId =
-          typeof session.subscription ===
-          "string"
-            ? session.subscription
-            : session.subscription?.id;
+  const userId =
+    session.client_reference_id ??
+    session.metadata?.user_id;
 
-        if (!userId) {
-          console.error(
-            "Aucun user_id trouvé dans la session Stripe"
-          );
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id;
 
-          return NextResponse.json(
-            {
-              error:
-                "Utilisateur introuvable",
-            },
-            { status: 400 }
-          );
-        }
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id;
 
-        const {
-          data: updatedProfiles,
-          error: updateError,
-        } = await supabaseAdmin
-          .from("profils")
-          .update({
-            premium: true,
-            stripe_customer_id:
-              customerId ?? null,
-            stripe_subscription_id:
-              subscriptionId ?? null,
-          })
-          .eq("id", userId)
-          .select("id");
+  if (!userId || !subscriptionId) {
+    console.error(
+      "Utilisateur ou abonnement Stripe introuvable"
+    );
 
-        if (updateError) {
-          console.error(
-            "Erreur activation Premium :",
-            updateError
-          );
+    return NextResponse.json(
+      {
+        error:
+          "Informations d'abonnement incomplètes",
+      },
+      { status: 400 }
+    );
+  }
 
-          return NextResponse.json(
-            {
-              error:
-                "Impossible d'activer Premium",
-            },
-            { status: 500 }
-          );
-        }
+  const subscription =
+    await stripe.subscriptions.retrieve(
+      subscriptionId
+    );
 
-        if (
-          !updatedProfiles ||
-          updatedProfiles.length === 0
-        ) {
-          console.error(
-            "Aucun profil trouvé pour l'utilisateur :",
-            userId
-          );
+  if (!hasPremiumAccess(subscription.status)) {
+    console.error(
+      "Abonnement non actif :",
+      subscription.status
+    );
 
-          return NextResponse.json(
-            { error: "Profil introuvable" },
-            { status: 404 }
-          );
-        }
+    return NextResponse.json(
+      {
+        error:
+          "L'abonnement n'est pas actif",
+      },
+      { status: 400 }
+    );
+  }
 
-        console.log(
-          "✅ Premium activé pour l'utilisateur :",
-          userId
-        );
+  const {
+    data: updatedProfiles,
+    error: updateError,
+  } = await supabaseAdmin
+    .from("profils")
+    .update({
+      premium: true,
+      stripe_customer_id:
+        customerId ?? null,
+      stripe_subscription_id:
+        subscriptionId,
+    })
+    .eq("id", userId)
+    .select("id");
 
-        await sendPremiumWelcomeEmail({
-          userId,
-          stripeEventId: event.id,
-          customerId,
-          subscriptionId,
-        });
+  if (updateError) {
+    console.error(
+      "Erreur activation Premium :",
+      updateError
+    );
 
-        break;
-      }
+    return NextResponse.json(
+      {
+        error:
+          "Impossible d'activer Premium",
+      },
+      { status: 500 }
+    );
+  }
+
+  if (
+    !updatedProfiles ||
+    updatedProfiles.length === 0
+  ) {
+    console.error(
+      "Aucun profil trouvé pour l'utilisateur :",
+      userId
+    );
+
+    return NextResponse.json(
+      { error: "Profil introuvable" },
+      { status: 404 }
+    );
+  }
+
+  console.log(
+    "✅ Premium activé pour l'utilisateur :",
+    userId
+  );
+
+  await sendPremiumWelcomeEmail({
+    userId,
+    stripeEventId: event.id,
+    customerId,
+    subscriptionId,
+  });
+
+  break;
+}
+
+case "customer.subscription.updated": {
+  const subscription =
+    event.data.object as Stripe.Subscription;
+
+  const premium =
+    hasPremiumAccess(subscription.status);
+
+  const { error } =
+    await supabaseAdmin
+      .from("profils")
+      .update({
+        premium,
+      })
+      .eq(
+        "stripe_subscription_id",
+        subscription.id
+      );
+
+  if (error) {
+    console.error(
+      "Erreur mise à jour statut Premium :",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Impossible de mettre à jour Premium",
+      },
+      { status: 500 }
+    );
+  }
+
+  console.log(
+    premium
+      ? "✅ Abonnement Premium actif"
+      : `⚠️ Premium désactivé, statut : ${subscription.status}`
+  );
+
+  break;
+}
 
       case "customer.subscription.deleted": {
         const subscription =

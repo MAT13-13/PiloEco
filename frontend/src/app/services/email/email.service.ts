@@ -59,12 +59,13 @@ export async function sendEmail(
     }
 
     const { data, error } =
-      await resend.emails.send({
-        from: "PiloEco <onboarding@resend.dev>",
-        to: input.to,
-        subject: input.subject,
-        html: input.html,
-      });
+  await resend.emails.send({
+    from: "PiloEco <no-reply@piloeco.com>",
+    replyTo: "contact@piloeco.com",
+    to: input.to,
+    subject: input.subject,
+    html: input.html,
+  });
 
     if (error) {
       await saveEmailLog({

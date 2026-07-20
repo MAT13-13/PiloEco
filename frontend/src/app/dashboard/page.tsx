@@ -393,6 +393,58 @@ export default function DashboardPage() {
   const missionPrioritaire = [...missions]
     .filter((m) => m.status !== "Terminée")
     .sort((a, b) => Number(b.saving || 0) - Number(a.saving || 0))[0];
+    const piloSituation = (() => {
+  if (
+    missionPrioritaire &&
+    Number(missionPrioritaire.saving || 0) > 0
+  ) {
+    return {
+      mood: "opportunity",
+      emoji: "🎯",
+      title: "J’ai une mission pour toi !",
+      message: `La mission « ${missionPrioritaire.title} » pourrait te faire économiser ${Number(
+        missionPrioritaire.saving || 0
+      ).toLocaleString("fr-FR")} € par an.`,
+      glowClass: "bg-green-500/35",
+    };
+  }
+
+  if (
+    piloProfile.yearlySaving > 0 &&
+    piloProfile.missionsRemaining === 0
+  ) {
+    return {
+      mood: "success",
+      emoji: "🎉",
+      title: "Tout est bien optimisé !",
+      message: `Tu as déjà récupéré ${piloProfile.yearlySaving.toLocaleString(
+        "fr-FR"
+      )} € par an et terminé toutes tes missions actuelles.`,
+      glowClass: "bg-emerald-400/35",
+    };
+  }
+
+  if (analyses.length === 0) {
+    return {
+      mood: "waiting",
+      emoji: "🔎",
+      title: "On commence l’analyse ?",
+      message:
+        "Réponds à quelques questions et je chercherai les économies possibles dans ton budget.",
+      glowClass: "bg-blue-500/25",
+    };
+  }
+
+  return {
+    mood: "calm",
+    emoji: "🐦",
+    title: "Je veille sur ton budget.",
+    message:
+      piloBrain.pilo.message ||
+      "Je continue à suivre ta progression et à chercher de nouvelles économies.",
+    glowClass: "bg-green-500/25",
+  };
+})();
   async function onCompleteMission(mission: any) {
     if (!user || mission.status === "Terminée") return;
 
@@ -481,83 +533,131 @@ export default function DashboardPage() {
 
           <PiloNavigation />
 
-          <FadeIn delay={0}>
-            <section className="mt-8 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/40 p-7 shadow-2xl sm:p-9">
-              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-                <div>
-                  <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
-                    🐦 Ton copilote d’économies
-                  </p>
+        <FadeIn delay={0}>
+  <section className="mt-8 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/40 p-7 shadow-2xl sm:p-9">
+    <div className="grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
+      <div>
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
+          🐦 Ton copilote d’économies
+        </p>
 
-                  <h1 className="mt-4 text-4xl font-black sm:text-5xl">
-                    Bonjour Fiona 👋
-                  </h1>
+        <h1 className="mt-4 text-4xl font-black sm:text-5xl">
+          Bonjour Fiona 👋
+        </h1>
 
-                  <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
-                    Pilo a détecté{" "}
-                    <span className="font-black text-green-400">
-                      {piloProfile.yearlySaving.toLocaleString("fr-FR")} €/an
-                    </span>{" "}
-                    d’économies potentielles.
-                  </p>
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
+          Pilo a détecté{" "}
+          <span className="font-black text-green-400">
+            {piloProfile.yearlySaving.toLocaleString(
+              "fr-FR"
+            )}{" "}
+            €/an
+          </span>{" "}
+          d’économies potentielles.
+        </p>
 
-                  <p className="mt-3 max-w-2xl text-slate-400">
-                    {piloBrain.pilo.message}
-                  </p>
+        <div className="mt-5 max-w-2xl rounded-2xl border border-green-400/20 bg-green-400/[0.06] px-5 py-4">
+          <p className="font-black text-white">
+            {piloSituation.emoji}{" "}
+            {piloSituation.title}
+          </p>
 
-                  <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Score Pilo
-                      </p>
+          <p className="mt-2 leading-relaxed text-slate-300">
+            {piloSituation.message}
+          </p>
+        </div>
 
-                      <p className="mt-2 text-2xl font-black text-white">
-                        {piloProfile.score}/100
-                      </p>
-                    </div>
+        <div className="mt-7 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Score Pilo
+            </p>
 
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Missions restantes
-                      </p>
+            <p className="mt-2 text-2xl font-black text-white">
+              {piloProfile.score}/100
+            </p>
+          </div>
 
-                      <p className="mt-2 text-2xl font-black text-white">
-                        {piloProfile.missionsRemaining}
-                      </p>
-                    </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Missions restantes
+            </p>
 
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                        Niveau
-                      </p>
+            <p className="mt-2 text-2xl font-black text-white">
+              {piloProfile.missionsRemaining}
+            </p>
+          </div>
 
-                      <p className="mt-2 text-2xl font-black text-white">
-                        {piloProfile.level} · {piloProfile.title}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Niveau
+            </p>
 
-                <div className="flex w-full flex-col gap-3 lg:w-64">
-                  <Link
-                    href="/analyse"
-                    className="rounded-2xl bg-green-500 px-6 py-4 text-center font-black text-slate-950 transition hover:scale-[1.02] hover:bg-green-400"
-                  >
-                    {analyses.length > 0
-                      ? "🔄 Relancer une analyse"
-                      : "🚀 Lancer une analyse"}
-                  </Link>
+            <p className="mt-2 text-2xl font-black text-white">
+              {piloProfile.level} ·{" "}
+              {piloProfile.title}
+            </p>
+          </div>
+        </div>
+      </div>
 
-                  <Link
-                    href="/monitoring"
-                    className="rounded-2xl border border-white/10 bg-slate-950/60 px-6 py-4 text-center font-black text-white transition hover:border-green-500/40 hover:text-green-300"
-                  >
-                    📊 Ouvrir le Monitoring
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </FadeIn>
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative flex h-52 w-52 items-center justify-center">
+          <div
+            className={`absolute inset-5 animate-pulse rounded-full ${piloSituation.glowClass} blur-3xl`}
+          />
+
+          <img
+            src="/pilo.png"
+            alt="Pilo, la mascotte de PiloEco"
+            className="relative z-10 h-full w-full animate-pilo object-contain drop-shadow-[0_20px_60px_rgba(34,197,94,0.45)] transition duration-300 hover:scale-105 hover:-rotate-2"
+          />
+        </div>
+
+        {missionPrioritaire && (
+          <Link
+            href={`/missions/${missionPrioritaire.mission_id}`}
+            className="w-full rounded-2xl border border-green-400/20 bg-green-400/[0.07] p-4 transition hover:border-green-400/50 hover:bg-green-400/[0.12]"
+          >
+            <p className="text-xs font-black uppercase tracking-wider text-green-400">
+              🎯 Mission du moment
+            </p>
+
+            <p className="mt-2 font-black text-white">
+              {missionPrioritaire.title}
+            </p>
+
+            <p className="mt-1 text-sm font-bold text-green-300">
+              Jusqu’à{" "}
+              {Number(
+                missionPrioritaire.saving || 0
+              ).toLocaleString("fr-FR")}{" "}
+              €/an
+            </p>
+          </Link>
+        )}
+
+        <div className="grid w-full gap-3">
+          <Link
+            href="/analyse"
+            className="rounded-2xl bg-green-500 px-6 py-4 text-center font-black text-slate-950 transition hover:scale-[1.02] hover:bg-green-400"
+          >
+            {analyses.length > 0
+              ? "🔄 Relancer une analyse"
+              : "🚀 Lancer une analyse"}
+          </Link>
+
+          <Link
+            href="/monitoring"
+            className="rounded-2xl border border-white/10 bg-slate-950/60 px-6 py-4 text-center font-black text-white transition hover:border-green-500/40 hover:text-green-300"
+          >
+            📊 Ouvrir le Monitoring
+          </Link>
+        </div>
+      </div>
+    </div>
+  </section>
+</FadeIn>
 
           <FadeIn delay={0.15}>
             <DashboardQuickActions />

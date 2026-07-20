@@ -6,12 +6,12 @@ export async function GET(request: Request) {
   const authorization =
     request.headers.get("authorization");
 
-  const expectedAuthorization =
-    `Bearer ${process.env.CRON_SECRET}`;
+  const cronSecret =
+    process.env.CRON_SECRET;
 
   if (
-    !process.env.CRON_SECRET ||
-    authorization !== expectedAuthorization
+    !cronSecret ||
+    authorization !== `Bearer ${cronSecret}`
   ) {
     return NextResponse.json(
       {
@@ -30,7 +30,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Scheduler exécuté avec succès.",
+      message:
+        "Scheduler exécuté avec succès.",
       scheduler: schedulerResult ?? null,
     });
   } catch (error) {
@@ -43,9 +44,7 @@ export async function GET(request: Request) {
       {
         success: false,
         error:
-          error instanceof Error
-            ? error.message
-            : "Erreur inconnue",
+          "Impossible d’exécuter le scheduler.",
       },
       {
         status: 500,

@@ -4,22 +4,32 @@ import type {
   MonitoringContract,
 } from "@/app/monitoring/services/monitoring.service";
 
-export type PremiumUserContract = {
+export type PremiumUser = {
   userId: string;
   email: string;
   firstName: string | null;
   premium: boolean;
-  contract: MonitoringContract;
 };
 
-export async function getPremiumContracts(): Promise<
-  PremiumUserContract[]
+export type PremiumUserContract =
+  PremiumUser & {
+    contract: MonitoringContract;
+  };
+
+/**
+ * Récupère tous les utilisateurs Premium
+ * possédant une adresse email.
+ */
+export async function getPremiumUsers(): Promise<
+  PremiumUser[]
 > {
-  const { data: profiles, error: profilesError } =
-    await supabaseAdmin
-      .from("profils")
-      .select("id, premium, first_name")
-      .eq("premium", true);
+  const {
+    data: profiles,
+    error: profilesError,
+  } = await supabaseAdmin
+    .from("profils")
+    .select("id, premium, first_name")
+    .eq("premium", true);
 
   if (profilesError) {
     console.error(
@@ -30,60 +40,24 @@ export async function getPremiumContracts(): Promise<
     throw new Error(profilesError.message);
   }
 
-  if (!profiles || profiles.length === 0) {
+  if (!profiles?.length) {
     return [];
   }
 
-  const userIds = profiles.map(
-    (profile) => profile.id
-  );
+  const results: PremiumUser[] = [];
 
-  const { data: contracts, error: contractsError } =
-    await supabaseAdmin
-      .from("monitoring_contracts")
-      .select("*")
-      .in("user_id", userIds);
-
-  if (contractsError) {
-    console.error(
-      "Erreur récupération contrats Premium :",
-      contractsError
-    );
-
-    throw new Error(contractsError.message);
-  }
-
-  const profileMap = new Map(
-    profiles.map((profile) => [
-      profile.id,
-      profile,
-    ])
-  );
-
-  const results: PremiumUserContract[] = [];
-
-  for (const rawContract of contracts ?? []) {
-    const contract =
-      rawContract as MonitoringContract;
-
-    const profile = profileMap.get(
-      contract.user_id
-    );
-
-    if (!profile) {
-      continue;
-    }
-
+  for (const profile of profiles) {
     const {
       data: userData,
       error: userError,
-    } = await supabaseAdmin.auth.admin.getUserById(
-      contract.user_id
-    );
+    } =
+      await supabaseAdmin.auth.admin.getUserById(
+        profile.id
+      );
 
     if (userError) {
       console.error(
-        `Erreur récupération utilisateur ${contract.user_id} :`,
+        `Erreur récupération utilisateur ${profile.id} :`,
         userError
       );
 
@@ -94,17 +68,85 @@ export async function getPremiumContracts(): Promise<
 
     if (!email) {
       console.warn(
-        `Aucune adresse email pour ${contract.user_id}`
+        `Aucune adresse email pour ${profile.id}`
       );
 
       continue;
     }
 
     results.push({
-      userId: contract.user_id,
+      userId: profile.id,
       email,
-      firstName: profile.first_name,
+      firstName:
+        profile.first_name ?? null,
       premium: profile.premium,
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Récupère tous les contrats appartenant
+ * aux utilisateurs Premium.
+ */
+export async function getPremiumContracts(): Promise<
+  PremiumUserContract[]
+> {
+  const premiumUsers =
+    await getPremiumUsers();
+
+  if (!premiumUsers.length) {
+    return [];
+  }
+
+  const userIds = premiumUsers.map(
+    (user) => user.userId
+  );
+
+  const {
+    data: contracts,
+    error: contractsError,
+  } = await supabaseAdmin
+    .from("monitoring_contracts")
+    .select("*")
+    .in("user_id", userIds);
+
+  if (contractsError) {
+    console.error(
+      "Erreur récupération contrats Premium :",
+      contractsError
+    );
+
+    throw new Error(
+      contractsError.message
+    );
+  }
+
+  const userMap = new Map(
+    premiumUsers.map((user) => [
+      user.userId,
+      user,
+    ])
+  );
+
+  const results: PremiumUserContract[] =
+    [];
+
+  for (const rawContract of contracts ?? []) {
+    const contract =
+      rawContract as MonitoringContract;
+
+    const user = userMap.get(
+      contract.user_id
+    );
+
+    if (!user) {
+      continue;
+    }
+
+    results.push({
+      ...user,
       contract,
     });
   }

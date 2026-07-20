@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   useCallback,
   useEffect,
@@ -397,6 +399,22 @@ function MonitoringDashboard() {
           tes hausses de prix et tes
           économies.
         </p>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black text-white transition hover:border-green-400/40 hover:bg-white/10 hover:text-green-300"
+          >
+            ← Retour au dashboard
+          </Link>
+
+          <Link
+            href="/monitoring/add"
+            className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-green-400"
+          >
+            ➕ Ajouter un contrat
+          </Link>
+        </div>
 
         <PiloNavigation />
 
