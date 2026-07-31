@@ -17,6 +17,7 @@ export type Offer = {
   piloScore: number;
   highlight: string;
   partnerUrl?: string;
+  score?: number;
 };
 
 export const offers: Offer[] = [

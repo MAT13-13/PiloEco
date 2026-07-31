@@ -1,6 +1,6 @@
 import { Depense, getDepenses } from "../finance/depenses.service";
 import { calculateEconomyScore } from "../finance/score.service";
-import type { Offer } from "../../data/offers";
+import type { Offer } from "../pilo-engine/offers";
 import {
   createPiloEngine,
   type PiloCategory,

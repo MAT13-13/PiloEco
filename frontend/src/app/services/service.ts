@@ -1,4 +1,4 @@
-import { Offer } from "../data/offers";
+import type { Offer } from "./pilo-engine/offers";
 
 export function explainOffer(currentPrice: number, offer: Offer): string {
   const saving = Math.max(

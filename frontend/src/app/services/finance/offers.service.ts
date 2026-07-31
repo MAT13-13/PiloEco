@@ -1,4 +1,4 @@
-import type { Offer } from "../../data/offers";
+import type { Offer } from "../pilo-engine/offers";
 
 export function findBestOffer(
   currentPrice: number,

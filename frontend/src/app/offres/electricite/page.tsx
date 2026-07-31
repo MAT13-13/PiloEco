@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { electriciteOffers } from "../../data/offers";
+import { electriciteOffers } from "../../data/electriciteOffers";
 import { createRecommendation } from "../../services/ai/pilo-engine.service";
 import PiloAdvice from "../../components/PiloAdvice";
 import { supabase } from "../../lib/supabase";

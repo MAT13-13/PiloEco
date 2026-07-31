@@ -1,4 +1,4 @@
-import { Offer } from "../../data/offers";
+import type { Offer } from "../pilo-engine/offers";
 
 export type PiloRecommendation = {
   offer: Offer;
