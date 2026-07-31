@@ -47,76 +47,56 @@ export default function LoginPage() {
     return true;
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(
+  event: FormEvent<HTMLFormElement>
+) {
+  event.preventDefault();
 
-    setErrorMessage("");
-    setSuccessMessage("");
+  setErrorMessage("");
+  setSuccessMessage("");
 
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) {
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail =
+      email.trim().toLowerCase();
 
-      if (mode === "login") {
-        const { error } =
-          await supabase.auth.signInWithPassword({
-            email: cleanEmail,
-            password,
-          });
+    if (mode === "login") {
+      const {
+        data,
+        error,
+      } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
 
-        if (error) {
-          if (
-            error.message
-              .toLowerCase()
-              .includes("invalid login credentials")
-          ) {
-            setErrorMessage(
-              "Adresse e-mail ou mot de passe incorrect."
-            );
-            return;
-          }
+      if (error) {
+        const errorText =
+          error.message.toLowerCase();
 
-          if (
-            error.message
-              .toLowerCase()
-              .includes("email not confirmed")
-          ) {
-            setErrorMessage(
-              "Confirme d’abord ton adresse e-mail avant de te connecter."
-            );
-            return;
-          }
-
-          setErrorMessage(error.message);
+        if (
+          errorText.includes(
+            "invalid login credentials"
+          )
+        ) {
+          setErrorMessage(
+            "Adresse e-mail ou mot de passe incorrect."
+          );
           return;
         }
 
-        router.replace("/dashboard");
-        router.refresh();
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-
-      if (error) {
         if (
-          error.message
-            .toLowerCase()
-            .includes("already registered")
+          errorText.includes(
+            "email not confirmed"
+          )
         ) {
           setErrorMessage(
-            "Un compte existe déjà avec cette adresse e-mail."
+            "Confirme d’abord ton adresse e-mail avant de te connecter."
           );
           return;
         }
@@ -125,31 +105,101 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.session) {
-        router.replace("/dashboard");
-        router.refresh();
+      const userId = data.user?.id;
+
+      if (!userId) {
+        setErrorMessage(
+          "Impossible de récupérer ton compte."
+        );
         return;
       }
 
-      setSuccessMessage(
-        "Ton compte a été créé. Ouvre l’e-mail envoyé par PiloEco pour confirmer ton adresse."
-      );
+      const {
+        data: profile,
+        error: profileError,
+      } = await supabase
+        .from("profils")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
 
-      setMode("login");
-      setPassword("");
-    } catch (error) {
-      console.error(
-        "Erreur pendant l’authentification :",
-        error
-      );
+      if (profileError) {
+        console.error(
+          "Erreur lecture du rôle :",
+          profileError
+        );
 
-      setErrorMessage(
-        "Une erreur inattendue est survenue. Réessaie dans quelques instants."
-      );
-    } finally {
-      setLoading(false);
+        setErrorMessage(
+          "Impossible de déterminer ton espace."
+        );
+        return;
+      }
+
+      if (profile?.role === "partner") {
+        router.replace(
+          "/partner-dashboard"
+        );
+      } else {
+        router.replace("/dashboard");
+      }
+
+      router.refresh();
+      return;
     }
+
+    const {
+      data,
+      error,
+    } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo:
+          `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      if (
+        error.message
+          .toLowerCase()
+          .includes("already registered")
+      ) {
+        setErrorMessage(
+          "Un compte existe déjà avec cette adresse e-mail."
+        );
+        return;
+      }
+
+      setErrorMessage(error.message);
+      return;
+    }
+
+    if (data.session) {
+      router.replace("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    setSuccessMessage(
+      "Ton compte a été créé. Ouvre l’e-mail envoyé par PiloEco pour confirmer ton adresse."
+    );
+
+    setMode("login");
+    setPassword("");
+  } catch (error) {
+    console.error(
+      "Erreur pendant l’authentification :",
+      error
+    );
+
+    setErrorMessage(
+      "Une erreur inattendue est survenue. Réessaie dans quelques instants."
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   function changeMode(nextMode: AuthMode) {
     setMode(nextMode);

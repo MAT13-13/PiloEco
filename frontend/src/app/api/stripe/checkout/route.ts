@@ -2,19 +2,59 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
+
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
 import { stripe } from "@/app/lib/stripe";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function jsonError(
+  message: string,
+  status: number
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: message,
+    },
+    {
+      status,
+    }
+  );
+}
+
+function getBearerToken(
+  request: NextRequest
+) {
+  const authorization =
+    request.headers.get("authorization");
+
+  if (
+    !authorization?.startsWith("Bearer ")
+  ) {
+    return null;
+  }
+
+  return authorization.slice(7).trim();
+}
+
+function normalizeAppUrl(
+  value: string
+) {
+  return value.replace(/\/+$/, "");
+}
+
 export async function POST(
-  req: NextRequest
+  request: NextRequest
 ) {
   try {
     const priceId =
       process.env.STRIPE_PRICE_ID;
 
-    const appUrl =
+    const rawAppUrl =
       process.env.NEXT_PUBLIC_APP_URL;
 
     const supabaseUrl =
@@ -26,7 +66,7 @@ export async function POST(
 
     if (
       !priceId ||
-      !appUrl ||
+      !rawAppUrl ||
       !supabaseUrl ||
       !supabaseAnonKey
     ) {
@@ -34,65 +74,96 @@ export async function POST(
         "Configuration Stripe ou Supabase manquante"
       );
 
-      return NextResponse.json(
-        {
-          error:
-            "Le paiement est temporairement indisponible.",
-        },
-        { status: 500 }
+      return jsonError(
+        "Le paiement est temporairement indisponible.",
+        500
       );
     }
 
-    const authorization =
-      req.headers.get("authorization");
+    const appUrl =
+      normalizeAppUrl(rawAppUrl);
+
+    let parsedAppUrl: URL;
+
+    try {
+      parsedAppUrl = new URL(appUrl);
+    } catch {
+      console.error(
+        "NEXT_PUBLIC_APP_URL invalide :",
+        appUrl
+      );
+
+      return jsonError(
+        "La configuration du site est invalide.",
+        500
+      );
+    }
+
+    if (
+      parsedAppUrl.protocol !== "https:" &&
+      parsedAppUrl.hostname !==
+        "localhost"
+    ) {
+      console.error(
+        "NEXT_PUBLIC_APP_URL doit utiliser HTTPS en production."
+      );
+
+      return jsonError(
+        "La configuration du paiement est invalide.",
+        500
+      );
+    }
 
     const accessToken =
-      authorization?.startsWith("Bearer ")
-        ? authorization.slice(7)
-        : null;
+      getBearerToken(request);
 
     if (!accessToken) {
-      return NextResponse.json(
-        {
-          error:
-            "Utilisateur non connecté",
-        },
-        { status: 401 }
+      return jsonError(
+        "Utilisateur non connecté.",
+        401
       );
     }
 
-    const supabase = createClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        global: {
-          headers: {
-            Authorization:
-              `Bearer ${accessToken}`,
+    /*
+     * Ce client utilise la clé publique Supabase,
+     * accompagnée du token de l'utilisateur.
+     */
+    const supabase =
+      createClient(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+          global: {
+            headers: {
+              Authorization:
+                `Bearer ${accessToken}`,
+            },
           },
-        },
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-        },
-      }
-    );
 
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+          },
+        }
+      );
+
+    /*
+     * getUser contacte Supabase Auth et vérifie
+     * réellement le token reçu.
+     */
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser(
-      accessToken
-    );
+    } =
+      await supabase.auth.getUser(
+        accessToken
+      );
 
     if (userError || !user) {
-      return NextResponse.json(
-        {
-          error:
-            "Session utilisateur invalide",
-        },
-        { status: 401 }
+      return jsonError(
+        "Session utilisateur invalide ou expirée.",
+        401
       );
     }
 
@@ -102,7 +173,11 @@ export async function POST(
     } = await supabase
       .from("profils")
       .select(
-        "premium, stripe_customer_id, stripe_subscription_id"
+        `
+          premium,
+          stripe_customer_id,
+          stripe_subscription_id
+        `
       )
       .eq("id", user.id)
       .maybeSingle();
@@ -113,30 +188,69 @@ export async function POST(
         profileError
       );
 
-      return NextResponse.json(
-        {
-          error:
-            "Impossible de vérifier votre abonnement.",
-        },
-        { status: 500 }
+      return jsonError(
+        "Impossible de vérifier votre abonnement.",
+        500
       );
     }
 
-    if (
-      profile?.premium ||
-      profile?.stripe_subscription_id
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Un abonnement Premium existe déjà pour ce compte.",
-        },
-        { status: 409 }
+    if (!profile) {
+      return jsonError(
+        "Votre profil utilisateur est introuvable.",
+        404
       );
+    }
+
+    if (profile.premium) {
+      return jsonError(
+        "Ce compte possède déjà un abonnement Premium actif.",
+        409
+      );
+    }
+
+    /*
+     * Si un identifiant d'abonnement existe déjà,
+     * on vérifie directement son statut dans Stripe.
+     */
+    if (
+      profile.stripe_subscription_id
+    ) {
+      try {
+        const existingSubscription =
+          await stripe.subscriptions.retrieve(
+            profile.stripe_subscription_id
+          );
+
+        const subscriptionExists =
+          existingSubscription.status !==
+            "canceled" &&
+          existingSubscription.status !==
+            "incomplete_expired";
+
+        if (subscriptionExists) {
+          return jsonError(
+            "Un abonnement Stripe existe déjà pour ce compte.",
+            409
+          );
+        }
+      } catch (error) {
+        if (
+          error instanceof
+            Stripe.errors.StripeInvalidRequestError
+        ) {
+          console.warn(
+            "Ancien abonnement Stripe introuvable :",
+            profile.stripe_subscription_id
+          );
+        } else {
+          throw error;
+        }
+      }
     }
 
     const checkoutParameters:
-      Stripe.Checkout.SessionCreateParams = {
+      Stripe.Checkout.SessionCreateParams =
+      {
         mode: "subscription",
 
         client_reference_id: user.id,
@@ -159,18 +273,27 @@ export async function POST(
         ],
 
         success_url:
-          `${appUrl}/premium?success=true`,
+          `${appUrl}/premium?success=true&session_id={CHECKOUT_SESSION_ID}`,
 
         cancel_url:
           `${appUrl}/premium?canceled=true`,
+
+        allow_promotion_codes: false,
       };
 
-    if (profile?.stripe_customer_id) {
+    if (
+      profile.stripe_customer_id
+    ) {
       checkoutParameters.customer =
         profile.stripe_customer_id;
     } else if (user.email) {
       checkoutParameters.customer_email =
         user.email;
+    } else {
+      return jsonError(
+        "Aucune adresse e-mail n’est associée à ce compte.",
+        400
+      );
     }
 
     const session =
@@ -180,19 +303,21 @@ export async function POST(
 
     if (!session.url) {
       console.error(
-        "Stripe n'a pas retourné d'URL de paiement"
+        "Stripe n'a pas retourné d'URL de paiement",
+        {
+          sessionId: session.id,
+          userId: user.id,
+        }
       );
 
-      return NextResponse.json(
-        {
-          error:
-            "Impossible de créer la page de paiement.",
-        },
-        { status: 500 }
+      return jsonError(
+        "Impossible de créer la page de paiement.",
+        500
       );
     }
 
     return NextResponse.json({
+      success: true,
       url: session.url,
     });
   } catch (error) {
@@ -201,12 +326,9 @@ export async function POST(
       error
     );
 
-    return NextResponse.json(
-      {
-        error:
-          "Impossible de démarrer le paiement pour le moment.",
-      },
-      { status: 500 }
+    return jsonError(
+      "Impossible de démarrer le paiement pour le moment.",
+      500
     );
   }
 }

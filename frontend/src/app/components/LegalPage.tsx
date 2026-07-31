@@ -25,7 +25,7 @@ export default function LegalPage({
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-white sm:px-8">
       <div className="mx-auto max-w-5xl">
         <Link
-          href="/parametres"
+          href="/dashboard"
           className="inline-flex items-center gap-2 text-sm font-semibold text-green-400 transition hover:text-green-300"
         >
           ← Retour aux paramètres

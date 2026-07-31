@@ -379,10 +379,10 @@ export async function createMonitoringContract(
   }
 
   if (existingContract) {
-    throw new Error(
-      "Ce contrat est déjà surveillé."
-    );
-  }
+  return {
+    ...existingContract,
+  } as MonitoringContract;
+}
 
   const now = new Date().toISOString();
 

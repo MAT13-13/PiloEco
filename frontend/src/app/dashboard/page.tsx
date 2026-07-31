@@ -68,6 +68,7 @@ type PiloDbProfile = {
   completed_missions: number;
   badges: string[];
   premium: boolean;
+  role: string;
 };
 
 export default function DashboardPage() {
@@ -533,6 +534,17 @@ export default function DashboardPage() {
 
           <PiloNavigation />
 
+          {profile?.role === "admin" && (
+  <div className="mt-6 flex justify-end">
+  <Link
+  href="/admin"
+  className="rounded-xl bg-green-500 px-5 py-3 font-black text-slate-950 hover:bg-green-400"
+>
+  🛠 Administration
+</Link>
+  </div>
+)}
+
         <FadeIn delay={0}>
   <section className="mt-8 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/40 p-7 shadow-2xl sm:p-9">
     <div className="grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
@@ -636,24 +648,31 @@ export default function DashboardPage() {
             </p>
           </Link>
         )}
+<div className="mt-3 flex w-full flex-col gap-3">
+  <Link
+    href="/analyse"
+    className="rounded-2xl bg-green-500 px-6 py-4 text-center font-black text-slate-950 transition hover:scale-[1.02] hover:bg-green-400"
+  >
+    {analyses.length > 0
+      ? "🔄 Relancer une analyse"
+      : "🚀 Lancer une analyse"}
+  </Link>
 
-        <div className="grid w-full gap-3">
-          <Link
-            href="/analyse"
-            className="rounded-2xl bg-green-500 px-6 py-4 text-center font-black text-slate-950 transition hover:scale-[1.02] hover:bg-green-400"
-          >
-            {analyses.length > 0
-              ? "🔄 Relancer une analyse"
-              : "🚀 Lancer une analyse"}
-          </Link>
+  <Link
+    href="/monitoring"
+    className="rounded-2xl border border-white/10 bg-slate-950/60 px-6 py-4 text-center font-black text-white transition hover:border-green-500/40 hover:text-green-300"
+  >
+    📊 Ouvrir le Monitoring
+  </Link>
 
-          <Link
-            href="/monitoring"
-            className="rounded-2xl border border-white/10 bg-slate-950/60 px-6 py-4 text-center font-black text-white transition hover:border-green-500/40 hover:text-green-300"
-          >
-            📊 Ouvrir le Monitoring
-          </Link>
-        </div>
+  <Link
+    href="/devenir-partenaire"
+    className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-4 text-center font-black text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500 hover:text-slate-950"
+  >
+    🤝 Devenir partenaire
+  </Link>
+</div>
+      
       </div>
     </div>
   </section>

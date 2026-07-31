@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { monitoringOffers } from "../monitoring/services/monitoring-offers.service";
+import { supabase } from "../lib/supabase";
 
 type AnalyseCategory =
   | "telephone"
@@ -221,43 +222,46 @@ export default function AnalyseLoadingPage() {
                 )
               );
 
-        const response = await fetch("/api/pilo", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            score,
-            savings,
-            depenses: [
-              {
-                description:
-                  categoryDescriptions[
-                    validAnalysis.category
-                  ],
-                category:
-                  validAnalysis.category,
-                amount: currentPrice,
-                provider:
-                  validAnalysis.values.provider ??
-                  "",
-                currentOffer:
-                  validAnalysis.values.formula ??
-                  validAnalysis.values.offer ??
-                  validAnalysis.values
-                    .connectionType ??
-                  validAnalysis.values.tariff ??
-                  "",
-                recommendedProvider:
-                  recommendedOffer.provider,
-                recommendedOffer:
-                  recommendedOffer.offer,
-                recommendedPrice:
-                  recommendedOffer.price,
-              },
-            ],
-          }),
-        });
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+const response = await fetch("/api/pilo", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${session?.access_token}`,
+  },
+  body: JSON.stringify({
+    score,
+    savings,
+    depenses: [
+      {
+        description:
+          categoryDescriptions[
+            validAnalysis.category
+          ],
+        category:
+          validAnalysis.category,
+        amount: currentPrice,
+        provider:
+          validAnalysis.values.provider ?? "",
+        currentOffer:
+          validAnalysis.values.formula ??
+          validAnalysis.values.offer ??
+          validAnalysis.values.connectionType ??
+          validAnalysis.values.tariff ??
+          "",
+        recommendedProvider:
+          recommendedOffer.provider,
+        recommendedOffer:
+          recommendedOffer.offer,
+        recommendedPrice:
+          recommendedOffer.price,
+      },
+    ],
+  }),
+});
 
         if (!response.ok) {
           throw new Error(

@@ -14,36 +14,91 @@ export default function ConfidentialitePage() {
       description="Cette politique explique quelles données PiloEco peut traiter, pourquoi elles sont utilisées et comment exercer vos droits."
       sections={[
         {
-          title: "1. Responsable du traitement",
-          content: (
-            <>
-              <p>
-                Le responsable du traitement est l’éditeur du service PiloEco.
-              </p>
+  title: "1. Responsable du traitement",
+  content: (
+    <>
+      <p>
+        La présente politique de confidentialité décrit la manière dont les
+        données personnelles sont collectées, utilisées et protégées dans le
+        cadre de l'utilisation de la plateforme{" "}
+        <strong className="text-white">PiloEco</strong>.
+      </p>
 
-              <p>
-                <strong className="text-white">Nom commercial :</strong>{" "}
-                PiloEco
-                <br />
-                <strong className="text-white">Localisation :</strong>{" "}
-                Tourrette-Levens, France
-                <br />
-                <strong className="text-white">Contact :</strong>{" "}
-                <a
-                  href="mailto:contact@piloeco.com"
-                  className="font-semibold text-green-400 hover:text-green-300"
-                >
-                  contact@piloeco.com
-                </a>
-              </p>
+      <div className="rounded-2xl border border-green-400/20 bg-green-400/5 p-4">
+        <p>
+          Le responsable du traitement des données personnelles est :
+        </p>
+      </div>
 
-              <p className="text-slate-400">
-                Les informations juridiques définitives seront ajoutées après
-                l’immatriculation de l’entreprise.
-              </p>
-            </>
-          ),
-        },
+      <p>
+        <strong className="text-white">
+          Responsable du traitement :
+        </strong>{" "}
+        Fiona Mathieu
+        <br />
+
+        <strong className="text-white">
+          Forme juridique :
+        </strong>{" "}
+        Entrepreneur individuel
+        <br />
+
+        <strong className="text-white">
+          Nom commercial :
+        </strong>{" "}
+        FM SERVICES
+        <br />
+
+        <strong className="text-white">
+          Plateforme exploitée :
+        </strong>{" "}
+        PiloEco
+        <br />
+
+        <strong className="text-white">
+          SIREN :
+        </strong>{" "}
+        880 312 988
+        <br />
+
+        <strong className="text-white">
+          RCS :
+        </strong>{" "}
+        Nice 880 312 988
+        <br />
+
+        <strong className="text-white">
+          Téléphone :
+        </strong>{" "}
+        07 68 54 05 95
+        <br />
+
+        <strong className="text-white">
+          Localisation :
+        </strong>{" "}
+        Tourrette-Levens, France
+        <br />
+
+        <strong className="text-white">
+          Contact :
+        </strong>{" "}
+        <a
+          href="mailto:contact@piloeco.com"
+          className="font-semibold text-green-400 hover:text-green-300"
+        >
+          contact@piloeco.com
+        </a>
+      </p>
+
+      <p className="text-slate-400">
+        Pour toute question relative au traitement de vos données personnelles
+        ou pour exercer vos droits conformément au Règlement Général sur la
+        Protection des Données (RGPD), vous pouvez nous contacter par e-mail à
+        l'adresse indiquée ci-dessus.
+      </p>
+    </>
+  ),
+},
         {
           title: "2. Données susceptibles d’être collectées",
           content: (
@@ -228,8 +283,7 @@ export default function ConfidentialitePage() {
           content: (
             <>
               <p>
-                Les durées exactes devront être fixées dans le registre de
-                traitement de PiloEco. Les principes suivants sont envisagés :
+                Les données personnelles sont conservées uniquement pendant la durée nécessaire aux finalités pour lesquelles elles ont été collectées et conformément aux obligations légales applicables. À titre indicatif :
               </p>
 
               <ul className="list-disc space-y-2 pl-5">

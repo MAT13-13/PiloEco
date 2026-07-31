@@ -450,66 +450,80 @@ export default function AnalyseResultPage() {
   }
 
   async function handleAddToMonitoring() {
+  if (
+    !result ||
+    addingToMonitoring
+  ) {
+    return;
+  }
+
+  try {
+    setAddingToMonitoring(true);
+    setErrorMessage("");
+
+    await createMonitoringContract({
+      category: result.category,
+
+      provider:
+        result.values.provider?.trim() ||
+        "Fournisseur non renseigné",
+
+      monthly_price:
+        result.currentPrice,
+
+      current_offer:
+        getCurrentOffer(
+          result.values
+        ) || null,
+
+      end_date:
+        result.values.endDate ||
+        null,
+
+      better_offer: bestOffer
+        ? `${bestOffer.provider} — ${bestOffer.offer} — ${bestOffer.price.toFixed(
+            2
+          )} €/mois`
+        : null,
+
+      yearly_saving:
+        bestOffer?.yearlySaving ?? 0,
+    });
+
+    setMonitoringAdded(true);
+
+    setTimeout(() => {
+      router.push("/monitoring");
+    }, 900);
+  } catch (error) {
+    console.error(
+      "Erreur ajout au Monitoring :",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Impossible d’ajouter ce contrat au Monitoring.";
+
     if (
-      !result ||
-      addingToMonitoring
+      message ===
+      "Ce contrat est déjà surveillé."
     ) {
-      return;
-    }
-
-    try {
-      setAddingToMonitoring(true);
-      setErrorMessage("");
-
-      await createMonitoringContract({
-  category: result.category,
-
-  provider:
-    result.values.provider?.trim() ||
-    "Fournisseur non renseigné",
-
-  monthly_price:
-    result.currentPrice,
-
-  current_offer:
-    getCurrentOffer(
-      result.values
-    ) || null,
-
-  end_date:
-    result.values.endDate ||
-    null,
-
-  better_offer: bestOffer
-    ? `${bestOffer.provider} — ${bestOffer.offer} — ${bestOffer.price.toFixed(
-        2
-      )} €/mois`
-    : null,
-
-  yearly_saving:
-    bestOffer?.yearlySaving ?? 0,
-});
-
       setMonitoringAdded(true);
 
       setTimeout(() => {
         router.push("/monitoring");
-      }, 900);
-    } catch (error) {
-      console.error(
-        "Erreur ajout au Monitoring :",
-        error
-      );
+      }, 800);
 
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Impossible d’ajouter ce contrat au Monitoring."
-      );
-    } finally {
-      setAddingToMonitoring(false);
+      return;
     }
+
+    setErrorMessage(message);
+  } finally {
+    setAddingToMonitoring(false);
   }
+}
 
   if (loading) {
     return (

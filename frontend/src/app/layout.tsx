@@ -7,6 +7,7 @@ import {
 import "./globals.css";
 
 import { PremiumProvider } from "../premium/PremiumContext";
+import Footer from "./components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,11 +59,17 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
-        <PremiumProvider>
-          {children}
-        </PremiumProvider>
-      </body>
+      <body className="min-h-full bg-slate-950 text-white">
+  <PremiumProvider>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1">
+        {children}
+      </main>
+
+      <Footer />
+    </div>
+  </PremiumProvider>
+</body>
     </html>
   );
 }
