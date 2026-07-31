@@ -55,20 +55,20 @@ export default function ElectriciteOfferPage() {
           </p>
 
           <h1 className="mt-4 text-5xl font-black">
-            ⚡ {bestOffer.provider}
+            ⚡ {bestOffer.operator}
           </h1>
 
           <div className="mt-8 rounded-3xl bg-slate-950/70 p-6">
             <p className="text-slate-400">Prix mensuel estimé</p>
 
             <p className="mt-2 text-5xl font-black text-green-400">
-              {bestOffer.monthlyPrice.toFixed(2)} €/mois
+              {bestOffer.price.toFixed(2)}
             </p>
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
-              🔓 {bestOffer.commitment}
+             Sans engagement
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
