@@ -223,7 +223,7 @@ export default function DashboardPage() {
     setMessage("Pilo prépare ton résultat...");
 
     try {
-      const response = await fetch("http://localhost:3001/calcul-economies", {
+      const response = await fetch("/api/calcul-economies", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -235,6 +235,10 @@ export default function DashboardPage() {
           electricite: Number(dataValues.electricite),
         }),
       });
+
+      if (!response.ok) {
+  throw new Error("Impossible de réaliser l'analyse.");
+}
 
       const data = await response.json();
 
