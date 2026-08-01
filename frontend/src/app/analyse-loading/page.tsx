@@ -226,11 +226,39 @@ const {
   data: { session },
 } = await supabase.auth.getSession();
 
+console.log("Session :", session);
+console.log("Token :", session?.access_token);
+
+const {
+  data: { session: currentSession },
+  error: sessionError,
+} = await supabase.auth.getSession();
+
+let activeSession = currentSession;
+
+if (!activeSession && !sessionError) {
+  const {
+    data: { session: refreshedSession },
+  } = await supabase.auth.refreshSession();
+
+  activeSession = refreshedSession;
+}
+
+if (sessionError || !activeSession?.access_token) {
+  localStorage.setItem(
+    "pilo-login-redirect",
+    "/analyse-loading"
+  );
+
+  router.replace("/connexion");
+  return;
+}
+
 const response = await fetch("/api/pilo", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${session?.access_token}`,
+    Authorization: `Bearer ${activeSession.access_token}`,
   },
   body: JSON.stringify({
     score,
