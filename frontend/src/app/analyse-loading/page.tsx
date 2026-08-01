@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { useRouter } from "next/navigation";
 
 import { monitoringOffers } from "../monitoring/services/monitoring-offers.service";
-import { supabase } from "../lib/supabase";
 
 type AnalyseCategory =
   | "telephone"
@@ -24,7 +28,10 @@ type AnalysisPayload = {
   createdAt: string;
 };
 
-const loadingSteps: Record<AnalyseCategory, string[]> = {
+const loadingSteps: Record<
+  AnalyseCategory,
+  string[]
+> = {
   telephone: [
     "Lecture de ton opérateur mobile",
     "Analyse du volume de données",
@@ -122,12 +129,16 @@ function isAnalyseCategory(
 export default function AnalyseLoadingPage() {
   const router = useRouter();
 
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] =
+    useState(0);
+
   const [analysis, setAnalysis] =
     useState<AnalysisPayload | null>(null);
 
-  const [analysisFinished, setAnalysisFinished] =
-    useState(false);
+  const [
+    analysisFinished,
+    setAnalysisFinished,
+  ] = useState(false);
 
   const [errorMessage, setErrorMessage] =
     useState("");
@@ -149,7 +160,9 @@ export default function AnalyseLoadingPage() {
   useEffect(() => {
     async function startAnalysis() {
       const rawAnalysis =
-        localStorage.getItem("pilo-analysis");
+        localStorage.getItem(
+          "pilo-analysis"
+        );
 
       if (!rawAnalysis) {
         router.replace("/analyse");
@@ -172,30 +185,45 @@ export default function AnalyseLoadingPage() {
           );
         }
 
-        const validAnalysis: AnalysisPayload = {
-          category: parsedAnalysis.category,
-          categoryLabel:
-            parsedAnalysis.categoryLabel ??
-            categoryDescriptions[
-              parsedAnalysis.category
-            ],
-          icon: parsedAnalysis.icon ?? "🐦",
-          values: parsedAnalysis.values,
-          createdAt:
-            parsedAnalysis.createdAt ??
-            new Date().toISOString(),
-        };
+        const validAnalysis: AnalysisPayload =
+          {
+            category:
+              parsedAnalysis.category,
+
+            categoryLabel:
+              parsedAnalysis.categoryLabel ??
+              categoryDescriptions[
+                parsedAnalysis.category
+              ],
+
+            icon:
+              parsedAnalysis.icon ?? "🐦",
+
+            values:
+              parsedAnalysis.values,
+
+            createdAt:
+              parsedAnalysis.createdAt ??
+              new Date().toISOString(),
+          };
 
         setAnalysis(validAnalysis);
 
         const currentPrice = Number(
-          validAnalysis.values.monthlyPrice ?? 0
+          validAnalysis.values
+            .monthlyPrice ?? 0
         );
 
         const recommendedOffer =
           monitoringOffers[
             validAnalysis.category
           ];
+
+        if (!recommendedOffer) {
+          throw new Error(
+            "Aucune offre de référence n’est disponible pour cette catégorie."
+          );
+        }
 
         const savings = Math.max(
           0,
@@ -216,100 +244,97 @@ export default function AnalyseLoadingPage() {
                   Math.round(
                     100 -
                       (savings /
-                        (currentPrice * 12)) *
+                        (currentPrice *
+                          12)) *
                         100
                   )
                 )
               );
 
-const {
-  data: { session },
-} = await supabase.auth.getSession();
+        const response = await fetch(
+          "/api/pilo",
+          {
+            method: "POST",
 
-console.log("Session :", session);
-console.log("Token :", session?.access_token);
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-const {
-  data: { session: currentSession },
-  error: sessionError,
-} = await supabase.auth.getSession();
+            body: JSON.stringify({
+              score,
+              savings,
 
-let activeSession = currentSession;
+              depenses: [
+                {
+                  description:
+                    categoryDescriptions[
+                      validAnalysis
+                        .category
+                    ],
 
-if (!activeSession && !sessionError) {
-  const {
-    data: { session: refreshedSession },
-  } = await supabase.auth.refreshSession();
+                  category:
+                    validAnalysis.category,
 
-  activeSession = refreshedSession;
-}
+                  amount: currentPrice,
 
-if (sessionError || !activeSession?.access_token) {
-  localStorage.setItem(
-    "pilo-login-redirect",
-    "/analyse-loading"
-  );
+                  provider:
+                    validAnalysis.values
+                      .provider ?? "",
 
-  router.replace("/connexion");
-  return;
-}
+                  currentOffer:
+                    validAnalysis.values
+                      .formula ??
+                    validAnalysis.values
+                      .offer ??
+                    validAnalysis.values
+                      .connectionType ??
+                    validAnalysis.values
+                      .tariff ??
+                    "",
 
-const response = await fetch("/api/pilo", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${activeSession.access_token}`,
-  },
-  body: JSON.stringify({
-    score,
-    savings,
-    depenses: [
-      {
-        description:
-          categoryDescriptions[
-            validAnalysis.category
-          ],
-        category:
-          validAnalysis.category,
-        amount: currentPrice,
-        provider:
-          validAnalysis.values.provider ?? "",
-        currentOffer:
-          validAnalysis.values.formula ??
-          validAnalysis.values.offer ??
-          validAnalysis.values.connectionType ??
-          validAnalysis.values.tariff ??
-          "",
-        recommendedProvider:
-          recommendedOffer.provider,
-        recommendedOffer:
-          recommendedOffer.offer,
-        recommendedPrice:
-          recommendedOffer.price,
-      },
-    ],
-  }),
-});
+                  recommendedProvider:
+                    recommendedOffer.provider,
+
+                  recommendedOffer:
+                    recommendedOffer.offer,
+
+                  recommendedPrice:
+                    recommendedOffer.price,
+                },
+              ],
+            }),
+          }
+        );
+
+        const data =
+          await response.json();
 
         if (!response.ok) {
           throw new Error(
-            "Le conseil de Pilo n’a pas pu être généré."
+            data?.error ||
+              "Le conseil de Pilo n’a pas pu être généré."
           );
         }
 
-        const data = await response.json();
-
         const result = {
           ...validAnalysis,
+
           currentPrice,
+
           recommendedProvider:
             recommendedOffer.provider,
+
           recommendedOffer:
             recommendedOffer.offer,
+
           recommendedPrice:
             recommendedOffer.price,
+
           yearlySaving: savings,
+
           score,
+
           advice:
             data.success && data.advice
               ? data.advice
@@ -321,7 +346,10 @@ const response = await fetch("/api/pilo", {
           JSON.stringify(result)
         );
 
-        if (data.success && data.advice) {
+        if (
+          data.success &&
+          data.advice
+        ) {
           localStorage.setItem(
             "pilo-ai-advice",
             data.advice
@@ -347,22 +375,33 @@ const response = await fetch("/api/pilo", {
   }, [router]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setProgress((currentProgress) => {
-        if (analysisFinished) {
-          window.clearInterval(timer);
-          return 100;
-        }
+    const timer =
+      window.setInterval(() => {
+        setProgress(
+          (currentProgress) => {
+            if (analysisFinished) {
+              window.clearInterval(
+                timer
+              );
 
-        if (currentProgress >= 94) {
-          return 94;
-        }
+              return 100;
+            }
 
-        return currentProgress + 2;
-      });
-    }, 80);
+            if (
+              currentProgress >= 94
+            ) {
+              return 94;
+            }
 
-    return () => window.clearInterval(timer);
+            return (
+              currentProgress + 2
+            );
+          }
+        );
+      }, 80);
+
+    return () =>
+      window.clearInterval(timer);
   }, [analysisFinished]);
 
   useEffect(() => {
@@ -371,15 +410,17 @@ const response = await fetch("/api/pilo", {
       analysisFinished &&
       !errorMessage
     ) {
-      const redirectTimer = window.setTimeout(
-        () => {
-          router.replace("/analyse-result");
-        },
-        500
-      );
+      const redirectTimer =
+        window.setTimeout(() => {
+          router.replace(
+            "/analyse-result"
+          );
+        }, 500);
 
       return () =>
-        window.clearTimeout(redirectTimer);
+        window.clearTimeout(
+          redirectTimer
+        );
     }
   }, [
     progress,
@@ -405,45 +446,53 @@ const response = await fetch("/api/pilo", {
         </h1>
 
         <p className="mt-4 text-slate-400">
-          Je compare tes informations et je
-          recherche les économies possibles.
+          Je compare tes informations
+          et je recherche les économies
+          possibles.
         </p>
 
         <div className="mt-10 space-y-4 text-left">
-          {steps.map((stepLabel, index) => {
-            const stepThreshold =
-              ((index + 1) / steps.length) * 100;
+          {steps.map(
+            (stepLabel, index) => {
+              const stepThreshold =
+                ((index + 1) /
+                  steps.length) *
+                100;
 
-            const isDone =
-              progress >= stepThreshold;
+              const isDone =
+                progress >=
+                stepThreshold;
 
-            return (
-              <div
-                key={stepLabel}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-5 py-4"
-              >
-                <span
-                  className={
-                    isDone
-                      ? "text-white"
-                      : "text-slate-400"
-                  }
+              return (
+                <div
+                  key={stepLabel}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-5 py-4"
                 >
-                  {stepLabel}
-                </span>
+                  <span
+                    className={
+                      isDone
+                        ? "text-white"
+                        : "text-slate-400"
+                    }
+                  >
+                    {stepLabel}
+                  </span>
 
-                <span
-                  className={
-                    isDone
-                      ? "text-green-400"
-                      : "text-slate-500"
-                  }
-                >
-                  {isDone ? "✓" : "⏳"}
-                </span>
-              </div>
-            );
-          })}
+                  <span
+                    className={
+                      isDone
+                        ? "text-green-400"
+                        : "text-slate-500"
+                    }
+                  >
+                    {isDone
+                      ? "✓"
+                      : "⏳"}
+                  </span>
+                </div>
+              );
+            }
+          )}
         </div>
 
         <div className="mt-10 h-4 overflow-hidden rounded-full bg-slate-800">
@@ -468,7 +517,9 @@ const response = await fetch("/api/pilo", {
             <button
               type="button"
               onClick={() =>
-                router.replace("/analyse")
+                router.replace(
+                  "/analyse"
+                )
               }
               className="mt-4 rounded-xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-400"
             >

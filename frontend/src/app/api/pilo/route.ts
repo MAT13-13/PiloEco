@@ -3,8 +3,6 @@ import {
   NextResponse,
 } from "next/server";
 
-import { createClient } from "@supabase/supabase-js";
-
 import { generatePiloAdvice } from "../../services/openai/openai.service";
 
 export const runtime = "nodejs";
@@ -30,20 +28,6 @@ function jsonError(
   );
 }
 
-function getBearerToken(
-  request: NextRequest
-) {
-  const authorization =
-    request.headers.get("authorization");
-
-  if (
-    !authorization?.startsWith("Bearer ")
-  ) {
-    return null;
-  }
-
-  return authorization.slice(7).trim();
-}
 
 function isValidPayload(
   value: unknown
@@ -80,47 +64,6 @@ export async function POST(
       );
     }
 
-    const accessToken =
-      getBearerToken(request);
-
-    if (!accessToken) {
-      return jsonError(
-        "Utilisateur non connecté.",
-        401
-      );
-    }
-
-    const supabase = createClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        global: {
-          headers: {
-            Authorization:
-              `Bearer ${accessToken}`,
-          },
-        },
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(
-      accessToken
-    );
-
-    if (userError || !user) {
-      return jsonError(
-        "Session utilisateur invalide ou expirée.",
-        401
-      );
-    }
 
     const contentLength =
       Number(
