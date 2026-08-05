@@ -8,14 +8,25 @@ import PiloMascot from "../components/PiloMascot";
 import QuestionCard from "../components/QuestionCard";
 
 type AnalyseCategory =
+  | "famille"
   | "telephone"
   | "internet"
   | "electricite"
   | "habitation"
   | "auto"
+  | "moto"
+  | "mutuelle"
   | "animaux"
   | "banque"
-  | "streaming";
+  | "streaming"
+  | "fintech"
+  | "securite"
+  | "demenagement"
+  | "servicesAuto"
+  | "travaux"
+  | "logiciels"
+  | "formation"
+  | "voyage";
 
 type QuestionType =
   | "text"
@@ -44,6 +55,80 @@ const categories: Record<
   AnalyseCategory,
   CategoryConfig
 > = {
+  famille: {
+    label: "Famille & aides",
+    icon: "👨‍👩‍👧",
+    message:
+      "Je vais rechercher les aides de l’État et les dispositifs adaptés à ton foyer.",
+    questions: [
+      {
+        key: "householdStatus",
+        type: "select",
+        emoji: "👨‍👩‍👧",
+        title: "Quelle est la situation de ton foyer ?",
+        description:
+          "Choisis la situation qui correspond le mieux à ton foyer.",
+        options: [
+          "Personne seule",
+          "Couple sans enfant",
+          "Famille avec enfant(s)",
+          "Famille monoparentale",
+          "Autre situation",
+        ],
+      },
+      {
+        key: "childrenCount",
+        type: "number",
+        emoji: "👶",
+        title: "Combien d’enfants vivent dans ton foyer ?",
+        description:
+          "Indique 0 si aucun enfant ne vit dans ton foyer.",
+        placeholder: "Ex : 2",
+      },
+      {
+        key: "housingStatus",
+        type: "select",
+        emoji: "🏠",
+        title: "Quelle est ta situation de logement ?",
+        description:
+          "Cette information aide Pilo à repérer les aides au logement possibles.",
+        options: [
+          "Locataire",
+          "Propriétaire",
+          "Hébergé gratuitement",
+          "Logement social",
+          "Autre",
+        ],
+      },
+      {
+        key: "employmentStatus",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est ta situation professionnelle ?",
+        description:
+          "Choisis ta situation principale actuelle.",
+        options: [
+          "Salarié",
+          "Indépendant",
+          "Demandeur d’emploi",
+          "Étudiant",
+          "Retraité",
+          "Sans activité",
+          "Autre",
+        ],
+      },
+      {
+        key: "monthlyHouseholdIncome",
+        type: "number",
+        emoji: "💶",
+        title: "Quel est le revenu mensuel approximatif du foyer ?",
+        description:
+          "Indique une estimation du revenu net total du foyer.",
+        placeholder: "Ex : 2800",
+      },
+    ],
+  },
+
   telephone: {
     label: "Téléphone",
     icon: "📱",
@@ -298,6 +383,111 @@ const categories: Record<
     ],
   },
 
+
+  moto: {
+    label: "Assurance moto",
+    icon: "🏍️",
+    message:
+      "Je vais analyser ton assurance moto uniquement.",
+    questions: [
+      {
+        key: "provider",
+        type: "text",
+        emoji: "🏍️",
+        title: "Quel est ton assureur moto ?",
+        description:
+          "Indique le nom de ta compagnie actuelle.",
+        placeholder:
+          "Ex : AMV, April Moto, AXA, Allianz...",
+      },
+      {
+        key: "formula",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quelle est ta formule actuelle ?",
+        description:
+          "Choisis le niveau de couverture de ton contrat.",
+        options: [
+          "Au tiers",
+          "Tiers étendu",
+          "Tous risques",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Combien paies-tu ton assurance moto ?",
+        description:
+          "Indique le prix mensuel en euros.",
+        placeholder: "Ex : 42",
+      },
+      {
+        key: "endDate",
+        type: "date",
+        emoji: "📅",
+        title:
+          "Quelle est la prochaine échéance du contrat ?",
+        description:
+          "Cette information reste facultative.",
+      },
+    ],
+  },
+
+  mutuelle: {
+    label: "Mutuelle santé",
+    icon: "❤️",
+    message:
+      "Je vais analyser ta mutuelle santé et son coût.",
+    questions: [
+      {
+        key: "provider",
+        type: "text",
+        emoji: "❤️",
+        title: "Quelle est ta mutuelle actuelle ?",
+        description:
+          "Indique le nom de ton organisme de complémentaire santé.",
+        placeholder:
+          "Ex : Harmonie Mutuelle, Alan, Aésio...",
+      },
+      {
+        key: "coverageType",
+        type: "select",
+        emoji: "👥",
+        title: "Qui est couvert par ce contrat ?",
+        description:
+          "Choisis les personnes couvertes par la mutuelle.",
+        options: [
+          "Moi uniquement",
+          "Couple",
+          "Famille",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Combien paies-tu ta mutuelle chaque mois ?",
+        description:
+          "Indique le prix mensuel total en euros.",
+        placeholder: "Ex : 65",
+      },
+      {
+        key: "endDate",
+        type: "date",
+        emoji: "📅",
+        title:
+          "Quelle est la prochaine échéance du contrat ?",
+        description:
+          "Cette information reste facultative.",
+      },
+    ],
+  },
+
   animaux: {
     label: "Assurance animaux",
     icon: "🐶",
@@ -413,6 +603,408 @@ const categories: Record<
         description:
           "Indique le prix mensuel de l’abonnement.",
         placeholder: "Ex : 19.99",
+      },
+    ],
+  },
+
+
+  fintech: {
+    label: "Fintech & budget",
+    icon: "💳",
+    message:
+      "Je vais analyser les frais et les outils que tu utilises pour gérer ton argent.",
+    questions: [
+      {
+        key: "provider",
+        type: "text",
+        emoji: "💳",
+        title: "Quel service financier utilises-tu ?",
+        description:
+          "Indique l’application ou le service concerné.",
+        placeholder:
+          "Ex : Revolut, Lydia, N26, une application de budget...",
+      },
+      {
+        key: "serviceType",
+        type: "select",
+        emoji: "📊",
+        title: "Quel type de service veux-tu analyser ?",
+        description:
+          "Choisis l’usage principal de ce service.",
+        options: [
+          "Compte ou carte",
+          "Gestion de budget",
+          "Cashback",
+          "Épargne",
+          "Investissement",
+          "Autre",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien ce service te coûte-t-il chaque mois ?",
+        description:
+          "Indique 0 si le service est actuellement gratuit.",
+        placeholder: "Ex : 9.99",
+      },
+    ],
+  },
+
+  securite: {
+    label: "Alarme & sécurité",
+    icon: "🔐",
+    message:
+      "Je vais analyser ton abonnement de sécurité ou de télésurveillance.",
+    questions: [
+      {
+        key: "provider",
+        type: "text",
+        emoji: "🔐",
+        title: "Quel prestataire de sécurité utilises-tu ?",
+        description:
+          "Indique le nom de la société ou de la marque.",
+        placeholder:
+          "Ex : Verisure, Sector Alarm, Homiris...",
+      },
+      {
+        key: "serviceType",
+        type: "select",
+        emoji: "📹",
+        title: "Quel service utilises-tu ?",
+        description:
+          "Choisis le type de protection concerné.",
+        options: [
+          "Télésurveillance",
+          "Alarme connectée",
+          "Caméras",
+          "Détecteurs",
+          "Autre",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien paies-tu chaque mois ?",
+        description:
+          "Indique le prix mensuel de ton abonnement.",
+        placeholder: "Ex : 39.90",
+      },
+      {
+        key: "commitment",
+        type: "select",
+        emoji: "📅",
+        title: "Es-tu encore engagé ?",
+        description:
+          "Cette information aide Pilo à déterminer quand changer.",
+        options: [
+          "Sans engagement",
+          "Engagement en cours",
+          "Je ne sais pas",
+        ],
+      },
+    ],
+  },
+
+  demenagement: {
+    label: "Déménagement",
+    icon: "🚚",
+    message:
+      "Je vais t’aider à comparer les principaux coûts de ton déménagement.",
+    questions: [
+      {
+        key: "moveType",
+        type: "select",
+        emoji: "📦",
+        title: "Quel service recherches-tu ?",
+        description:
+          "Choisis le besoin principal lié à ton déménagement.",
+        options: [
+          "Déménageur professionnel",
+          "Location de camion",
+          "Garde-meubles",
+          "Cartons et matériel",
+          "Changement d’adresse",
+          "Autre",
+        ],
+      },
+      {
+        key: "distance",
+        type: "number",
+        emoji: "🛣️",
+        title: "Quelle distance environ vas-tu parcourir ?",
+        description:
+          "Indique la distance estimée en kilomètres.",
+        placeholder: "Ex : 120",
+      },
+      {
+        key: "estimatedBudget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget as-tu prévu ?",
+        description:
+          "Indique ton budget approximatif en euros.",
+        placeholder: "Ex : 900",
+      },
+      {
+        key: "moveDate",
+        type: "date",
+        emoji: "📅",
+        title: "Quelle est la date prévue du déménagement ?",
+        description:
+          "Cette information reste facultative.",
+      },
+    ],
+  },
+
+  servicesAuto: {
+    label: "Services auto",
+    icon: "🔧",
+    message:
+      "Je vais analyser tes dépenses d’entretien et de services automobiles.",
+    questions: [
+      {
+        key: "serviceType",
+        type: "select",
+        emoji: "🔧",
+        title: "Quel service automobile veux-tu analyser ?",
+        description:
+          "Choisis la dépense principale concernée.",
+        options: [
+          "Entretien ou réparation",
+          "Pneus",
+          "Contrôle technique",
+          "Lavage",
+          "Parking",
+          "Location de véhicule",
+          "Autre",
+        ],
+      },
+      {
+        key: "provider",
+        type: "text",
+        emoji: "🏪",
+        title: "Quel prestataire utilises-tu actuellement ?",
+        description:
+          "Indique le garage, l’enseigne ou le service concerné.",
+        placeholder:
+          "Ex : Norauto, Feu Vert, un garage indépendant...",
+      },
+      {
+        key: "yearlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien dépenses-tu environ par an ?",
+        description:
+          "Indique une estimation annuelle en euros.",
+        placeholder: "Ex : 650",
+      },
+    ],
+  },
+
+  travaux: {
+    label: "Travaux & rénovation",
+    icon: "🛠️",
+    message:
+      "Je vais analyser ton projet et rechercher des économies ou des aides possibles.",
+    questions: [
+      {
+        key: "projectType",
+        type: "select",
+        emoji: "🛠️",
+        title: "Quel type de travaux envisages-tu ?",
+        description:
+          "Choisis le projet principal.",
+        options: [
+          "Isolation",
+          "Chauffage ou pompe à chaleur",
+          "Panneaux solaires",
+          "Fenêtres",
+          "Rénovation intérieure",
+          "Toiture",
+          "Autre",
+        ],
+      },
+      {
+        key: "housingType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel logement est concerné ?",
+        description:
+          "Choisis le type de logement.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Local professionnel",
+          "Autre",
+        ],
+      },
+      {
+        key: "estimatedBudget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget prévois-tu ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 12000",
+      },
+      {
+        key: "projectDate",
+        type: "date",
+        emoji: "📅",
+        title: "Quand souhaites-tu commencer les travaux ?",
+        description:
+          "Cette information reste facultative.",
+      },
+    ],
+  },
+
+  logiciels: {
+    label: "Logiciels",
+    icon: "💻",
+    message:
+      "Je vais vérifier le coût de tes logiciels et abonnements numériques.",
+    questions: [
+      {
+        key: "provider",
+        type: "text",
+        emoji: "💻",
+        title: "Quel logiciel ou service veux-tu analyser ?",
+        description:
+          "Indique le nom du service concerné.",
+        placeholder:
+          "Ex : Microsoft 365, NordVPN, Dropbox, antivirus...",
+      },
+      {
+        key: "softwareType",
+        type: "select",
+        emoji: "🧩",
+        title: "Quel type de logiciel est-ce ?",
+        description:
+          "Choisis la catégorie principale.",
+        options: [
+          "VPN",
+          "Antivirus",
+          "Stockage cloud",
+          "Bureautique",
+          "Création ou design",
+          "Gestion professionnelle",
+          "Autre",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien paies-tu chaque mois ?",
+        description:
+          "Convertis le tarif annuel en moyenne mensuelle si nécessaire.",
+        placeholder: "Ex : 12.99",
+      },
+    ],
+  },
+
+  formation: {
+    label: "Formation",
+    icon: "🎓",
+    message:
+      "Je vais analyser ton projet de formation et les financements possibles.",
+    questions: [
+      {
+        key: "trainingType",
+        type: "select",
+        emoji: "🎓",
+        title: "Quelle formation recherches-tu ?",
+        description:
+          "Choisis le domaine principal.",
+        options: [
+          "Langues",
+          "Permis de conduire",
+          "Numérique",
+          "Reconversion professionnelle",
+          "Création d’entreprise",
+          "Sport",
+          "Autre",
+        ],
+      },
+      {
+        key: "employmentStatus",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est ta situation professionnelle ?",
+        description:
+          "Cette information permet d’identifier les financements possibles.",
+        options: [
+          "Salarié",
+          "Indépendant",
+          "Demandeur d’emploi",
+          "Étudiant",
+          "Sans activité",
+          "Autre",
+        ],
+      },
+      {
+        key: "estimatedBudget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel est le prix estimé de la formation ?",
+        description:
+          "Indique le montant total en euros.",
+        placeholder: "Ex : 2500",
+      },
+    ],
+  },
+
+  voyage: {
+    label: "Voyage",
+    icon: "✈️",
+    message:
+      "Je vais analyser les principaux frais liés à ton prochain voyage.",
+    questions: [
+      {
+        key: "serviceType",
+        type: "select",
+        emoji: "✈️",
+        title: "Quel service de voyage veux-tu analyser ?",
+        description:
+          "Choisis le besoin principal.",
+        options: [
+          "Hébergement",
+          "Location de voiture",
+          "Assurance voyage",
+          "Transport",
+          "Activités",
+          "Forfait mobile à l’étranger",
+          "Autre",
+        ],
+      },
+      {
+        key: "destination",
+        type: "text",
+        emoji: "🌍",
+        title: "Quelle est ta destination ?",
+        description:
+          "Indique la ville ou le pays principal.",
+        placeholder: "Ex : Espagne, Rome, New York...",
+      },
+      {
+        key: "estimatedBudget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget as-tu prévu ?",
+        description:
+          "Indique le budget approximatif en euros.",
+        placeholder: "Ex : 1800",
+      },
+      {
+        key: "departureDate",
+        type: "date",
+        emoji: "📅",
+        title: "Quelle est ta date de départ ?",
+        description:
+          "Cette information reste facultative.",
       },
     ],
   },
@@ -795,4 +1387,4 @@ export default function AnalysePage() {
       <PiloMascot />
     </main>
   );
-}
+  }

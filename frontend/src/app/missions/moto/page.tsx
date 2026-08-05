@@ -7,36 +7,60 @@ export default function MotoMissionPage() {
     <MissionLayout
       icon="🏍️"
       title="Comparer ton assurance moto"
-      subtitle="Pilo recherche une assurance moto moins chère avec des garanties équivalentes."
+      subtitle="Pilo analyse ton contrat moto pour vérifier si tu pourrais payer moins cher."
 
-      basePrice={42}
-      recommendedPrice={28}
+      basePrice={45}
+      recommendedPrice={30}
 
-      recommendedName="Assurance Moto Éco"
+      recommendedName="Devis personnalisé Leocare"
 
-      advice="Pilo pense qu'une autre assurance pourrait réduire ta cotisation tout en gardant une bonne protection."
+      advice="Pilo estime qu'une économie est possible sur ton assurance moto. Le tarif définitif dépendra de ton véhicule, de ton profil et des garanties choisies."
 
-      offerPath="/offres/moto"
+      dynamicOfferField="offer"
+
+      dynamicOffers={{
+        Leocare: {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300138",
+          buttonLabel: "Calculer mon tarif chez Leocare",
+          recommendedName: "Devis personnalisé Leocare",
+          advice:
+            "Tu vas être redirigé vers Leocare afin d'obtenir un devis personnalisé. Tu restes libre de poursuivre ou non ta demande.",
+          external: true,
+        },
+      }}
 
       fields={[
         {
           name: "monthlyPrice",
           label: "Cotisation mensuelle",
           type: "number",
-          defaultValue: 42,
+          defaultValue: 45,
         },
         {
-          name: "moto",
-          label: "Moto",
-          type: "text",
-          defaultValue: "",
-        },
-        {
-          name: "coverage",
-          label: "Formule actuelle",
+          name: "vehicleType",
+          label: "Type de deux-roues",
           type: "select",
-          defaultValue: "Tous risques",
-          options: ["Tiers", "Tiers +", "Tous risques"],
+          defaultValue: "Moto",
+          options: ["Moto", "Scooter"],
+        },
+        {
+          name: "engineSize",
+          label: "Cylindrée",
+          type: "select",
+          defaultValue: "125 cm³",
+          options: [
+            "50 cm³",
+            "125 cm³",
+            "Entre 126 et 500 cm³",
+            "Plus de 500 cm³",
+          ],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: ["Leocare"],
         },
       ]}
     />

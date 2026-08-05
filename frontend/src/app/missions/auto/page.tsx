@@ -7,12 +7,28 @@ export default function AutoMissionPage() {
     <MissionLayout
       icon="🚗"
       title="Comparer ton assurance auto"
-      subtitle="Pilo analyse ton contrat auto pour chercher une offre plus adaptée."
+      subtitle="Pilo analyse ton contrat auto pour vérifier si tu pourrais payer moins cher."
+
       basePrice={68}
       recommendedPrice={45}
-      recommendedName="Assurance Auto Éco"
-      advice="Pilo pense que tu peux réduire ta cotisation auto tout en gardant de bonnes garanties."
-      offerPath="/offres/auto"
+
+      recommendedName="Devis personnalisé Leocare"
+
+      advice="Pilo estime qu'une économie est possible sur ton assurance auto. Le tarif définitif dépendra de ton profil, de ton véhicule et des garanties choisies."
+
+      dynamicOfferField="offer"
+
+      dynamicOffers={{
+        Leocare: {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300139",
+          buttonLabel: "Calculer mon tarif chez Leocare",
+          recommendedName: "Devis personnalisé Leocare",
+          advice:
+            "Tu vas être redirigé vers Leocare afin d'obtenir un devis personnalisé. Tu restes libre de poursuivre ou non ta demande.",
+          external: true,
+        },
+      }}
+
       fields={[
         {
           name: "monthlyPrice",
@@ -27,11 +43,22 @@ export default function AutoMissionPage() {
           defaultValue: "",
         },
         {
-          name: "coverage",
-          label: "Formule actuelle",
+          name: "driverProfile",
+          label: "Profil du conducteur",
           type: "select",
-          defaultValue: "Tous risques",
-          options: ["Tiers", "Tiers +", "Tous risques"],
+          defaultValue: "Conducteur expérimenté",
+          options: [
+            "Jeune conducteur",
+            "Conducteur expérimenté",
+            "Conducteur avec malus",
+          ],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: ["Leocare"],
         },
       ]}
     />

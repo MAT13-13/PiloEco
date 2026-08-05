@@ -7,16 +7,27 @@ export default function HabitationMissionPage() {
     <MissionLayout
       icon="🏠"
       title="Comparer ton assurance habitation"
-      subtitle="Pilo compare ton contrat habitation avec les meilleures offres."
+      subtitle="Pilo analyse ton contrat habitation pour vérifier si tu pourrais payer moins cher."
 
       basePrice={32}
       recommendedPrice={18}
 
-      recommendedName="Habitation Éco"
+      recommendedName="Devis personnalisé Leocare"
 
-      advice="Pilo pense que ton contrat actuel peut être optimisé tout en conservant un excellent niveau de garanties."
+      advice="Pilo estime qu'une économie est possible sur ton assurance habitation. Le tarif définitif dépendra de ton logement, de ta situation et des garanties choisies."
 
-      offerPath="/offres/habitation"
+      dynamicOfferField="offer"
+
+      dynamicOffers={{
+        Leocare: {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300140",
+          buttonLabel: "Calculer mon tarif chez Leocare",
+          recommendedName: "Devis personnalisé Leocare",
+          advice:
+            "Tu vas être redirigé vers Leocare afin d'obtenir un devis personnalisé. Tu restes libre de poursuivre ou non ta demande.",
+          external: true,
+        },
+      }}
 
       fields={[
         {
@@ -37,6 +48,13 @@ export default function HabitationMissionPage() {
           type: "select",
           defaultValue: "Locataire",
           options: ["Locataire", "Propriétaire"],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: ["Leocare"],
         },
       ]}
     />

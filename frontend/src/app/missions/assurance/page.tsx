@@ -4,6 +4,20 @@ import Link from "next/link";
 
 const assurances = [
   {
+    icon: "🚗",
+    title: "Assurance auto",
+    description: "Compare ton assurance auto et découvre une offre partenaire.",
+    saving: "Jusqu'à 180 €/an",
+    href: "/missions/auto",
+  },
+  {
+    icon: "🏍️",
+    title: "Assurance moto",
+    description: "Compare ton assurance moto et cherche une meilleure offre.",
+    saving: "Jusqu'à 150 €/an",
+    href: "/missions/moto",
+  },
+  {
     icon: "🏠",
     title: "Assurance habitation",
     description: "Compare ton assurance logement et cherche une meilleure offre.",

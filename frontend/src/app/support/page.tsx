@@ -37,7 +37,7 @@ export default function SupportPage() {
                 href="tel:+33768540595"
                 className="font-semibold text-green-400 hover:text-green-300"
               >
-                07 68 54 05 95
+                en cours
               </a>
 
               <p className="text-slate-400">
