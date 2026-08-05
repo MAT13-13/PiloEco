@@ -10,6 +10,7 @@ import QuestionCard from "../components/QuestionCard";
 type AnalyseCategory =
   | "famille"
   | "telephone"
+  | "telephoneSenior"
   | "internet"
   | "electricite"
   | "habitation"
@@ -23,6 +24,7 @@ type AnalyseCategory =
   | "securite"
   | "demenagement"
   | "servicesAuto"
+  | "mobilitesDouces"
   | "travaux"
   | "logiciels"
   | "formation"
@@ -180,6 +182,38 @@ const categories: Record<
       },
     ],
   },
+
+  telephoneSenior: {
+  label: "Téléphone senior",
+  icon: "👴",
+  message:
+    "Je vais t'aider à trouver un téléphone simple et adapté aux seniors.",
+  questions: [
+    {
+      key: "deviceType",
+      type: "select",
+      emoji: "📱",
+      title: "Que recherches-tu ?",
+      description:
+        "Choisis le type d'appareil souhaité.",
+      options: [
+        "Smartphone simplifié",
+        "Téléphone mobile simple",
+        "Téléphone fixe",
+        "Forfait Doro Connect",
+      ],
+    },
+    {
+      key: "budget",
+      type: "number",
+      emoji: "💶",
+      title: "Quel est ton budget ?",
+      description:
+        "Indique le budget maximum souhaité.",
+      placeholder: "Ex : 150",
+    },
+  ],
+},
 
   internet: {
     label: "Internet",
@@ -383,6 +417,39 @@ const categories: Record<
     ],
   },
 
+  mobilitesDouces: {
+    label: "Mobilités douces",
+    icon: "🚲",
+    message:
+      "Je vais analyser l’assurance de ton vélo ou de ta trottinette électrique.",
+    questions: [
+      {
+        key: "vehicleType",
+        type: "select",
+        emoji: "🚲",
+        title: "Quel véhicule souhaites-tu assurer ?",
+        description:
+          "Choisis le type de mobilité concerné.",
+        options: [
+          "Vélo",
+          "Trottinette électrique et nouvelles mobilités",
+        ],
+      },
+      {
+        key: "budget",
+        type: "select",
+        emoji: "💶",
+        title: "Quel budget mensuel souhaites-tu consacrer à l’assurance ?",
+        description:
+          "Choisis la fourchette correspondant à ton budget.",
+        options: [
+          "Moins de 10 €",
+          "De 10 € à 20 €",
+          "Plus de 20 €",
+        ],
+      },
+    ],
+  },
 
   moto: {
     label: "Assurance moto",
@@ -1134,6 +1201,16 @@ export default function AnalysePage() {
         JSON.stringify(analysisPayload)
       );
 
+      if (selectedCategory === "telephoneSenior") {
+        router.push("/missions/telephone-senior");
+        return;
+      }
+
+      if (selectedCategory === "mobilitesDouces") {
+        router.push("/missions/mobilites-douces");
+        return;
+      }
+
       router.push("/analyse-loading");
     } catch (error) {
       console.error(
@@ -1387,4 +1464,4 @@ export default function AnalysePage() {
       <PiloMascot />
     </main>
   );
-  }
+}

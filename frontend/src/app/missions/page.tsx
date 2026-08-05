@@ -4,9 +4,19 @@ import PiloNavigation from "../components/PiloNavigation";
 
 const missions = [
   {
+    title: "Famille & aides",
+    icon: "👨‍👩‍👧",
+    href: "/missions/famille",
+  },
+  {
     title: "Téléphone",
     icon: "📱",
     href: "/missions/mobile",
+  },
+  {
+    title: "Téléphone senior",
+    icon: "👵",
+    href: "/missions/telephone-senior",
   },
   {
     title: "Internet",
@@ -19,39 +29,86 @@ const missions = [
     href: "/missions/electricite",
   },
   {
-    title: "Habitation",
+    title: "Mutuelle santé",
+    icon: "❤️",
+    href: "/missions/mutuelle",
+  },
+   {
+    title: "Assurance animaux",
+    icon: "🐶",
+    href: "/missions/animaux",
+  },
+  {
+    title: "Assurance habitation",
     icon: "🏠",
     href: "/missions/habitation",
   },
   {
-    title: "Famille",
-    icon: "👨‍👩‍👧",
-    href: "/missions/famille",
+    title: "Assurance auto",
+    icon: "🚗",
+    href: "/missions/auto",
   },
   {
-    title: "Animaux",
-    icon: "🐶",
-    href: "/missions/animaux",
+    title: "Assurance moto",
+    icon: "🏍️",
+    href: "/missions/moto",
   },
+  {
+  title: "Mobilités douces",
+  icon: "🚲",
+  href: "/missions/mobilites-douces",
+},
+ {
+    title: "Services auto",
+    icon: "🔧",
+    href: "/missions/services-auto",
+  },
+
   {
     title: "Banque",
     icon: "🏦",
     href: "/missions/banque",
   },
   {
-    title: "Assurances",
-    icon: "🛡️",
-    href: "/missions/assurance",
-  },
-  {
-    title: "Mobilité",
-    icon: "🚗",
-    href: "/missions/mobilite",
-  },
-  {
     title: "Streaming",
     icon: "📺",
     href: "/missions/streaming",
+  },
+  {
+    title: "Fintech & budget",
+    icon: "💳",
+    href: "/missions/fintech",
+  },
+  {
+    title: "Alarme & sécurité",
+    icon: "🔐",
+    href: "/missions/securite",
+  },
+  {
+    title: "Déménagement",
+    icon: "🚚",
+    href: "/missions/demenagement",
+  },
+ 
+  {
+    title: "Travaux & rénovation",
+    icon: "🛠️",
+    href: "/missions/travaux",
+  },
+  {
+    title: "Logiciels",
+    icon: "💻",
+    href: "/missions/logiciels",
+  },
+  {
+    title: "Formation",
+    icon: "🎓",
+    href: "/missions/formation",
+  },
+  {
+    title: "Voyage",
+    icon: "✈️",
+    href: "/missions/voyage",
   },
 ];
 
@@ -68,8 +125,7 @@ export default function MissionsPage() {
         </h1>
 
         <p className="mt-4 text-slate-300">
-          Choisis une mission pour trouver
-          une économie.
+          Choisis une mission pour trouver une économie.
         </p>
 
         <PiloNavigation />

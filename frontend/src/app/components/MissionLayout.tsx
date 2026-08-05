@@ -31,6 +31,9 @@ type MissionLayoutProps = {
   offerPath?: string;
   dynamicOfferField?: string;
   dynamicOffers?: Record<string, DynamicOffer>;
+  alternativeOfferField?: string;
+  alternativeOffers?: Record<string, DynamicOffer>;
+  alternativeTitle?: string;
 };
 
 export default function MissionLayout({
@@ -45,6 +48,9 @@ export default function MissionLayout({
   offerPath = "/offres/mobile",
   dynamicOfferField,
   dynamicOffers,
+  alternativeOfferField,
+  alternativeOffers,
+  alternativeTitle = "Autre offre partenaire",
 }: MissionLayoutProps) {
   const [values, setValues] = useState<Record<string, string | number>>(
     Object.fromEntries(
@@ -53,12 +59,7 @@ export default function MissionLayout({
   );
 
   const currentPrice = Number(values.monthlyPrice ?? basePrice);
-
-  const monthlySaving = Math.max(
-    currentPrice - recommendedPrice,
-    0
-  );
-
+  const monthlySaving = Math.max(currentPrice - recommendedPrice, 0);
   const yearlySaving = monthlySaving * 12;
 
   const selectedDynamicValue = dynamicOfferField
@@ -70,22 +71,28 @@ export default function MissionLayout({
       ? dynamicOffers[selectedDynamicValue]
       : undefined;
 
+  const selectedAlternativeValue = alternativeOfferField
+    ? String(values[alternativeOfferField] ?? "")
+    : "";
+
+  const selectedAlternativeOffer =
+    alternativeOffers && selectedAlternativeValue
+      ? alternativeOffers[selectedAlternativeValue]
+      : undefined;
+
   const finalHref = selectedOffer?.href ?? offerPath;
-
   const finalButtonLabel =
-    selectedOffer?.buttonLabel ?? "Voir une meilleure offre";
-
+    selectedOffer?.buttonLabel ?? "Voir une offre partenaire";
   const finalRecommendedName =
     selectedOffer?.recommendedName ?? recommendedName;
-
-  const finalAdvice =
-    selectedOffer?.advice ?? advice;
-
-  const opensExternalWebsite =
-    selectedOffer?.external === true;
+  const finalAdvice = selectedOffer?.advice ?? advice;
+  const opensExternalWebsite = selectedOffer?.external === true;
 
   const actionClassName =
     "mt-8 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-black transition hover:bg-green-400";
+
+  const alternativeActionClassName =
+    "mt-6 inline-block rounded-xl border border-green-400/40 bg-green-500/10 px-7 py-3 font-bold text-green-300 transition hover:bg-green-500/20";
 
   const updateValue = (
     fieldName: string,
@@ -112,40 +119,27 @@ export default function MissionLayout({
             {icon} Mission Pilo
           </p>
 
-          <h1 className="mt-4 text-4xl font-black">
-            {title}
-          </h1>
+          <h1 className="mt-4 text-4xl font-black">{title}</h1>
 
-          <p className="mt-4 text-slate-300">
-            {subtitle}
-          </p>
+          <p className="mt-4 text-slate-300">{subtitle}</p>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {fields.map((field) => (
               <label key={field.name}>
-                <p className="mb-2 font-semibold">
-                  {field.label}
-                </p>
+                <p className="mb-2 font-semibold">{field.label}</p>
 
                 {field.type === "select" ? (
                   <select
                     value={String(
-                      values[field.name] ??
-                        field.defaultValue
+                      values[field.name] ?? field.defaultValue
                     )}
                     onChange={(event) =>
-                      updateValue(
-                        field.name,
-                        event.target.value
-                      )
+                      updateValue(field.name, event.target.value)
                     }
                     className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
                   >
                     {field.options?.map((option) => (
-                      <option
-                        key={option}
-                        value={option}
-                      >
+                      <option key={option} value={option}>
                         {option}
                       </option>
                     ))}
@@ -153,14 +147,9 @@ export default function MissionLayout({
                 ) : (
                   <input
                     type={field.type}
-                    min={
-                      field.type === "number"
-                        ? 0
-                        : undefined
-                    }
+                    min={field.type === "number" ? 0 : undefined}
                     value={
-                      values[field.name] ??
-                      field.defaultValue
+                      values[field.name] ?? field.defaultValue
                     }
                     onChange={(event) => {
                       const newValue =
@@ -168,10 +157,7 @@ export default function MissionLayout({
                           ? Number(event.target.value)
                           : event.target.value;
 
-                      updateValue(
-                        field.name,
-                        newValue
-                      );
+                      updateValue(field.name, newValue);
                     }}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
                   />
@@ -189,17 +175,19 @@ export default function MissionLayout({
               {yearlySaving} €
             </h2>
 
-            <h3 className="mt-6 text-2xl font-black">
+            <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Première offre partenaire
+            </p>
+
+            <h3 className="mt-3 text-2xl font-black">
               {finalRecommendedName}
             </h3>
 
-            <p className="mt-3 text-slate-300">
-              {finalAdvice}
-            </p>
+            <p className="mt-3 text-slate-300">{finalAdvice}</p>
 
             {opensExternalWebsite && (
               <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                En cliquant sur ce bouton, tu seras redirigé vers le site de notre partenaire afin d’obtenir un devis personnalisé. Tu restes libre de poursuivre ou non ta demande.
+                En cliquant sur ce bouton, tu seras redirigé vers le site de notre partenaire. Tu restes libre de poursuivre ou non ta réservation.
               </div>
             )}
 
@@ -213,14 +201,48 @@ export default function MissionLayout({
                 {finalButtonLabel}
               </a>
             ) : (
-              <Link
-                href={finalHref}
-                className={actionClassName}
-              >
+              <Link href={finalHref} className={actionClassName}>
                 {finalButtonLabel}
               </Link>
             )}
           </div>
+
+          {selectedAlternativeOffer && (
+            <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+                {alternativeTitle}
+              </p>
+
+              <h3 className="mt-4 text-2xl font-black">
+                {selectedAlternativeOffer.recommendedName ??
+                  "Vacances Bleues"}
+              </h3>
+
+              {selectedAlternativeOffer.advice && (
+                <p className="mt-3 text-slate-300">
+                  {selectedAlternativeOffer.advice}
+                </p>
+              )}
+
+              {selectedAlternativeOffer.external ? (
+                <a
+                  href={selectedAlternativeOffer.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={alternativeActionClassName}
+                >
+                  {selectedAlternativeOffer.buttonLabel}
+                </a>
+              ) : (
+                <Link
+                  href={selectedAlternativeOffer.href}
+                  className={alternativeActionClassName}
+                >
+                  {selectedAlternativeOffer.buttonLabel}
+                </Link>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </main>
