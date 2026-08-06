@@ -1,15 +1,68 @@
-export default function SecuritePage() {
-  return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-4xl font-black">
-          Alarme & sécurité
-        </h1>
+"use client";
 
-        <p className="mt-4 text-slate-300">
-          Cette mission sera bientôt disponible.
-        </p>
-      </div>
-    </main>
+import MissionLayout from "../../components/MissionLayout";
+
+export default function SecuriteMissionPage() {
+  return (
+    <MissionLayout
+      icon="🔐"
+      title="Protéger ton logement"
+      subtitle="Analyse ta solution de sécurité actuelle ou trouve un équipement adapté à ton logement."
+      basePrice={40}
+      recommendedPrice={25}
+      recommendedName="Solution de sécurité adaptée"
+      advice="Compare le prix de l’abonnement, la durée d’engagement et les équipements inclus avant de choisir une nouvelle solution."
+      fields={[
+        {
+          name: "contractStatus",
+          label: "Quelle est ta situation ?",
+          type: "select",
+          defaultValue: "J’ai déjà une solution de sécurité",
+          options: [
+            "J’ai déjà une solution de sécurité",
+            "Je cherche une solution de sécurité",
+          ],
+        },
+        {
+          name: "provider",
+          label: "Quel prestataire ou quelle marque utilises-tu ?",
+          type: "text",
+          defaultValue: "",
+        },
+        {
+          name: "serviceType",
+          label: "Quel service est concerné ?",
+          type: "select",
+          defaultValue: "Télésurveillance",
+          options: [
+            "Télésurveillance",
+            "Alarme connectée",
+            "Caméras",
+            "Détecteurs",
+            "Sonnette connectée",
+            "Autre",
+          ],
+        },
+        {
+          name: "housingType",
+          label: "Quel logement est concerné ?",
+          type: "select",
+          defaultValue: "Maison",
+          options: [
+            "Appartement",
+            "Maison",
+            "Local professionnel",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget mensuel souhaites-tu prévoir ?",
+          type: "number",
+          defaultValue: 25,
+        },
+      ]}
+      offerPath="/cybersecurite"
+    />
   );
 }
