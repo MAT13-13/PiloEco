@@ -24,6 +24,11 @@ const missions = [
     href: "/missions/internet",
   },
   {
+    title: "Cybersécurité",
+    icon: "🛡️",
+    href: "/missions/cybersecurite",
+  },
+  {
     title: "Électricité",
     icon: "⚡",
     href: "/missions/electricite",
@@ -33,7 +38,7 @@ const missions = [
     icon: "❤️",
     href: "/missions/mutuelle",
   },
-   {
+  {
     title: "Assurance animaux",
     icon: "🐶",
     href: "/missions/animaux",
@@ -54,16 +59,16 @@ const missions = [
     href: "/missions/moto",
   },
   {
-  title: "Mobilités douces",
-  icon: "🚲",
-  href: "/missions/mobilites-douces",
-},
- {
+    title: "Mobilités douces",
+    icon: "🚲",
+    href: "/missions/mobilites-douces",
+  },
+  {
     title: "Services auto",
     icon: "🔧",
     href: "/missions/services-auto",
   },
-
+  
   {
     title: "Banque",
     icon: "🏦",
@@ -89,7 +94,7 @@ const missions = [
     icon: "🚚",
     href: "/missions/demenagement",
   },
- 
+
   {
     title: "Travaux & rénovation",
     icon: "🛠️",
@@ -120,9 +125,7 @@ export default function MissionsPage() {
           PiloEco
         </p>
 
-        <h1 className="text-4xl font-black">
-          Mes missions
-        </h1>
+        <h1 className="text-4xl font-black">Mes missions</h1>
 
         <p className="mt-4 text-slate-300">
           Choisis une mission pour trouver une économie.
@@ -137,13 +140,9 @@ export default function MissionsPage() {
               href={mission.href}
               className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800"
             >
-              <div className="text-4xl">
-                {mission.icon}
-              </div>
+              <div className="text-4xl">{mission.icon}</div>
 
-              <h2 className="mt-4 text-xl font-black">
-                {mission.title}
-              </h2>
+              <h2 className="mt-4 text-xl font-black">{mission.title}</h2>
 
               <p className="mt-2 text-sm text-slate-400">
                 Voir les recommandations →

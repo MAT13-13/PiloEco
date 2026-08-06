@@ -44,6 +44,10 @@ type AnalyseQuestion = {
   description: string;
   placeholder?: string;
   options?: string[];
+  showIf?: {
+    key: string;
+    equals: string;
+  };
 };
 
 type CategoryConfig = {
@@ -131,12 +135,25 @@ const categories: Record<
     ],
   },
 
-  telephone: {
+   telephone: {
     label: "Téléphone",
     icon: "📱",
     message:
-      "Je vais analyser ton forfait mobile et son prix.",
+      "Je vais analyser ton forfait actuel ou t’aider à trouver une nouvelle offre mobile.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "📱",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un forfait mobile ou si tu recherches une nouvelle offre.",
+        options: [
+          "J’ai déjà un forfait mobile",
+          "Je cherche un forfait mobile",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
@@ -146,17 +163,26 @@ const categories: Record<
           "Indique le nom de ton opérateur actuel.",
         placeholder:
           "Ex : Free, Orange, SFR, Bouygues...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un forfait mobile",
+        },
       },
+
       {
         key: "dataAmount",
         type: "number",
         emoji: "📶",
-        title:
-          "Combien de Go contient ton forfait ?",
+        title: "Combien de Go contient ton forfait ?",
         description:
           "Indique le volume de données mobiles inclus.",
         placeholder: "Ex : 150",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un forfait mobile",
+        },
       },
+
       {
         key: "monthlyPrice",
         type: "number",
@@ -166,7 +192,12 @@ const categories: Record<
         description:
           "Indique le prix mensuel en euros.",
         placeholder: "Ex : 24.99",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un forfait mobile",
+        },
       },
+
       {
         key: "commitment",
         type: "select",
@@ -179,6 +210,66 @@ const categories: Record<
           "Engagement en cours",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un forfait mobile",
+        },
+      },
+
+      {
+        key: "desiredData",
+        type: "select",
+        emoji: "📶",
+        title:
+          "De combien de données mobiles as-tu besoin ?",
+        description:
+          "Choisis la quantité qui correspond le mieux à ton utilisation.",
+        options: [
+          "Moins de 20 Go",
+          "De 20 à 100 Go",
+          "De 100 à 200 Go",
+          "Plus de 200 Go",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un forfait mobile",
+        },
+      },
+
+      {
+        key: "offerType",
+        type: "select",
+        emoji: "📲",
+        title: "Quel type de forfait recherches-tu ?",
+        description:
+          "Choisis le format de forfait qui correspond à ton besoin.",
+        options: [
+          "Forfait classique",
+          "Forfait prépayé",
+          "Forfait international",
+          "eSIM",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un forfait mobile",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer au forfait ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 15",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un forfait mobile",
+        },
       },
     ],
   },
@@ -215,46 +306,74 @@ const categories: Record<
   ],
 },
 
-  internet: {
+    internet: {
     label: "Internet",
     icon: "🌐",
     message:
-      "Je vais vérifier le prix et le type de ta box.",
+      "Je vais analyser ta box actuelle ou t’aider à trouver une nouvelle offre Internet.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🌐",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà une box Internet ou si tu recherches une nouvelle offre.",
+        options: [
+          "J’ai déjà une box Internet",
+          "Je cherche une box Internet",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "🌐",
         title: "Quel est ton fournisseur Internet ?",
         description:
-          "Indique le fournisseur de ta box.",
+          "Indique le fournisseur de ta box actuelle.",
         placeholder:
           "Ex : Free, Orange, SFR, Bouygues...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une box Internet",
+        },
       },
+
       {
         key: "connectionType",
         type: "select",
         emoji: "⚙️",
         title: "Quel type de connexion utilises-tu ?",
         description:
-          "Choisis la technologie de ta connexion.",
+          "Choisis la technologie de ta connexion actuelle.",
         options: [
           "Fibre",
           "ADSL",
           "Box 4G ou 5G",
+          "Satellite",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une box Internet",
+        },
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu Internet chaque mois ?",
+        title: "Combien paies-tu Internet chaque mois ?",
         description:
           "Indique le prix mensuel de ta box.",
         placeholder: "Ex : 39.99",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une box Internet",
+        },
       },
+
       {
         key: "commitment",
         type: "select",
@@ -267,27 +386,118 @@ const categories: Record<
           "Engagement en cours",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une box Internet",
+        },
+      },
+
+      {
+        key: "desiredConnection",
+        type: "select",
+        emoji: "⚡",
+        title: "Quel type de connexion recherches-tu ?",
+        description:
+          "Choisis la technologie souhaitée pour ton logement.",
+        options: [
+          "Fibre",
+          "ADSL",
+          "Box 4G ou 5G",
+          "Satellite",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une box Internet",
+        },
+      },
+
+      {
+        key: "householdSize",
+        type: "number",
+        emoji: "👥",
+        title: "Combien de personnes utiliseront la connexion ?",
+        description:
+          "Indique le nombre de personnes dans le foyer.",
+        placeholder: "Ex : 3",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une box Internet",
+        },
+      },
+
+      {
+        key: "usageType",
+        type: "select",
+        emoji: "💻",
+        title: "Quel sera ton usage principal d’Internet ?",
+        description:
+          "Choisis l’utilisation la plus importante pour ton foyer.",
+        options: [
+          "Navigation et réseaux sociaux",
+          "Télétravail",
+          "Streaming vidéo",
+          "Jeux en ligne",
+          "Plusieurs usages intensifs",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une box Internet",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer à Internet ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 30",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une box Internet",
+        },
       },
     ],
   },
 
-  electricite: {
+    electricite: {
     label: "Électricité",
     icon: "⚡",
     message:
-      "Je vais examiner ton fournisseur et ta mensualité.",
+      "Je vais analyser ton contrat actuel ou t’aider à trouver une offre adaptée à ton logement.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "⚡",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un contrat d’électricité ou si tu recherches une nouvelle offre.",
+        options: [
+          "J’ai déjà un contrat d’électricité",
+          "Je cherche un contrat d’électricité",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "⚡",
-        title:
-          "Quel est ton fournisseur d’électricité ?",
+        title: "Quel est ton fournisseur d’électricité ?",
         description:
           "Indique le nom de ton fournisseur actuel.",
         placeholder:
           "Ex : EDF, TotalEnergies, Octopus...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un contrat d’électricité",
+        },
       },
+
       {
         key: "tariff",
         type: "select",
@@ -300,49 +510,157 @@ const categories: Record<
           "Heures pleines / Heures creuses",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un contrat d’électricité",
+        },
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Quelle est ta mensualité d’électricité ?",
+        title: "Quelle est ta mensualité d’électricité ?",
         description:
           "Indique le montant mensuel en euros.",
         placeholder: "Ex : 120",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un contrat d’électricité",
+        },
+      },
+
+      {
+        key: "housingType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel logement est concerné ?",
+        description:
+          "Choisis le type de logement à alimenter.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Autre",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat d’électricité",
+        },
+      },
+
+      {
+        key: "surface",
+        type: "number",
+        emoji: "📐",
+        title: "Quelle est la surface approximative du logement ?",
+        description:
+          "Indique la surface en mètres carrés.",
+        placeholder: "Ex : 70",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat d’électricité",
+        },
+      },
+
+      {
+        key: "heatingType",
+        type: "select",
+        emoji: "🔥",
+        title: "Quel est le mode de chauffage principal ?",
+        description:
+          "Cette information aide Pilo à estimer la consommation.",
+        options: [
+          "Électricité",
+          "Gaz",
+          "Bois ou granulés",
+          "Pompe à chaleur",
+          "Autre",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat d’électricité",
+        },
+      },
+
+      {
+        key: "occupants",
+        type: "number",
+        emoji: "👥",
+        title: "Combien de personnes vivent dans le logement ?",
+        description:
+          "Indique le nombre d’occupants.",
+        placeholder: "Ex : 2",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat d’électricité",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget approximatif.",
+        placeholder: "Ex : 100",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat d’électricité",
+        },
       },
     ],
   },
 
-  habitation: {
+    habitation: {
     label: "Assurance habitation",
     icon: "🏠",
     message:
-      "Je vais analyser ton contrat habitation.",
+      "Je vais analyser ton contrat actuel ou t’aider à trouver une première assurance habitation.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🏠",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si ton logement est déjà assuré ou si tu recherches une assurance habitation.",
+        options: [
+          "J’ai déjà une assurance habitation",
+          "Je cherche une assurance habitation",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "🏠",
         title: "Quel est ton assureur habitation ?",
         description:
-          "Indique la compagnie qui assure ton logement.",
+          "Indique la compagnie qui assure actuellement ton logement.",
         placeholder:
           "Ex : MAIF, AXA, Acheel, Allianz...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance habitation",
+        },
       },
+
       {
         key: "housingType",
         type: "select",
         emoji: "🔑",
-        title: "Quel logement assures-tu ?",
+        title: "Quel logement est concerné ?",
         description:
-          "Choisis le type de logement concerné.",
+          "Choisis le type de logement à assurer.",
         options: [
           "Appartement",
           "Maison",
           "Autre",
         ],
       },
+
       {
         key: "monthlyPrice",
         type: "number",
@@ -352,25 +670,112 @@ const categories: Record<
         description:
           "Indique le prix mensuel en euros.",
         placeholder: "Ex : 28",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance habitation",
+        },
       },
+
       {
         key: "endDate",
         type: "date",
         emoji: "📅",
         title:
-          "Quelle est la prochaine échéance ?",
+          "Quelle est la prochaine échéance du contrat ?",
         description:
           "Cette information reste facultative.",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance habitation",
+        },
+      },
+
+      {
+        key: "occupancyStatus",
+        type: "select",
+        emoji: "🔑",
+        title: "Quelle est ta situation dans le logement ?",
+        description:
+          "Choisis ton statut d’occupation.",
+        options: [
+          "Locataire",
+          "Propriétaire occupant",
+          "Propriétaire non occupant",
+          "Hébergé",
+          "Autre",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance habitation",
+        },
+      },
+
+      {
+        key: "surface",
+        type: "number",
+        emoji: "📐",
+        title:
+          "Quelle est la surface approximative du logement ?",
+        description:
+          "Indique la surface en mètres carrés.",
+        placeholder: "Ex : 65",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance habitation",
+        },
+      },
+
+      {
+        key: "rooms",
+        type: "number",
+        emoji: "🚪",
+        title:
+          "Combien de pièces principales possède le logement ?",
+        description:
+          "Indique le nombre de pièces principales.",
+        placeholder: "Ex : 3",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance habitation",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer à l’assurance ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 25",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance habitation",
+        },
       },
     ],
   },
 
-  auto: {
+    auto: {
     label: "Assurance auto",
     icon: "🚗",
     message:
-      "Je vais analyser ton assurance auto uniquement.",
+      "Je vais analyser ton contrat actuel ou t’aider à trouver une première assurance auto.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🚗",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà une assurance auto ou si tu recherches un nouveau contrat.",
+        options: [
+          "J’ai déjà une assurance auto",
+          "Je cherche une assurance auto",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
@@ -380,7 +785,12 @@ const categories: Record<
           "Indique le nom de ta compagnie actuelle.",
         placeholder:
           "Ex : MAIF, AXA, Allianz, Direct Assurance...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance auto",
+        },
       },
+
       {
         key: "formula",
         type: "select",
@@ -394,17 +804,26 @@ const categories: Record<
           "Tous risques",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance auto",
+        },
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu ton assurance auto ?",
+        title: "Combien paies-tu ton assurance auto ?",
         description:
           "Indique le prix mensuel en euros.",
         placeholder: "Ex : 68",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance auto",
+        },
       },
+
       {
         key: "endDate",
         type: "date",
@@ -413,6 +832,100 @@ const categories: Record<
           "Quelle est la prochaine échéance du contrat ?",
         description:
           "Cette information reste facultative.",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance auto",
+        },
+      },
+
+      {
+        key: "vehicleType",
+        type: "select",
+        emoji: "🚘",
+        title: "Quel type de véhicule souhaites-tu assurer ?",
+        description:
+          "Choisis le type de véhicule concerné.",
+        options: [
+          "Citadine",
+          "Berline",
+          "SUV",
+          "Utilitaire",
+          "Voiture électrique ou hybride",
+          "Autre",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance auto",
+        },
+      },
+
+      {
+        key: "desiredFormula",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quelle couverture souhaites-tu ?",
+        description:
+          "Choisis le niveau de protection recherché.",
+        options: [
+          "Au tiers",
+          "Tiers étendu",
+          "Tous risques",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance auto",
+        },
+      },
+
+      {
+        key: "vehicleValue",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quelle est la valeur approximative du véhicule ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 12000",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance auto",
+        },
+      },
+
+      {
+        key: "driverProfile",
+        type: "select",
+        emoji: "👤",
+        title: "Quel est ton profil de conducteur ?",
+        description:
+          "Choisis la situation qui te correspond le mieux.",
+        options: [
+          "Conducteur expérimenté",
+          "Jeune conducteur",
+          "Conducteur secondaire",
+          "Plusieurs conducteurs",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance auto",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "🎯",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer à l’assurance ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 60",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une assurance auto",
+        },
       },
     ],
   },
@@ -455,8 +968,20 @@ const categories: Record<
     label: "Assurance moto",
     icon: "🏍️",
     message:
-      "Je vais analyser ton assurance moto uniquement.",
+      "Je vais t’aider à analyser ton contrat actuel ou à rechercher une première assurance moto.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🏍️",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà une assurance moto ou si tu recherches ton premier contrat.",
+        options: [
+          "J’ai déjà une assurance moto",
+          "Je cherche une première assurance moto",
+        ],
+      },
       {
         key: "provider",
         type: "text",
@@ -466,6 +991,10 @@ const categories: Record<
           "Indique le nom de ta compagnie actuelle.",
         placeholder:
           "Ex : AMV, April Moto, AXA, Allianz...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance moto",
+        },
       },
       {
         key: "formula",
@@ -480,6 +1009,10 @@ const categories: Record<
           "Tous risques",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance moto",
+        },
       },
       {
         key: "monthlyPrice",
@@ -490,6 +1023,10 @@ const categories: Record<
         description:
           "Indique le prix mensuel en euros.",
         placeholder: "Ex : 42",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance moto",
+        },
       },
       {
         key: "endDate",
@@ -499,16 +1036,96 @@ const categories: Record<
           "Quelle est la prochaine échéance du contrat ?",
         description:
           "Cette information reste facultative.",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une assurance moto",
+        },
+      },
+      {
+        key: "engineSize",
+        type: "select",
+        emoji: "🏍️",
+        title: "Quelle est la cylindrée de ta moto ?",
+        description:
+          "Choisis la tranche correspondant à ton véhicule.",
+        options: [
+          "Moins de 125 cm³",
+          "125 cm³",
+          "De 126 à 600 cm³",
+          "Plus de 600 cm³",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une première assurance moto",
+        },
+      },
+      {
+        key: "desiredFormula",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quelle couverture souhaites-tu ?",
+        description:
+          "Choisis le niveau de protection recherché.",
+        options: [
+          "Au tiers",
+          "Tiers étendu",
+          "Tous risques",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une première assurance moto",
+        },
+      },
+      {
+        key: "vehicleValue",
+        type: "number",
+        emoji: "💶",
+        title: "Quelle est la valeur approximative de la moto ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 6500",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une première assurance moto",
+        },
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "🎯",
+        title: "Quel budget mensuel souhaites-tu consacrer à l’assurance ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 50",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une première assurance moto",
+        },
       },
     ],
   },
 
-  mutuelle: {
+    mutuelle: {
     label: "Mutuelle santé",
     icon: "❤️",
     message:
-      "Je vais analyser ta mutuelle santé et son coût.",
+      "Je vais analyser ta mutuelle actuelle ou t’aider à trouver une première couverture santé.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "❤️",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà une mutuelle ou si tu recherches une nouvelle couverture.",
+        options: [
+          "J’ai déjà une mutuelle",
+          "Je cherche une mutuelle",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
@@ -518,14 +1135,19 @@ const categories: Record<
           "Indique le nom de ton organisme de complémentaire santé.",
         placeholder:
           "Ex : Harmonie Mutuelle, Alan, Aésio...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une mutuelle",
+        },
       },
+
       {
         key: "coverageType",
         type: "select",
         emoji: "👥",
-        title: "Qui est couvert par ce contrat ?",
+        title: "Qui est couvert par le contrat ?",
         description:
-          "Choisis les personnes couvertes par la mutuelle.",
+          "Choisis les personnes couvertes ou à couvrir.",
         options: [
           "Moi uniquement",
           "Couple",
@@ -533,16 +1155,21 @@ const categories: Record<
           "Je ne sais pas",
         ],
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu ta mutuelle chaque mois ?",
+        title: "Combien paies-tu ta mutuelle chaque mois ?",
         description:
           "Indique le prix mensuel total en euros.",
         placeholder: "Ex : 65",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une mutuelle",
+        },
       },
+
       {
         key: "endDate",
         type: "date",
@@ -551,136 +1178,484 @@ const categories: Record<
           "Quelle est la prochaine échéance du contrat ?",
         description:
           "Cette information reste facultative.",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une mutuelle",
+        },
+      },
+
+      {
+        key: "priorityNeed",
+        type: "select",
+        emoji: "🩺",
+        title: "Quel est ton besoin de santé prioritaire ?",
+        description:
+          "Choisis le poste de remboursement le plus important pour toi.",
+        options: [
+          "Soins courants",
+          "Dentaire",
+          "Optique",
+          "Hospitalisation",
+          "Médecines douces",
+          "Couverture équilibrée",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une mutuelle",
+        },
+      },
+
+      {
+        key: "coverageLevel",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quel niveau de couverture recherches-tu ?",
+        description:
+          "Choisis le niveau de protection souhaité.",
+        options: [
+          "Essentiel",
+          "Intermédiaire",
+          "Renforcé",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une mutuelle",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer à la mutuelle ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 60",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une mutuelle",
+        },
       },
     ],
   },
 
-  animaux: {
+    animaux: {
     label: "Assurance animaux",
     icon: "🐶",
     message:
-      "Je vais analyser la couverture de ton animal.",
+      "Je vais analyser la couverture actuelle de ton animal ou t’aider à trouver une première assurance.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🐾",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si ton animal est déjà assuré ou si tu recherches une assurance.",
+        options: [
+          "Mon animal est déjà assuré",
+          "Je cherche une assurance pour mon animal",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "🐶",
-        title:
-          "Quel est ton assureur pour animaux ?",
+        title: "Quel est ton assureur ?",
         description:
-          "Indique le nom de ton assureur actuel.",
+          "Indique le nom de ton assurance actuelle.",
         placeholder:
           "Ex : SantéVet, Kozoo, Bulle Bleue...",
+        showIf: {
+          key: "contractStatus",
+          equals: "Mon animal est déjà assuré",
+        },
       },
+
       {
         key: "animalType",
         type: "select",
         emoji: "🐾",
-        title: "Quel animal est assuré ?",
+        title: "Quel animal est concerné ?",
         description:
-          "Choisis le type d’animal concerné.",
-        options: ["Chien", "Chat", "Autre"],
+          "Choisis l'animal à assurer.",
+        options: [
+          "Chien",
+          "Chat",
+          "Autre",
+        ],
       },
+
+      {
+        key: "breed",
+        type: "text",
+        emoji: "🦴",
+        title: "Quelle est sa race ?",
+        description:
+          "Indique la race de ton animal.",
+        placeholder:
+          "Ex : Staffordshire Bull Terrier",
+      },
+
+      {
+        key: "age",
+        type: "number",
+        emoji: "🎂",
+        title: "Quel âge a ton animal ?",
+        description:
+          "Indique son âge en années.",
+        placeholder: "Ex : 3",
+      },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu chaque mois ?",
+        title: "Combien paies-tu chaque mois ?",
         description:
-          "Indique le prix mensuel de l’assurance.",
+          "Indique le prix mensuel de ton assurance.",
         placeholder: "Ex : 35",
+        showIf: {
+          key: "contractStatus",
+          equals: "Mon animal est déjà assuré",
+        },
+      },
+
+      {
+        key: "desiredCoverage",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quelle couverture recherches-tu ?",
+        description:
+          "Choisis le niveau de protection souhaité.",
+        options: [
+          "Accidents uniquement",
+          "Accidents + maladies",
+          "Protection maximale",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals:
+            "Je cherche une assurance pour mon animal",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer à l'assurance ?",
+        description:
+          "Indique ton budget maximum.",
+        placeholder: "Ex : 30",
+        showIf: {
+          key: "contractStatus",
+          equals:
+            "Je cherche une assurance pour mon animal",
+        },
       },
     ],
   },
 
-  banque: {
+    banque: {
     label: "Banque",
     icon: "🏦",
     message:
-      "Je vais examiner tes frais bancaires.",
+      "Je vais analyser tes frais bancaires actuels ou t’aider à choisir une nouvelle banque.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🏦",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un compte bancaire ou si tu recherches une nouvelle banque.",
+        options: [
+          "J’ai déjà un compte bancaire",
+          "Je cherche une banque",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "🏦",
-        title: "Dans quelle banque es-tu ?",
+        title: "Quelle est ta banque actuelle ?",
         description:
           "Indique le nom de ta banque principale.",
         placeholder:
-          "Ex : Crédit Agricole, BNP, BoursoBank...",
+          "Ex : Crédit Agricole, BNP Paribas, BoursoBank...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un compte bancaire",
+        },
       },
+
       {
-        key: "offer",
-        type: "text",
+        key: "accountType",
+        type: "select",
         emoji: "💳",
-        title:
-          "Quelle carte ou formule utilises-tu ?",
+        title: "Quel type de compte possèdes-tu ?",
         description:
-          "Indique le nom de ta carte ou de ton offre.",
-        placeholder:
-          "Ex : Visa Premier, Gold Mastercard...",
+          "Choisis le compte que tu souhaites analyser.",
+        options: [
+          "Compte courant",
+          "Compte joint",
+          "Compte professionnel",
+        ],
       },
+
+      {
+        key: "cardType",
+        type: "select",
+        emoji: "💳",
+        title: "Quel type de carte bancaire possèdes-tu ?",
+        description:
+          "Choisis ta carte actuelle.",
+        options: [
+          "Visa Classic",
+          "Visa Premier",
+          "Mastercard",
+          "Gold Mastercard",
+          "Autre",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un compte bancaire",
+        },
+      },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu de frais chaque mois ?",
+        title: "Combien te coûtent tes frais bancaires par mois ?",
         description:
-          "Additionne la carte et les principaux frais récurrents.",
+          "Additionne les principaux frais récurrents.",
         placeholder: "Ex : 12",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un compte bancaire",
+        },
+      },
+
+      {
+        key: "bankType",
+        type: "select",
+        emoji: "🏦",
+        title: "Quel type de banque recherches-tu ?",
+        description:
+          "Choisis le type d'établissement souhaité.",
+        options: [
+          "Banque en ligne",
+          "Banque traditionnelle",
+          "Les deux me conviennent",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une banque",
+        },
+      },
+
+      {
+        key: "mainNeed",
+        type: "select",
+        emoji: "⭐",
+        title: "Quel est ton besoin principal ?",
+        description:
+          "Choisis ce qui est le plus important pour toi.",
+        options: [
+          "Carte gratuite",
+          "Compte joint",
+          "Voyages à l'étranger",
+          "Épargne",
+          "Investissement",
+          "Compte professionnel",
+          "Cashback",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une banque",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget mensuel acceptes-tu pour les frais bancaires ?",
+        description:
+          "Indique 0 € si tu recherches une banque gratuite.",
+        placeholder: "Ex : 0",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une banque",
+        },
       },
     ],
   },
 
-  streaming: {
+    streaming: {
     label: "Streaming",
     icon: "📺",
     message:
-      "Je vais vérifier le coût de tes abonnements.",
+      "Je vais analyser tes abonnements actuels ou t’aider à choisir un nouveau service de streaming.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "📺",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un abonnement ou si tu recherches un nouveau service.",
+        options: [
+          "J’ai déjà un abonnement",
+          "Je cherche un abonnement",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "📺",
-        title:
-          "Quel abonnement veux-tu analyser ?",
+        title: "Quel abonnement veux-tu analyser ?",
         description:
           "Indique le service principal concerné.",
         placeholder:
           "Ex : Netflix, Disney+, Canal+, Spotify...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un abonnement",
+        },
       },
+
       {
         key: "offer",
         type: "text",
         emoji: "🎬",
         title: "Quelle formule utilises-tu ?",
         description:
-          "Indique le nom de ton abonnement.",
+          "Indique le nom de ton abonnement actuel.",
         placeholder:
           "Ex : Premium, Standard, Famille...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un abonnement",
+        },
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title:
-          "Combien paies-tu chaque mois ?",
+        title: "Combien paies-tu chaque mois ?",
         description:
           "Indique le prix mensuel de l’abonnement.",
         placeholder: "Ex : 19.99",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà un abonnement",
+        },
+      },
+
+      {
+        key: "contentType",
+        type: "select",
+        emoji: "🎬",
+        title: "Quel type de contenu recherches-tu ?",
+        description:
+          "Choisis le contenu principal qui t’intéresse.",
+        options: [
+          "Films et séries",
+          "Sport",
+          "Musique",
+          "Documentaires",
+          "Contenus pour enfants",
+          "Plusieurs types de contenus",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un abonnement",
+        },
+      },
+
+      {
+        key: "users",
+        type: "number",
+        emoji: "👥",
+        title:
+          "Combien de personnes utiliseront l’abonnement ?",
+        description:
+          "Indique le nombre d’utilisateurs prévus.",
+        placeholder: "Ex : 2",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un abonnement",
+        },
+      },
+
+      {
+        key: "advertisingPreference",
+        type: "select",
+        emoji: "📢",
+        title: "Acceptes-tu une formule avec publicité ?",
+        description:
+          "Les offres avec publicité sont souvent moins chères.",
+        options: [
+          "Oui",
+          "Non",
+          "Peu importe",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un abonnement",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer au streaming ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 15",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un abonnement",
+        },
       },
     ],
   },
 
 
-  fintech: {
+    fintech: {
     label: "Fintech & budget",
     icon: "💳",
     message:
-      "Je vais analyser les frais et les outils que tu utilises pour gérer ton argent.",
+      "Je vais analyser le service financier que tu utilises ou t’aider à choisir une nouvelle solution.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "💳",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu utilises déjà un service financier ou si tu recherches une nouvelle solution.",
+        options: [
+          "J’utilise déjà un service financier",
+          "Je cherche un service financier",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
@@ -690,14 +1665,19 @@ const categories: Record<
           "Indique l’application ou le service concerné.",
         placeholder:
           "Ex : Revolut, Lydia, N26, une application de budget...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’utilise déjà un service financier",
+        },
       },
+
       {
         key: "serviceType",
         type: "select",
         emoji: "📊",
-        title: "Quel type de service veux-tu analyser ?",
+        title: "Quel type de service est concerné ?",
         description:
-          "Choisis l’usage principal de ce service.",
+          "Choisis l’usage principal du service.",
         options: [
           "Compte ou carte",
           "Gestion de budget",
@@ -707,24 +1687,102 @@ const categories: Record<
           "Autre",
         ],
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
-        title: "Combien ce service te coûte-t-il chaque mois ?",
+        title:
+          "Combien ce service te coûte-t-il chaque mois ?",
         description:
           "Indique 0 si le service est actuellement gratuit.",
         placeholder: "Ex : 9.99",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’utilise déjà un service financier",
+        },
+      },
+
+      {
+        key: "mainGoal",
+        type: "select",
+        emoji: "🎯",
+        title: "Quel est ton objectif principal ?",
+        description:
+          "Choisis ce que tu souhaites améliorer avec ce service.",
+        options: [
+          "Réduire mes frais",
+          "Mieux gérer mon budget",
+          "Obtenir du cashback",
+          "Épargner automatiquement",
+          "Investir",
+          "Voyager avec moins de frais",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un service financier",
+        },
+      },
+
+      {
+        key: "priorityFeature",
+        type: "select",
+        emoji: "⭐",
+        title:
+          "Quelle fonctionnalité est la plus importante pour toi ?",
+        description:
+          "Choisis le critère prioritaire.",
+        options: [
+          "Simplicité",
+          "Frais réduits",
+          "Application complète",
+          "Cashback",
+          "Automatisation",
+          "Accompagnement",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un service financier",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel acceptes-tu pour ce service ?",
+        description:
+          "Indique 0 si tu recherches une solution gratuite.",
+        placeholder: "Ex : 0",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un service financier",
+        },
       },
     ],
   },
 
-  securite: {
+    securite: {
     label: "Alarme & sécurité",
     icon: "🔐",
     message:
-      "Je vais analyser ton abonnement de sécurité ou de télésurveillance.",
+      "Je vais analyser ta solution actuelle ou t’aider à choisir un premier équipement de sécurité.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🔐",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu utilises déjà une solution de sécurité ou si tu recherches un nouvel équipement.",
+        options: [
+          "J’ai déjà une solution de sécurité",
+          "Je cherche une solution de sécurité",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
@@ -734,22 +1792,29 @@ const categories: Record<
           "Indique le nom de la société ou de la marque.",
         placeholder:
           "Ex : Verisure, Sector Alarm, Homiris...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une solution de sécurité",
+        },
       },
+
       {
         key: "serviceType",
         type: "select",
         emoji: "📹",
-        title: "Quel service utilises-tu ?",
+        title: "Quel service est concerné ?",
         description:
-          "Choisis le type de protection concerné.",
+          "Choisis le type de protection.",
         options: [
           "Télésurveillance",
           "Alarme connectée",
           "Caméras",
           "Détecteurs",
+          "Sonnette connectée",
           "Autre",
         ],
       },
+
       {
         key: "monthlyPrice",
         type: "number",
@@ -758,7 +1823,12 @@ const categories: Record<
         description:
           "Indique le prix mensuel de ton abonnement.",
         placeholder: "Ex : 39.90",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une solution de sécurité",
+        },
       },
+
       {
         key: "commitment",
         type: "select",
@@ -771,6 +1841,82 @@ const categories: Record<
           "Engagement en cours",
           "Je ne sais pas",
         ],
+        showIf: {
+          key: "contractStatus",
+          equals: "J’ai déjà une solution de sécurité",
+        },
+      },
+
+      {
+        key: "housingType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel logement souhaites-tu protéger ?",
+        description:
+          "Choisis le type de logement concerné.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Local professionnel",
+          "Autre",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une solution de sécurité",
+        },
+      },
+
+      {
+        key: "subscriptionPreference",
+        type: "select",
+        emoji: "📦",
+        title: "Souhaites-tu une solution avec abonnement ?",
+        description:
+          "Choisis le modèle qui te convient le mieux.",
+        options: [
+          "Avec abonnement",
+          "Sans abonnement",
+          "Je ne sais pas",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une solution de sécurité",
+        },
+      },
+
+      {
+        key: "priorityNeed",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quel est ton besoin principal ?",
+        description:
+          "Choisis la protection la plus importante pour toi.",
+        options: [
+          "Protéger les accès",
+          "Surveiller à distance",
+          "Être alerté en cas d’intrusion",
+          "Protéger une personne âgée",
+          "Sécuriser un local professionnel",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une solution de sécurité",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget approximatif.",
+        placeholder: "Ex : 25",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche une solution de sécurité",
+        },
       },
     ],
   },
@@ -928,47 +2074,125 @@ const categories: Record<
     ],
   },
 
-  logiciels: {
+    logiciels: {
     label: "Logiciels",
     icon: "💻",
     message:
-      "Je vais vérifier le coût de tes logiciels et abonnements numériques.",
+      "Je vais analyser ton abonnement actuel ou t’aider à choisir un nouveau logiciel.",
     questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "💻",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu utilises déjà un logiciel ou si tu recherches une nouvelle solution.",
+        options: [
+          "J’utilise déjà un logiciel",
+          "Je cherche un logiciel",
+        ],
+      },
+
       {
         key: "provider",
         type: "text",
         emoji: "💻",
-        title: "Quel logiciel ou service veux-tu analyser ?",
+        title: "Quel logiciel souhaites-tu analyser ?",
         description:
-          "Indique le nom du service concerné.",
+          "Indique le nom du logiciel ou du service actuel.",
         placeholder:
-          "Ex : Microsoft 365, NordVPN, Dropbox, antivirus...",
+          "Ex : Microsoft 365, Dropbox, NordVPN...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’utilise déjà un logiciel",
+        },
       },
+
       {
         key: "softwareType",
         type: "select",
         emoji: "🧩",
-        title: "Quel type de logiciel est-ce ?",
+        title: "Quel type de logiciel est concerné ?",
         description:
-          "Choisis la catégorie principale.",
+          "Choisis la catégorie du logiciel.",
         options: [
           "VPN",
           "Antivirus",
-          "Stockage cloud",
-          "Bureautique",
-          "Création ou design",
-          "Gestion professionnelle",
+          "Stockage Cloud",
+          "Suite bureautique",
+          "Création graphique",
+          "Gestion d'entreprise",
           "Autre",
         ],
       },
+
       {
         key: "monthlyPrice",
         type: "number",
         emoji: "💶",
         title: "Combien paies-tu chaque mois ?",
         description:
-          "Convertis le tarif annuel en moyenne mensuelle si nécessaire.",
-        placeholder: "Ex : 12.99",
+          "Convertis le tarif annuel en mensualité si besoin.",
+        placeholder: "Ex : 9.99",
+        showIf: {
+          key: "contractStatus",
+          equals: "J’utilise déjà un logiciel",
+        },
+      },
+
+      {
+        key: "usageType",
+        type: "select",
+        emoji: "👤",
+        title: "Quel sera ton usage ?",
+        description:
+          "Choisis l'utilisation principale.",
+        options: [
+          "Personnel",
+          "Professionnel",
+          "Famille",
+          "Entreprise",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un logiciel",
+        },
+      },
+
+      {
+        key: "priority",
+        type: "select",
+        emoji: "⭐",
+        title: "Quel est ton critère principal ?",
+        description:
+          "Choisis ce qui est le plus important.",
+        options: [
+          "Le prix",
+          "La simplicité",
+          "Les fonctionnalités",
+          "La sécurité",
+          "Le support",
+          "Je souhaite être conseillé",
+        ],
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un logiciel",
+        },
+      },
+
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title:
+          "Quel budget mensuel souhaites-tu consacrer au logiciel ?",
+        description:
+          "Indique ton budget maximum.",
+        placeholder: "Ex : 10",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un logiciel",
+        },
       },
     ],
   },
@@ -1101,7 +2325,19 @@ export default function AnalysePage() {
     ? categories[selectedCategory]
     : null;
 
-  const question = category?.questions[step];
+  const visibleQuestions =
+    category?.questions.filter((item) => {
+      if (!item.showIf) {
+        return true;
+      }
+
+      return (
+        values[item.showIf.key] ===
+        item.showIf.equals
+      );
+    }) ?? [];
+
+  const question = visibleQuestions[step];
 
   const currentValue = question
     ? values[question.key] ?? ""
@@ -1180,7 +2416,7 @@ export default function AnalysePage() {
 
     setErrorMessage("");
 
-    if (step < category.questions.length - 1) {
+    if (step < visibleQuestions.length - 1) {
       setStep((currentStep) => currentStep + 1);
       return;
     }
@@ -1243,10 +2479,39 @@ export default function AnalysePage() {
                 key={option}
                 type="button"
                 onClick={() => {
-                  setValues((currentValues) => ({
-                    ...currentValues,
-                    [question.key]: option,
-                  }));
+                  setValues((currentValues) => {
+                    const nextValues = {
+                      ...currentValues,
+                      [question.key]: option,
+                    };
+
+                    if (
+                      question.key === "contractStatus"
+                    ) {
+                      const keysToReset = [
+                        "provider",
+                        "formula",
+                        "monthlyPrice",
+                        "endDate",
+                        "engineSize",
+                        "desiredFormula",
+                        "vehicleValue",
+                        "budget",
+                      ];
+
+                      keysToReset.forEach((key) => {
+                        delete nextValues[key];
+                      });
+                    }
+
+                    return nextValues;
+                  });
+
+                  if (
+                    question.key === "contractStatus"
+                  ) {
+                    setStep(0);
+                  }
 
                   setErrorMessage("");
                 }}
@@ -1380,7 +2645,7 @@ export default function AnalysePage() {
 
                   <p className="mt-2 text-sm font-bold text-slate-500">
                     Question {step + 1} /{" "}
-                    {category.questions.length}
+                    {visibleQuestions.length}
                   </p>
 
                   <div className="mt-6 text-6xl">
@@ -1434,7 +2699,7 @@ export default function AnalysePage() {
                     {loading
                       ? "Analyse en cours..."
                       : step <
-                          category.questions.length -
+                          visibleQuestions.length -
                             1
                         ? "Continuer →"
                         : "Voir mon analyse →"}
@@ -1442,7 +2707,7 @@ export default function AnalysePage() {
                 </div>
 
                 <div className="mt-8 flex gap-2">
-                  {category.questions.map(
+                  {visibleQuestions.map(
                     (item, index) => (
                       <div
                         key={item.key}
@@ -1463,5 +2728,5 @@ export default function AnalysePage() {
 
       <PiloMascot />
     </main>
-  );
+   );
 }
