@@ -1973,49 +1973,153 @@ const categories: Record<
   },
 
   servicesAuto: {
-    label: "Services auto",
-    icon: "🔧",
-    message:
-      "Je vais analyser tes dépenses d’entretien et de services automobiles.",
-    questions: [
-      {
+  label: "Services auto",
+  icon: "🔧",
+  message:
+    "Je vais analyser tes dépenses d’entretien et de services automobiles.",
+  questions: [
+    {
+      key: "serviceType",
+      type: "select",
+      emoji: "🔧",
+      title: "Quel service automobile veux-tu analyser ?",
+      description:
+        "Choisis la dépense principale concernée.",
+      options: [
+        "Entretien ou réparation",
+        "Pneus",
+        "Contrôle technique",
+        "Lavage",
+        "Parking",
+        "Location de véhicule",
+        "Autre",
+      ],
+    },
+
+    // ENTRETIEN / RÉPARATION
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🔧",
+      title: "Quel garage ou réparateur utilises-tu actuellement ?",
+      description:
+        "Indique le garage ou l’enseigne qui entretient ou répare ton véhicule.",
+      placeholder:
+        "Ex : AD, Norauto, Feu Vert, garage indépendant...",
+      showIf: {
         key: "serviceType",
-        type: "select",
-        emoji: "🔧",
-        title: "Quel service automobile veux-tu analyser ?",
-        description:
-          "Choisis la dépense principale concernée.",
-        options: [
-          "Entretien ou réparation",
-          "Pneus",
-          "Contrôle technique",
-          "Lavage",
-          "Parking",
-          "Location de véhicule",
-          "Autre",
-        ],
+        equals: "Entretien ou réparation",
       },
-      {
-        key: "provider",
-        type: "text",
-        emoji: "🏪",
-        title: "Quel prestataire utilises-tu actuellement ?",
-        description:
-          "Indique le garage, l’enseigne ou le service concerné.",
-        placeholder:
-          "Ex : Norauto, Feu Vert, un garage indépendant...",
+    },
+
+    // PNEUS
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🛞",
+      title: "Où achètes-tu ou fais-tu monter tes pneus ?",
+      description:
+        "Indique l’enseigne ou le professionnel que tu utilises actuellement.",
+      placeholder:
+        "Ex : Allopneus, Norauto, Feu Vert...",
+      showIf: {
+        key: "serviceType",
+        equals: "Pneus",
       },
-      {
-        key: "yearlyPrice",
-        type: "number",
-        emoji: "💶",
-        title: "Combien dépenses-tu environ par an ?",
-        description:
-          "Indique une estimation annuelle en euros.",
-        placeholder: "Ex : 650",
+    },
+
+    // CONTRÔLE TECHNIQUE
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🔍",
+      title: "Quel centre de contrôle technique utilises-tu ?",
+      description:
+        "Indique l’enseigne ou le centre où tu réalises ton contrôle technique.",
+      placeholder:
+        "Ex : Dekra, Sécuritest, Autosur...",
+      showIf: {
+        key: "serviceType",
+        equals: "Contrôle technique",
       },
-    ],
-  },
+    },
+
+    // LAVAGE
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🧽",
+      title: "Quel service de lavage utilises-tu ?",
+      description:
+        "Indique la station, l’enseigne ou le service de lavage concerné.",
+      placeholder:
+        "Ex : Éléphant Bleu, Total Wash, station locale...",
+      showIf: {
+        key: "serviceType",
+        equals: "Lavage",
+      },
+    },
+
+    // PARKING
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🅿️",
+      title: "Quel parking ou service de stationnement utilises-tu ?",
+      description:
+        "Indique le parking, l’application ou le service de stationnement concerné.",
+      placeholder:
+        "Ex : Indigo, Q-Park, Zenpark, Yespark...",
+      showIf: {
+        key: "serviceType",
+        equals: "Parking",
+      },
+    },
+
+    // LOCATION DE VÉHICULE
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🚙",
+      title: "Quelle agence ou plateforme de location utilises-tu ?",
+      description:
+        "Indique l’agence ou la plateforme utilisée pour louer un véhicule.",
+      placeholder:
+        "Ex : Europcar, Sixt, Hertz, Getaround...",
+      showIf: {
+        key: "serviceType",
+        equals: "Location de véhicule",
+      },
+    },
+
+    // AUTRE
+    {
+      key: "provider",
+      type: "text",
+      emoji: "🏪",
+      title: "Quel prestataire utilises-tu ?",
+      description:
+        "Indique l’enseigne ou le service automobile concerné.",
+      placeholder:
+        "Ex : nom de l’enseigne ou du prestataire...",
+      showIf: {
+        key: "serviceType",
+        equals: "Autre",
+      },
+    },
+
+    // PRIX ANNUEL
+    {
+      key: "yearlyPrice",
+      type: "number",
+      emoji: "💶",
+      title: "Combien dépenses-tu environ par an ?",
+      description:
+        "Indique une estimation annuelle en euros.",
+      placeholder: "Ex : 650",
+    },
+  ],
+},
 
   travaux: {
     label: "Travaux & rénovation",
