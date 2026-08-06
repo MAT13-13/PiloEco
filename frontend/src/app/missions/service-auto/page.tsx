@@ -6,19 +6,20 @@ export default function ServicesAutoMissionPage() {
   return (
     <MissionLayout
       icon="🔧"
-      title="Trouver la bonne pièce ou le bon équipement auto"
-      subtitle="Choisis la rubrique recherchée. Tu pourras ensuite renseigner ta plaque directement sur Oscaro pour afficher les pièces compatibles avec ton véhicule."
+      title="Entretenir, réparer ou équiper ton véhicule"
+      subtitle="Choisis ton besoin : trouve un garage avec AD.fr ou commande des pièces compatibles avec ton véhicule sur Oscaro."
       basePrice={180}
       recommendedPrice={140}
-      recommendedName="Offre partenaire Oscaro"
-      advice="Sélectionne la rubrique correspondant à ton besoin, puis vérifie la compatibilité avec ton véhicule directement chez notre partenaire."
+      recommendedName="Solution partenaire automobile"
+      advice="Sélectionne la rubrique correspondant à ton besoin pour accéder à l’offre partenaire adaptée."
       fields={[
         {
           name: "serviceType",
-          label: "Quelle rubrique recherches-tu ?",
+          label: "Que recherches-tu pour ton véhicule ?",
           type: "select",
-          defaultValue: "Démarrage électrique",
+          defaultValue: "Entretien ou réparation en garage",
           options: [
+            "Entretien ou réparation en garage",
             "Démarrage électrique",
             "Direction / Suspension / Train",
             "Embrayage et boîte de vitesse",
@@ -35,7 +36,7 @@ export default function ServicesAutoMissionPage() {
         },
         {
           name: "monthlyPrice",
-          label: "Quel budget souhaites-tu consacrer à cet achat ?",
+          label: "Quel budget souhaites-tu consacrer à ce besoin ?",
           type: "select",
           defaultValue: "De 50 € à 150 €",
           options: [
@@ -47,6 +48,15 @@ export default function ServicesAutoMissionPage() {
       ]}
       dynamicOfferField="serviceType"
       dynamicOffers={{
+        "Entretien ou réparation en garage": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23300914&url=https%3A%2F%2Fwww.ad.fr%2F",
+          buttonLabel: "Trouver un garage AD",
+          recommendedName: "AD – Entretien et réparation automobile",
+          advice:
+            "Trouve un garage AD pour entretenir ou réparer ton véhicule et consulte les services disponibles près de chez toi.",
+          external: true,
+        },
+
         "Démarrage électrique": {
           href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fdemarrage-electrique-702600-c",
           buttonLabel: "Voir le démarrage électrique",

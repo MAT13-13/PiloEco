@@ -9,16 +9,32 @@ const mainItems = [
 ];
 
 const universeItems = [
+  { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
   { label: "📱 Téléphone", href: "/missions/mobile" },
+  { label: "👴 Téléphone senior", href: "/missions/telephone-senior" },
   { label: "🌐 Internet", href: "/missions/internet" },
-  { label: "⚡ Énergie", href: "/missions/electricite" },
-  { label: "🏠 Habitation", href: "/missions/habitation" },
-  { label: "👨‍👩‍👧 Famille", href: "/missions/famille" },
-  { label: "🐶 Animaux", href: "/missions/animaux" },
+
+  { label: "⚡ Électricité", href: "/missions/electricite" },
+  { label: "🏠 Assurance habitation", href: "/missions/habitation" },
+  { label: "🚗 Assurance auto", href: "/missions/assurance-auto" },
+  { label: "🚲 Mobilités douces", href: "/missions/mobilites-douces" },
+
+  { label: "🏍️ Assurance moto", href: "/missions/assurance-moto" },
+  { label: "❤️ Mutuelle santé", href: "/missions/mutuelle-sante" },
+  { label: "🐶 Assurance animaux", href: "/missions/assurance-animaux" },
   { label: "🏦 Banque", href: "/missions/banque" },
-  { label: "🛡️ Assurances", href: "/missions/assurance" },
-  { label: "🚗 Mobilité", href: "/missions/mobilite" },
+
   { label: "📺 Streaming", href: "/missions/streaming" },
+  { label: "💳 Fintech & budget", href: "/missions/fintech-budget" },
+  { label: "🔐 Alarme & sécurité", href: "/missions/alarme-securite" },
+  { label: "🚚 Déménagement", href: "/missions/demenagement" },
+
+  { label: "🔧 Services auto", href: "/missions/services-auto" },
+  { label: "🛠️ Travaux & rénovation", href: "/missions/travaux-renovation" },
+  { label: "💻 Logiciels", href: "/missions/logiciels" },
+  { label: "🎓 Formation", href: "/missions/formation" },
+
+  { label: "✈️ Voyage", href: "/missions/voyage" },
 ];
 
 export default function Sidebar() {
