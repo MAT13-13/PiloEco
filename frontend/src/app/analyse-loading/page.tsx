@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { monitoringOffers } from "../monitoring/services/monitoring-offers.service";
 
 type AnalyseCategory =
+  | "famille"
   | "telephone"
   | "internet"
   | "electricite"
@@ -28,10 +29,24 @@ type AnalysisPayload = {
   createdAt: string;
 };
 
+type RecommendedOffer = {
+  provider: string;
+  offer: string;
+  price: number;
+};
+
 const loadingSteps: Record<
   AnalyseCategory,
   string[]
 > = {
+  famille: [
+    "Analyse de la composition de ton foyer",
+    "Étude de ta situation familiale",
+    "Recherche des aides disponibles",
+    "Vérification des dispositifs officiels",
+    "Préparation du conseil de Pilo",
+  ],
+
   telephone: [
     "Lecture de ton opérateur mobile",
     "Analyse du volume de données",
@@ -101,6 +116,7 @@ const categoryDescriptions: Record<
   AnalyseCategory,
   string
 > = {
+  famille: "Famille & aides",
   telephone: "Forfait mobile",
   internet: "Internet",
   electricite: "Électricité",
@@ -115,6 +131,7 @@ function isAnalyseCategory(
   value: unknown
 ): value is AnalyseCategory {
   return (
+    value === "famille" ||
     value === "telephone" ||
     value === "internet" ||
     value === "electricite" ||
@@ -123,6 +140,81 @@ function isAnalyseCategory(
     value === "animaux" ||
     value === "banque" ||
     value === "streaming"
+  );
+}
+
+function getRecommendedOffer(
+  category: AnalyseCategory
+): RecommendedOffer | undefined {
+  /*
+   * Famille ne correspond pas à un contrat classique.
+   * On utilise donc les dispositifs officiels comme
+   * recommandation de référence.
+   */
+  if (category === "famille") {
+    return {
+      provider: "Service-Public.fr",
+      offer: "Aides et dispositifs officiels",
+      price: 0,
+    };
+  }
+
+  return monitoringOffers[category];
+}
+
+function getCurrentPrice(
+  analysis: AnalysisPayload
+): number {
+  const rawPrice =
+    analysis.values.monthlyPrice ??
+    analysis.values.budget ??
+    "0";
+
+  const parsedPrice = Number(rawPrice);
+
+  return Number.isFinite(parsedPrice)
+    ? parsedPrice
+    : 0;
+}
+
+function getProvider(
+  analysis: AnalysisPayload
+): string {
+  if (analysis.category === "famille") {
+    return (
+      analysis.values.householdStatus ??
+      "Foyer non renseigné"
+    );
+  }
+
+  return (
+    analysis.values.provider ??
+    analysis.values.operator ??
+    ""
+  );
+}
+
+function getCurrentOffer(
+  analysis: AnalysisPayload
+): string {
+  if (analysis.category === "famille") {
+    const children =
+      analysis.values.childrenCount ?? "0";
+
+    const housing =
+      analysis.values.housingStatus ??
+      "Logement non renseigné";
+
+    return `${children} enfant(s) — ${housing}`;
+  }
+
+  return (
+    analysis.values.formula ??
+    analysis.values.offer ??
+    analysis.values.connectionType ??
+    analysis.values.tariff ??
+    analysis.values.commitment ??
+    ""
   );
 }
 
@@ -147,9 +239,9 @@ export default function AnalyseLoadingPage() {
     if (!analysis) {
       return [
         "Lecture de tes informations",
-        "Analyse de ton contrat",
-        "Comparaison des prix",
-        "Recherche des économies possibles",
+        "Analyse de ta situation",
+        "Recherche des solutions",
+        "Étude des économies possibles",
         "Préparation du conseil de Pilo",
       ];
     }
@@ -178,7 +270,9 @@ export default function AnalyseLoadingPage() {
           !isAnalyseCategory(
             parsedAnalysis.category
           ) ||
-          !parsedAnalysis.values
+          !parsedAnalysis.values ||
+          typeof parsedAnalysis.values !==
+            "object"
         ) {
           throw new Error(
             "Les données de l’analyse sont invalides."
@@ -209,15 +303,13 @@ export default function AnalyseLoadingPage() {
 
         setAnalysis(validAnalysis);
 
-        const currentPrice = Number(
-          validAnalysis.values
-            .monthlyPrice ?? 0
-        );
+        const currentPrice =
+          getCurrentPrice(validAnalysis);
 
         const recommendedOffer =
-          monitoringOffers[
+          getRecommendedOffer(
             validAnalysis.category
-          ];
+          );
 
         if (!recommendedOffer) {
           throw new Error(
@@ -225,31 +317,42 @@ export default function AnalyseLoadingPage() {
           );
         }
 
-        const savings = Math.max(
-          0,
-          Math.round(
-            (currentPrice -
-              recommendedOffer.price) *
-              12
-          )
-        );
-
-        const score =
-          currentPrice <= 0
-            ? 50
+        /*
+         * Pour Famille & aides, on ne présente pas
+         * une économie commerciale automatique.
+         * Le résultat dépendra des aides accessibles
+         * selon la situation du foyer.
+         */
+        const savings =
+          validAnalysis.category === "famille"
+            ? 0
             : Math.max(
                 0,
-                Math.min(
-                  100,
-                  Math.round(
-                    100 -
-                      (savings /
-                        (currentPrice *
-                          12)) *
-                        100
-                  )
+                Math.round(
+                  (currentPrice -
+                    recommendedOffer.price) *
+                    12
                 )
               );
+
+        const score =
+          validAnalysis.category === "famille"
+            ? 70
+            : currentPrice <= 0
+              ? 50
+              : Math.max(
+                  0,
+                  Math.min(
+                    100,
+                    Math.round(
+                      100 -
+                        (savings /
+                          (currentPrice *
+                            12)) *
+                          100
+                    )
+                  )
+                );
 
         const response = await fetch(
           "/api/pilo",
@@ -269,8 +372,7 @@ export default function AnalyseLoadingPage() {
                 {
                   description:
                     categoryDescriptions[
-                      validAnalysis
-                        .category
+                      validAnalysis.category
                     ],
 
                   category:
@@ -279,19 +381,14 @@ export default function AnalyseLoadingPage() {
                   amount: currentPrice,
 
                   provider:
-                    validAnalysis.values
-                      .provider ?? "",
+                    getProvider(
+                      validAnalysis
+                    ),
 
                   currentOffer:
-                    validAnalysis.values
-                      .formula ??
-                    validAnalysis.values
-                      .offer ??
-                    validAnalysis.values
-                      .connectionType ??
-                    validAnalysis.values
-                      .tariff ??
-                    "",
+                    getCurrentOffer(
+                      validAnalysis
+                    ),
 
                   recommendedProvider:
                     recommendedOffer.provider,
@@ -307,18 +404,40 @@ export default function AnalyseLoadingPage() {
           }
         );
 
-        const data =
-          await response.json();
+        let data: {
+          success?: boolean;
+          advice?: string;
+          error?: string;
+        } = {};
+
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
 
         if (!response.ok) {
           throw new Error(
-            data?.error ||
+            data.error ||
               "Le conseil de Pilo n’a pas pu être généré."
           );
         }
 
+        const fallbackAdvice =
+          validAnalysis.category === "famille"
+            ? "Selon la composition de ton foyer, tes revenus et ta situation de logement, plusieurs aides publiques peuvent être accessibles. Consulte les dispositifs officiels proposés dans les recommandations de Pilo."
+            : savings > 0
+              ? `Pilo estime que tu pourrais économiser jusqu’à ${savings} € par an en étudiant une offre mieux adaptée.`
+              : "Ta situation semble déjà correctement positionnée. Pilo te conseille néanmoins de vérifier régulièrement les nouvelles offres disponibles.";
+
         const result = {
           ...validAnalysis,
+
+          analysisId:
+            crypto.randomUUID(),
+
+          comparisonDate:
+            new Date().toISOString(),
 
           currentPrice,
 
@@ -338,7 +457,7 @@ export default function AnalyseLoadingPage() {
           advice:
             data.success && data.advice
               ? data.advice
-              : null,
+              : fallbackAdvice,
         };
 
         localStorage.setItem(
@@ -346,15 +465,10 @@ export default function AnalyseLoadingPage() {
           JSON.stringify(result)
         );
 
-        if (
-          data.success &&
-          data.advice
-        ) {
-          localStorage.setItem(
-            "pilo-ai-advice",
-            data.advice
-          );
-        }
+        localStorage.setItem(
+          "pilo-ai-advice",
+          result.advice
+        );
       } catch (error) {
         console.error(
           "Erreur pendant l’analyse Pilo :",
@@ -442,13 +556,13 @@ export default function AnalyseLoadingPage() {
         </p>
 
         <h1 className="mt-4 text-4xl font-black">
-          Pilo analyse ton contrat...
+          Pilo analyse ta situation...
         </h1>
 
         <p className="mt-4 text-slate-400">
-          Je compare tes informations
-          et je recherche les économies
-          possibles.
+          Je compare tes informations et
+          je recherche les solutions et les
+          économies possibles.
         </p>
 
         <div className="mt-10 space-y-4 text-left">

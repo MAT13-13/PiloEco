@@ -8,6 +8,7 @@ export default function MobileMissionPage() {
       icon="📱"
       title="Comparer ton forfait mobile"
       subtitle="Pilo analyse ton forfait actuel et t’oriente vers une offre mobile adaptée à ton usage."
+      analysisCategory="telephone"
       basePrice={45}
       recommendedPrice={15}
       recommendedName="Offre mobile adaptée"

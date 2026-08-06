@@ -22,7 +22,7 @@ import {
 
 import { createMonitoringContract } from "../monitoring/services/monitoring.service";
 
-type AnalyseCategory =
+type MonitoringCategory =
   | "telephone"
   | "internet"
   | "electricite"
@@ -32,8 +32,59 @@ type AnalyseCategory =
   | "banque"
   | "streaming";
 
-  const ANALYSIS_HISTORY_KEY =
+type AnalyseCategory =
+  | "famille"
+  | MonitoringCategory;
+
+type Result = {
+  analysisId: string;
+  category: AnalyseCategory;
+  categoryLabel: string;
+  icon: string;
+  values: Record<string, string>;
+  currentPrice: number;
+  recommendedProvider: string;
+  recommendedOffer: string;
+  recommendedPrice: number;
+  yearlySaving: number;
+  score?: number;
+  advice: string | null;
+  comparisonDate?: string;
+};
+
+const ANALYSIS_HISTORY_KEY =
   "pilo-analysis-history";
+
+function isMonitoringCategory(
+  value: AnalyseCategory
+): value is MonitoringCategory {
+  return (
+    value === "telephone" ||
+    value === "internet" ||
+    value === "electricite" ||
+    value === "habitation" ||
+    value === "auto" ||
+    value === "animaux" ||
+    value === "banque" ||
+    value === "streaming"
+  );
+}
+
+function isAnalyseCategory(
+  value: unknown
+): value is AnalyseCategory {
+  return (
+    value === "famille" ||
+    value === "telephone" ||
+    value === "internet" ||
+    value === "electricite" ||
+    value === "habitation" ||
+    value === "auto" ||
+    value === "animaux" ||
+    value === "banque" ||
+    value === "streaming"
+  );
+}
 
 function saveAnalysisToHistory(
   analysis: Result
@@ -53,11 +104,6 @@ function saveAnalysisToHistory(
         ? parsedHistory
         : [];
 
-    /*
-     * On remplace l’analyse si elle existe déjà.
-     * Cela évite les doublons lorsqu’on recharge
-     * ou qu’on modifie le contrat.
-     */
     const updatedHistory = [
       analysis,
       ...history.filter(
@@ -65,13 +111,13 @@ function saveAnalysisToHistory(
           item.analysisId !==
           analysis.analysisId
       ),
-    ].sort((a, b) => {
+    ].sort((first, second) => {
       const firstDate = new Date(
-        a.comparisonDate ?? 0
+        first.comparisonDate ?? 0
       ).getTime();
 
       const secondDate = new Date(
-        b.comparisonDate ?? 0
+        second.comparisonDate ?? 0
       ).getTime();
 
       return secondDate - firstDate;
@@ -89,23 +135,9 @@ function saveAnalysisToHistory(
   }
 }
 
-type Result = {
-  analysisId: string;
-  category: AnalyseCategory;
-  categoryLabel: string;
-  icon: string;
-  values: Record<string, string>;
-  currentPrice: number;
-  recommendedProvider: string;
-  recommendedOffer: string;
-  recommendedPrice: number;
-  yearlySaving: number;
-  score?: number;
-  advice: string | null;
-  comparisonDate?: string;
-};
-
-function getCurrentOffer(values: Record<string, string>) {
+function getCurrentOffer(
+  values: Record<string, string>
+) {
   return (
     values.formula ||
     values.offer ||
@@ -120,14 +152,19 @@ function updateCurrentOffer(
   values: Record<string, string>,
   offer: string
 ) {
-  const updatedValues = { ...values };
+  const updatedValues = {
+    ...values,
+  };
 
   if ("formula" in updatedValues) {
     updatedValues.formula = offer;
   } else if ("offer" in updatedValues) {
     updatedValues.offer = offer;
-  } else if ("connectionType" in updatedValues) {
-    updatedValues.connectionType = offer;
+  } else if (
+    "connectionType" in updatedValues
+  ) {
+    updatedValues.connectionType =
+      offer;
   } else if ("tariff" in updatedValues) {
     updatedValues.tariff = offer;
   } else {
@@ -137,19 +174,42 @@ function updateCurrentOffer(
   return updatedValues;
 }
 
-function isAnalyseCategory(
-  value: unknown
-): value is AnalyseCategory {
-  return [
-    "telephone",
-    "internet",
-    "electricite",
-    "habitation",
-    "auto",
-    "animaux",
-    "banque",
-    "streaming",
-  ].includes(String(value));
+function getFamilySituation(
+  values: Record<string, string>
+) {
+  return (
+    values.householdStatus ||
+    "Situation du foyer non renseignée"
+  );
+}
+
+function getFamilyDetails(
+  values: Record<string, string>
+) {
+  const children =
+    values.childrenCount || "0";
+
+  const housing =
+    values.housingStatus ||
+    "Logement non renseigné";
+
+  const employment =
+    values.employmentStatus ||
+    "Situation professionnelle non renseignée";
+
+  return `${children} enfant(s) — ${housing} — ${employment}`;
+}
+
+function getFamilyIncome(
+  values: Record<string, string>
+) {
+  const income = Number(
+    values.monthlyHouseholdIncome ?? 0
+  );
+
+  return Number.isFinite(income)
+    ? income
+    : 0;
 }
 
 export default function AnalyseResultPage() {
@@ -164,20 +224,30 @@ export default function AnalyseResultPage() {
   const [editOpen, setEditOpen] =
     useState(false);
 
-  const [explanationOpen, setExplanationOpen] =
-    useState(false);
+  const [
+    explanationOpen,
+    setExplanationOpen,
+  ] = useState(false);
 
-  const [recalculating, setRecalculating] =
-    useState(false);
+  const [
+    recalculating,
+    setRecalculating,
+  ] = useState(false);
 
-  const [addingToMonitoring, setAddingToMonitoring] =
-    useState(false);
+  const [
+    addingToMonitoring,
+    setAddingToMonitoring,
+  ] = useState(false);
 
-  const [monitoringAdded, setMonitoringAdded] =
-    useState(false);
+  const [
+    monitoringAdded,
+    setMonitoringAdded,
+  ] = useState(false);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
 
   useEffect(() => {
     const raw = localStorage.getItem(
@@ -195,29 +265,71 @@ export default function AnalyseResultPage() {
       ) as Partial<Result>;
 
       if (
-        !isAnalyseCategory(parsed.category) ||
+        !isAnalyseCategory(
+          parsed.category
+        ) ||
         !parsed.values ||
-        typeof parsed.currentPrice !== "number"
+        typeof parsed.values !==
+          "object" ||
+        typeof parsed.currentPrice !==
+          "number"
       ) {
         throw new Error(
           "Le résultat enregistré est invalide."
         );
       }
 
-    const normalizedResult: Result = {
-  ...(parsed as Result),
+      const normalizedResult: Result = {
+        ...(parsed as Result),
 
-  analysisId:
-    typeof parsed.analysisId === "string" &&
-    parsed.analysisId.trim()
-      ? parsed.analysisId
-      : crypto.randomUUID(),
+        analysisId:
+          typeof parsed.analysisId ===
+            "string" &&
+          parsed.analysisId.trim()
+            ? parsed.analysisId
+            : crypto.randomUUID(),
 
-  comparisonDate:
-    typeof parsed.comparisonDate === "string"
-      ? parsed.comparisonDate
-      : new Date().toISOString(),
-};
+        comparisonDate:
+          typeof parsed.comparisonDate ===
+          "string"
+            ? parsed.comparisonDate
+            : new Date().toISOString(),
+
+        recommendedProvider:
+          typeof parsed.recommendedProvider ===
+          "string"
+            ? parsed.recommendedProvider
+            : parsed.category === "famille"
+              ? "Service-Public.fr"
+              : "",
+
+        recommendedOffer:
+          typeof parsed.recommendedOffer ===
+          "string"
+            ? parsed.recommendedOffer
+            : parsed.category === "famille"
+              ? "Aides et dispositifs officiels"
+              : "",
+
+        recommendedPrice:
+          typeof parsed.recommendedPrice ===
+          "number"
+            ? parsed.recommendedPrice
+            : 0,
+
+        yearlySaving:
+          typeof parsed.yearlySaving ===
+          "number"
+            ? parsed.yearlySaving
+            : 0,
+
+        advice:
+          typeof parsed.advice ===
+            "string" ||
+          parsed.advice === null
+            ? parsed.advice
+            : null,
+      };
 
       setResult(normalizedResult);
 
@@ -225,9 +337,10 @@ export default function AnalyseResultPage() {
         "pilo-analysis-result",
         JSON.stringify(normalizedResult)
       );
+
       saveAnalysisToHistory(
-  normalizedResult
-);
+        normalizedResult
+      );
     } catch (error) {
       console.error(
         "Erreur lecture résultat :",
@@ -245,7 +358,12 @@ export default function AnalyseResultPage() {
   async function handleSaveContract(
     contract: EditableContract
   ) {
-    if (!result) {
+    if (
+      !result ||
+      !isMonitoringCategory(
+        result.category
+      )
+    ) {
       return;
     }
 
@@ -254,7 +372,15 @@ export default function AnalyseResultPage() {
       setErrorMessage("");
 
       const reference =
-        monitoringOffers[result.category];
+        monitoringOffers[
+          result.category
+        ];
+
+      if (!reference) {
+        throw new Error(
+          "Aucune offre de référence n’est disponible."
+        );
+      }
 
       const yearlySaving = Math.max(
         0,
@@ -295,10 +421,11 @@ export default function AnalyseResultPage() {
         ),
       };
 
-      updatedValues = updateCurrentOffer(
-        updatedValues,
-        contract.offer
-      );
+      updatedValues =
+        updateCurrentOffer(
+          updatedValues,
+          contract.offer
+        );
 
       if (contract.endDate) {
         updatedValues.endDate =
@@ -315,29 +442,39 @@ export default function AnalyseResultPage() {
           "/api/pilo",
           {
             method: "POST",
+
             headers: {
               "Content-Type":
                 "application/json",
             },
+
             body: JSON.stringify({
               score,
               savings: yearlySaving,
+
               depenses: [
                 {
                   description:
                     result.categoryLabel,
+
                   category:
                     result.category,
+
                   amount:
                     contract.monthlyPrice,
+
                   provider:
                     contract.provider,
+
                   currentOffer:
                     contract.offer,
+
                   recommendedProvider:
                     reference.provider,
+
                   recommendedOffer:
                     reference.offer,
+
                   recommendedPrice:
                     reference.price,
                 },
@@ -377,19 +514,28 @@ export default function AnalyseResultPage() {
 
       const updatedResult: Result = {
         ...result,
+
         comparisonDate:
           new Date().toISOString(),
+
         values: updatedValues,
+
         currentPrice:
           contract.monthlyPrice,
+
         recommendedProvider:
           reference.provider,
+
         recommendedOffer:
           reference.offer,
+
         recommendedPrice:
           reference.price,
+
         yearlySaving,
+
         score,
+
         advice,
       };
 
@@ -401,13 +547,15 @@ export default function AnalyseResultPage() {
       );
 
       saveAnalysisToHistory(
-  updatedResult
-);
-
-      localStorage.setItem(
-        "pilo-ai-advice",
-        advice
+        updatedResult
       );
+
+      if (advice) {
+        localStorage.setItem(
+          "pilo-ai-advice",
+          advice
+        );
+      }
 
       const rawAnalysis =
         localStorage.getItem(
@@ -441,8 +589,10 @@ export default function AnalyseResultPage() {
         error
       );
 
-      throw new Error(
-        "Impossible de recalculer le résultat."
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Impossible de recalculer le résultat."
       );
     } finally {
       setRecalculating(false);
@@ -450,80 +600,92 @@ export default function AnalyseResultPage() {
   }
 
   async function handleAddToMonitoring() {
-  if (
-    !result ||
-    addingToMonitoring
-  ) {
-    return;
-  }
-
-  try {
-    setAddingToMonitoring(true);
-    setErrorMessage("");
-
-    await createMonitoringContract({
-      category: result.category,
-
-      provider:
-        result.values.provider?.trim() ||
-        "Fournisseur non renseigné",
-
-      monthly_price:
-        result.currentPrice,
-
-      current_offer:
-        getCurrentOffer(
-          result.values
-        ) || null,
-
-      end_date:
-        result.values.endDate ||
-        null,
-
-      better_offer: bestOffer
-        ? `${bestOffer.provider} — ${bestOffer.offer} — ${bestOffer.price.toFixed(
-            2
-          )} €/mois`
-        : null,
-
-      yearly_saving:
-        bestOffer?.yearlySaving ?? 0,
-    });
-
-    setMonitoringAdded(true);
-
-    setTimeout(() => {
-      router.push("/monitoring");
-    }, 900);
-  } catch (error) {
-    console.error(
-      "Erreur ajout au Monitoring :",
-      error
-    );
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Impossible d’ajouter ce contrat au Monitoring.";
-
     if (
-      message ===
-      "Ce contrat est déjà surveillé."
+      !result ||
+      addingToMonitoring ||
+      !isMonitoringCategory(
+        result.category
+      )
     ) {
-      setMonitoringAdded(true);
-
-      setTimeout(() => {
-        router.push("/monitoring");
-      }, 800);
-
       return;
     }
 
-    setErrorMessage(message);
-  } finally {
-    setAddingToMonitoring(false);
+    try {
+      setAddingToMonitoring(true);
+      setErrorMessage("");
+
+      const rankedOffers =
+        getRankedMonitoringOffers(
+          result.category,
+          result.currentPrice
+        );
+
+      const bestOffer =
+        rankedOffers[0];
+
+      await createMonitoringContract({
+        category: result.category,
+
+        provider:
+          result.values.provider?.trim() ||
+          "Fournisseur non renseigné",
+
+        monthly_price:
+          result.currentPrice,
+
+        current_offer:
+          getCurrentOffer(
+            result.values
+          ) || null,
+
+        end_date:
+          result.values.endDate ||
+          null,
+
+        better_offer: bestOffer
+          ? `${bestOffer.provider} — ${bestOffer.offer} — ${bestOffer.price.toFixed(
+              2
+            )} €/mois`
+          : null,
+
+        yearly_saving:
+          bestOffer?.yearlySaving ?? 0,
+      });
+
+      setMonitoringAdded(true);
+
+      window.setTimeout(() => {
+        router.push("/monitoring");
+      }, 900);
+    } catch (error) {
+      console.error(
+        "Erreur ajout au Monitoring :",
+        error
+      );
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Impossible d’ajouter ce contrat au Monitoring.";
+
+      if (
+        message ===
+        "Ce contrat est déjà surveillé."
+      ) {
+        setMonitoringAdded(true);
+
+        window.setTimeout(() => {
+          router.push("/monitoring");
+        }, 800);
+
+        return;
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setAddingToMonitoring(false);
+    }
   }
-}
 
   if (loading) {
     return (
@@ -562,15 +724,163 @@ export default function AnalyseResultPage() {
     );
   }
 
+  /*
+   * Résultat spécifique à Famille & aides.
+   * Cette rubrique ne correspond pas à un
+   * contrat pouvant être ajouté au Monitoring.
+   */
+  if (result.category === "famille") {
+    const familySituation =
+      getFamilySituation(
+        result.values
+      );
+
+    const familyDetails =
+      getFamilyDetails(
+        result.values
+      );
+
+    const householdIncome =
+      getFamilyIncome(
+        result.values
+      );
+
+    return (
+      <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center">
+            <div className="text-7xl">
+              {result.icon}
+            </div>
+
+            <p className="mt-4 font-bold uppercase tracking-[0.3em] text-green-400">
+              Analyse terminée
+            </p>
+
+            <h1 className="mt-4 text-5xl font-black">
+              {result.categoryLabel}
+            </h1>
+
+            <p className="mt-4 text-slate-400">
+              Voici les premières pistes
+              détectées par Pilo pour ton foyer.
+            </p>
+          </div>
+
+          <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+              Situation analysée
+            </p>
+
+            <h2 className="mt-4 text-2xl font-black">
+              {familySituation}
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              {familyDetails}
+            </p>
+
+            {householdIncome > 0 && (
+              <p className="mt-3 text-slate-400">
+                Revenu mensuel déclaré du foyer :
+                {" "}
+                <strong className="text-white">
+                  {householdIncome.toLocaleString(
+                    "fr-FR"
+                  )} €
+                </strong>
+              </p>
+            )}
+          </section>
+
+          <section className="mt-6 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Recommandation Pilo
+            </p>
+
+            <h2 className="mt-4 text-2xl font-black">
+              Aides et dispositifs officiels
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              Selon la composition de ton foyer,
+              tes revenus, ton logement et ta
+              situation professionnelle, tu peux
+              être éligible à plusieurs aides.
+              Les montants exacts doivent être
+              confirmés auprès des organismes
+              officiels.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <a
+                href="https://www.caf.fr/allocataires/aides-et-demarches"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl bg-green-500 px-5 py-4 text-center font-black text-slate-950 transition hover:bg-green-400"
+              >
+                Consulter les aides CAF
+              </a>
+
+              <a
+                href="https://www.service-public.fr/particuliers/vosdroits/N19811"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-center font-black transition hover:bg-white/10"
+              >
+                Voir les aides aux familles
+              </a>
+            </div>
+          </section>
+
+          <AiAdviceCard
+            advice={result.advice}
+          />
+
+          {errorMessage && (
+            <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
+              {errorMessage}
+            </div>
+          )}
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            <Link
+              href="/offres/famille"
+              className="rounded-2xl bg-green-500 py-5 text-center font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Voir les solutions famille
+            </Link>
+
+            <Link
+              href="/dashboard"
+              className="rounded-2xl border border-white/10 bg-white/5 py-5 text-center font-black transition hover:bg-white/10"
+            >
+              Retour au Dashboard
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  /*
+   * À partir d’ici, TypeScript sait que la
+   * catégorie appartient au Monitoring.
+   */
+  const monitoringCategory =
+    result.category;
+
   const currentOffer =
-    getCurrentOffer(result.values);
+    getCurrentOffer(
+      result.values
+    );
 
   const endDate =
     result.values.endDate ?? "";
 
   const rankedOffers =
     getRankedMonitoringOffers(
-      result.category,
+      monitoringCategory,
       result.currentPrice
     );
 
@@ -579,12 +889,12 @@ export default function AnalyseResultPage() {
 
   const averageObserved =
     getMarketAverage(
-      result.category
+      monitoringCategory
     );
 
   const confidence =
     getRecommendationConfidence(
-      result.category,
+      monitoringCategory,
       result.currentPrice,
       result.values.provider,
       currentOffer
@@ -622,6 +932,7 @@ export default function AnalyseResultPage() {
         <CurrentContractCard
           provider={
             result.values.provider ||
+            result.values.operator ||
             "Non renseigné"
           }
           offer={currentOffer}
@@ -696,6 +1007,7 @@ export default function AnalyseResultPage() {
         initialContract={{
           provider:
             result.values.provider ??
+            result.values.operator ??
             "",
           offer: currentOffer,
           monthlyPrice:
@@ -720,6 +1032,7 @@ export default function AnalyseResultPage() {
         }
         currentProvider={
           result.values.provider ||
+          result.values.operator ||
           "Fournisseur non renseigné"
         }
         currentOffer={currentOffer}
