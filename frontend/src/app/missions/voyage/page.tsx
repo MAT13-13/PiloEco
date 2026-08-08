@@ -131,6 +131,7 @@ const vacancesBleuesOffers = {
       "Découvre les hôtels, clubs et résidences disponibles sur la côte Atlantique.",
     external: true,
   },
+
   Campagne: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fa-la-campagne",
     buttonLabel: "Découvrir les séjours à la campagne",
@@ -139,6 +140,7 @@ const vacancesBleuesOffers = {
       "Explore les hôtels, clubs et résidences disponibles à la campagne.",
     external: true,
   },
+
   "Circuit organisé": {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues-voyages.fr%2F",
     buttonLabel: "Découvrir les circuits organisés",
@@ -147,6 +149,7 @@ const vacancesBleuesOffers = {
       "Découvre les circuits et voyages organisés proposés par Vacances Bleues.",
     external: true,
   },
+
   "Club vacances": {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-clubs-vacances-bleues",
     buttonLabel: "Voir les clubs vacances",
@@ -155,6 +158,7 @@ const vacancesBleuesOffers = {
       "Découvre les clubs vacances en France et compare les formules proposées.",
     external: true,
   },
+
   "Croisière fluviale": {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fsur-un-fleuve",
     buttonLabel: "Découvrir les croisières fluviales",
@@ -163,6 +167,7 @@ const vacancesBleuesOffers = {
       "Découvre les croisières proposées sur les fleuves de France.",
     external: true,
   },
+
   "Hôtel haut de gamme": {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-hotels-vacances-bleues",
     buttonLabel: "Voir les hôtels Vacances Bleues",
@@ -171,6 +176,7 @@ const vacancesBleuesOffers = {
       "Découvre les hôtels Vacances Bleues et choisis l’établissement adapté à ton séjour.",
     external: true,
   },
+
   Méditerranée: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fen-mediterranee",
     buttonLabel: "Découvrir les séjours en Méditerranée",
@@ -179,6 +185,7 @@ const vacancesBleuesOffers = {
       "Découvre les hôtels, clubs et résidences Vacances Bleues en Méditerranée.",
     external: true,
   },
+
   Montagne: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fa-la-montagne",
     buttonLabel: "Découvrir les séjours à la montagne",
@@ -187,6 +194,7 @@ const vacancesBleuesOffers = {
       "Explore les hôtels, clubs et résidences Vacances Bleues à la montagne.",
     external: true,
   },
+
   Résidence: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-residences-vacances-bleues",
     buttonLabel: "Voir les résidences de vacances",
@@ -195,6 +203,7 @@ const vacancesBleuesOffers = {
       "Découvre les résidences disponibles pour un séjour plus autonome.",
     external: true,
   },
+
   Ville: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fen-ville",
     buttonLabel: "Découvrir les séjours en ville",
@@ -203,6 +212,17 @@ const vacancesBleuesOffers = {
       "Découvre les établissements Vacances Bleues situés au cœur des villes.",
     external: true,
   },
+
+  "Transfert aéroport / Disneyland Paris": {
+    href: "https://www.tkqlhce.com/click-101847438-11423882",
+    buttonLabel: "Réserver mon transfert",
+    recommendedName:
+      "Magical Shuttle – Transfert aéroport & Disneyland Paris",
+    advice:
+      "Réserve ton transfert en navette entre les aéroports parisiens et Disneyland Paris avec Magical Shuttle.",
+    external: true,
+  },
+
   Autre: {
     href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2F",
     buttonLabel: "Découvrir toutes les offres Vacances Bleues",
@@ -223,6 +243,7 @@ const stayStyleOptions = [
   "Méditerranée",
   "Montagne",
   "Résidence",
+  "Transfert aéroport / Disneyland Paris",
   "Ville",
   "Autre",
 ];
@@ -232,7 +253,7 @@ export default function VoyageMissionPage() {
     <MissionLayout
       icon="✈️"
       title="Trouver un séjour adapté"
-      subtitle="Choisis ta destination, ton budget et ton style de séjour pour découvrir deux offres partenaires."
+      subtitle="Choisis ta destination, ton budget et ton besoin pour découvrir les offres de nos partenaires voyage."
       fields={[
         {
           name: "destination",
@@ -243,7 +264,7 @@ export default function VoyageMissionPage() {
         },
         {
           name: "stayStyle",
-          label: "Quel type de séjour recherches-tu ?",
+          label: "Quel type de séjour ou service recherches-tu ?",
           type: "select",
           defaultValue: "Méditerranée",
           options: stayStyleOptions,
@@ -269,7 +290,7 @@ export default function VoyageMissionPage() {
       dynamicOffers={auchanDynamicOffers}
       alternativeOfferField="stayStyle"
       alternativeOffers={vacancesBleuesOffers}
-      alternativeTitle="Deuxième offre partenaire"
+      alternativeTitle="Autre offre ou service partenaire"
     />
   );
 }
