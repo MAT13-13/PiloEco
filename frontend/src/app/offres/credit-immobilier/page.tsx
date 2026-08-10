@@ -1,9 +1,28 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
 
 export default function CreditImmobilierOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-slate-300">
+              Chargement de ton projet...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <CreditImmobilierOffersContent />
+    </Suspense>
+  );
+}
+
+function CreditImmobilierOffersContent() {
   const searchParams = useSearchParams();
 
   const amount = searchParams.get("amount");
@@ -83,8 +102,9 @@ export default function CreditImmobilierOffersPage() {
             </div>
 
             <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-300">
-              L'obtention d'un crédit dépend de l'étude de ton dossier. Pilo ne
-              garantit ni l'acceptation du financement, ni un taux particulier.
+              L&apos;obtention d&apos;un crédit dépend de l&apos;étude de ton
+              dossier. Pilo ne garantit ni l&apos;acceptation du financement,
+              ni un taux particulier.
             </div>
 
             <a

@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   getRecommendedAffiliateCampaigns,
@@ -7,6 +8,24 @@ import {
 } from "../../lib/affiliate-campaigns";
 
 export default function TravauxOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-slate-300">
+              Chargement des solutions travaux...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <TravauxOffersContent />
+    </Suspense>
+  );
+}
+
+function TravauxOffersContent() {
   const searchParams = useSearchParams();
 
   const projectType =
@@ -18,14 +37,15 @@ export default function TravauxOffersPage() {
     getRecommendedAffiliateCampaigns(projectType);
 
   const excludedCampaignIds: Record<string, number[]> = {
-  "Monte-escalier": [13950],
-};
+    "Monte-escalier": [13950],
+  };
 
-const excludedIds = excludedCampaignIds[projectType] ?? [];
+  const excludedIds =
+    excludedCampaignIds[projectType] ?? [];
 
-const offers = allOffers.filter(
-  (offer) => !excludedIds.includes(offer.id)
-);
+  const offers = allOffers.filter(
+    (offer) => !excludedIds.includes(offer.id)
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">

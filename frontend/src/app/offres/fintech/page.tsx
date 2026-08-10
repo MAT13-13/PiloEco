@@ -1,20 +1,40 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignsForNeed } from "../../lib/affiliate-campaigns";
 
 export default function FintechOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-slate-300">
+              Chargement des solutions financières...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <FintechOffersContent />
+    </Suspense>
+  );
+}
+
+function FintechOffersContent() {
   const searchParams = useSearchParams();
 
   const serviceType =
     searchParams.get("serviceType") ?? "Gestion du budget";
 
-  const allOffers = getAffiliateCampaignsForNeed(serviceType);
+  const allOffers =
+    getAffiliateCampaignsForNeed(serviceType);
 
-const offers =
-  serviceType === "Regroupement de crédits"
-    ? allOffers.filter((offer) => offer.id === 13935)
-    : allOffers;
+  const offers =
+    serviceType === "Regroupement de crédits"
+      ? allOffers.filter((offer) => offer.id === 13935)
+      : allOffers;
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">

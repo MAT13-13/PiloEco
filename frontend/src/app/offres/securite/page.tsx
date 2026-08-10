@@ -1,9 +1,28 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
 
 export default function SecuriteOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-slate-300">
+              Chargement de ton offre sécurité...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <SecuriteOffersContent />
+    </Suspense>
+  );
+}
+
+function SecuriteOffersContent() {
   const searchParams = useSearchParams();
 
   const serviceType =
@@ -14,7 +33,8 @@ export default function SecuriteOffersPage() {
 
   const monthlyPrice = searchParams.get("monthlyPrice");
 
-  const securiteOffer = getAffiliateCampaignById(13942);
+  const securiteOffer =
+    getAffiliateCampaignById(13942);
 
   const offerDisponible =
     securiteOffer?.published === true &&

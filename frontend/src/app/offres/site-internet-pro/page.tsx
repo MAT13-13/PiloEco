@@ -1,9 +1,28 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
 
 export default function SiteInternetProOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-slate-300">
+              Chargement de ton projet...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <SiteInternetProOffersContent />
+    </Suspense>
+  );
+}
+
+function SiteInternetProOffersContent() {
   const searchParams = useSearchParams();
 
   const projectType =
