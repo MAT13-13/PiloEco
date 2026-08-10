@@ -172,16 +172,6 @@ export const offers: Offer[] = [
 
   // 🐶 Animaux
   {
-    id: "santevet",
-    provider: "SantéVet",
-    category: "animaux",
-    name: "Assurance animaux",
-    monthlyPrice: 25,
-    yearlyPrice: 300,
-    piloScore: 86,
-    highlight: "Référence animaux",
-  },
-  {
     id: "assur-o-poil",
     provider: "Assur O'Poil",
     category: "animaux",
