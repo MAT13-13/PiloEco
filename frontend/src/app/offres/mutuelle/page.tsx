@@ -1,17 +1,38 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function MutuelleOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-slate-300">
+              Chargement de ton analyse mutuelle...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <MutuelleOffersContent />
+    </Suspense>
+  );
+}
+
+function MutuelleOffersContent() {
   const searchParams = useSearchParams();
 
-  const situation = searchParams.get("situation") || "Non renseignée";
-  const monthlyPrice = Number(searchParams.get("monthlyPrice") || 70);
-  const priority = searchParams.get("priority") || "Non renseigné";
+  const situation =
+    searchParams.get("situation") || "Non renseignée";
 
-  const recommendedPrice = Math.max(monthlyPrice - 20, 20);
-  const estimatedSaving = Math.max(monthlyPrice - recommendedPrice, 0);
-  const annualSaving = estimatedSaving * 12;
+  const monthlyPrice = Number(
+    searchParams.get("monthlyPrice") || 70
+  );
+
+  const priority =
+    searchParams.get("priority") || "Non renseigné";
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
@@ -25,13 +46,16 @@ export default function MutuelleOffersPage() {
         </h1>
 
         <p className="mt-4 max-w-3xl text-slate-300">
-          Pilo analyse ton budget et tes priorités afin de t'aider à identifier
-          une couverture santé plus adaptée.
+          Pilo analyse ton budget et tes priorités afin de
+          t&apos;aider à identifier des solutions de couverture
+          santé pouvant correspondre à ton profil.
         </p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-            <p className="text-sm text-slate-400">Situation</p>
+            <p className="text-sm text-slate-400">
+              Situation
+            </p>
 
             <p className="mt-2 text-xl font-bold">
               {situation}
@@ -59,51 +83,51 @@ export default function MutuelleOffersPage() {
           </div>
         </div>
 
-        <section className="mt-10 rounded-3xl border border-green-500/30 bg-slate-900 p-6 md:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
-                🏆 Recommandation Pilo
-              </p>
+        <section className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6 md:p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+            💡 Opportunité d&apos;économie détectée
+          </p>
 
-              <h2 className="mt-3 text-2xl font-black">
-                Une mutuelle autour de {recommendedPrice} € / mois
-              </h2>
+          <h2 className="mt-3 text-3xl font-black">
+            Vérifie si une autre mutuelle peut être plus avantageuse
+          </h2>
 
-              <p className="mt-3 max-w-2xl text-slate-300">
-                Selon les informations renseignées, une offre autour de ce
-                budget pourrait être intéressante tout en conservant une
-                couverture adaptée à ta priorité :{" "}
-                <span className="font-semibold text-white">
-                  {priority}
-                </span>.
-              </p>
-            </div>
+          <p className="mt-4 max-w-3xl text-slate-300">
+            Tu indiques actuellement un budget de{" "}
+            <strong className="text-white">
+              {monthlyPrice} € / mois
+            </strong>
+            . Pilo peut te présenter plusieurs partenaires
+            correspondant à ton besoin et à ta priorité :{" "}
+            <strong className="text-white">
+              {priority}
+            </strong>
+            .
+          </p>
 
-            <div className="rounded-2xl bg-slate-950 px-6 py-5 text-center">
-              <p className="text-sm text-slate-400">
-                Économie potentielle
-              </p>
-
-              <p className="mt-1 text-3xl font-black text-green-400">
-                {estimatedSaving} €
-              </p>
-
-              <p className="text-sm text-slate-400">
-                par mois
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-            <p className="font-bold">
-              💰 Jusqu'à {annualSaving} € d'économie estimée par an
+          <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+            <p className="font-bold text-white">
+              Pourquoi Pilo n&apos;affiche pas encore une économie chiffrée ?
             </p>
 
-            <p className="mt-2 text-sm text-slate-400">
-              Cette estimation est indicative et dépend des garanties, de l'âge,
-              de la situation personnelle et des conditions proposées par les
-              assureurs.
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Le tarif d&apos;une mutuelle dépend de plusieurs
+              critères personnels et des garanties choisies.
+              Pilo ne peut donc pas connaître ton économie réelle
+              avant que le partenaire ait calculé ton tarif.
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/5 p-5">
+            <p className="font-bold text-green-300">
+              🎯 L&apos;objectif reste le même
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Consulte les solutions proposées, récupère ton
+              tarif personnalisé et compare-le à ce que tu paies
+              actuellement. Tu poursuis uniquement si la solution
+              est réellement plus intéressante pour toi.
             </p>
           </div>
         </section>
@@ -114,7 +138,8 @@ export default function MutuelleOffersPage() {
           </h2>
 
           <p className="mt-2 text-slate-400">
-            Les partenaires correspondant à ton profil apparaîtront ici.
+            Les partenaires correspondant à ton profil pourront
+            apparaître ici au fur et à mesure de leur intégration.
           </p>
 
           <div className="mt-6 rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center">
@@ -123,19 +148,35 @@ export default function MutuelleOffersPage() {
             </div>
 
             <h3 className="mt-4 text-xl font-bold">
-              Partenaires mutuelle en cours d'intégration
+              Partenaires mutuelle en cours d&apos;intégration
             </h3>
 
             <p className="mx-auto mt-3 max-w-xl text-slate-400">
-              PiloEco travaille actuellement à l'intégration de partenaires
-              spécialisés en mutuelle santé afin de pouvoir te proposer des
-              solutions adaptées à ton profil.
+              PiloEco travaille actuellement à l&apos;intégration
+              de partenaires spécialisés en mutuelle santé afin
+              de pouvoir te proposer plusieurs solutions adaptées
+              à ton profil.
             </p>
 
             <div className="mt-6 inline-flex rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-bold text-green-400">
               En cours de partenaire
             </div>
           </div>
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="font-bold text-white">
+            Une fois ton tarif obtenu
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            Reviens dans Pilo avec le montant proposé.
+            Pilo pourra alors comparer ce tarif à tes{" "}
+            <strong className="text-white">
+              {monthlyPrice} € / mois
+            </strong>{" "}
+            actuels et calculer ton économie réelle.
+          </p>
         </section>
       </div>
     </main>
