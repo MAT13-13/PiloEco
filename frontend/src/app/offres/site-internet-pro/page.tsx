@@ -51,8 +51,8 @@ function SiteInternetProOffersContent() {
         </h1>
 
         <p className="mt-4 text-slate-300">
-          Pilo a identifié une solution partenaire pour ton projet
-          de site internet professionnel.
+          Pilo a identifié un partenaire adapté à ton projet
+          de création ou de refonte de site internet professionnel.
         </p>
 
         <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
@@ -109,9 +109,15 @@ function SiteInternetProOffersContent() {
         ) : (
           <article className="mt-8 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">
-                Partenaire Pilo
-              </p>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">
+                  Partenaire Pilo
+                </p>
+
+                <p className="mt-2 text-sm font-bold text-slate-400">
+                  91m²
+                </p>
+              </div>
 
               <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-400">
                 Disponible
@@ -128,8 +134,9 @@ function SiteInternetProOffersContent() {
 
             <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
               Cette solution est destinée aux professionnels.
-              Tu seras redirigé vers le site du partenaire pour
-              poursuivre ta demande de devis.
+              Tu seras redirigé vers le site du partenaire afin de
+              poursuivre ta demande de devis. Tu restes libre de
+              poursuivre ou non.
             </div>
 
             <a
@@ -138,7 +145,7 @@ function SiteInternetProOffersContent() {
               rel="noopener noreferrer sponsored"
               className="mt-8 inline-flex rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-950 transition hover:bg-green-400"
             >
-              {offer.buttonLabel || "Demander un devis"}
+              Demander mon devis chez 91m²
             </a>
           </article>
         )}
