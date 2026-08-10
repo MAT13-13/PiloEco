@@ -13,13 +13,25 @@ import { monitoringOffers } from "../monitoring/services/monitoring-offers.servi
 type AnalyseCategory =
   | "famille"
   | "telephone"
+  | "telephoneSenior"
   | "internet"
   | "electricite"
   | "habitation"
   | "auto"
+  | "moto"
+  | "mutuelle"
   | "animaux"
   | "banque"
-  | "streaming";
+  | "streaming"
+  | "fintech"
+  | "securite"
+  | "demenagement"
+  | "servicesAuto"
+  | "mobilitesDouces"
+  | "travaux"
+  | "logiciels"
+  | "formation"
+  | "voyage";
 
 type AnalysisPayload = {
   category: AnalyseCategory;
@@ -110,6 +122,19 @@ const loadingSteps: Record<
     "Recherche d’une formule optimisée",
     "Préparation du conseil de Pilo",
   ],
+
+  telephoneSenior: ["Lecture de ton besoin", "Analyse de ton budget", "Recherche des solutions", "Comparaison des options", "Préparation du conseil de Pilo"],
+  moto: ["Lecture de ton assurance moto", "Analyse de ta couverture", "Étude de ta cotisation", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  mutuelle: ["Lecture de ta mutuelle", "Analyse de ta couverture", "Étude de ta cotisation", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  fintech: ["Lecture de ta situation", "Analyse de ton besoin", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  securite: ["Lecture de ton besoin", "Analyse de ton logement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  demenagement: ["Lecture de ton projet", "Analyse de ton déménagement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  servicesAuto: ["Lecture de ton besoin automobile", "Analyse de ton véhicule", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  mobilitesDouces: ["Lecture de ton besoin", "Analyse de ta mobilité", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  travaux: ["Lecture de ton projet", "Analyse de tes travaux", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  logiciels: ["Lecture de ton besoin", "Analyse de ton équipement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  formation: ["Lecture de ton projet", "Analyse de tes besoins", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
+  voyage: ["Lecture de ton projet", "Analyse de ta destination", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
 };
 
 const categoryDescriptions: Record<
@@ -125,21 +150,26 @@ const categoryDescriptions: Record<
   animaux: "Assurance animaux",
   banque: "Banque",
   streaming: "Streaming",
+  telephoneSenior: "Téléphone senior",
+  moto: "Assurance moto",
+  mutuelle: "Mutuelle santé",
+  fintech: "Fintech & budget",
+  securite: "Alarme & sécurité",
+  demenagement: "Déménagement",
+  servicesAuto: "Services auto",
+  mobilitesDouces: "Mobilités douces",
+  travaux: "Travaux & rénovation",
+  logiciels: "Logiciels",
+  formation: "Formation",
+  voyage: "Voyage",
 };
 
 function isAnalyseCategory(
   value: unknown
 ): value is AnalyseCategory {
   return (
-    value === "famille" ||
-    value === "telephone" ||
-    value === "internet" ||
-    value === "electricite" ||
-    value === "habitation" ||
-    value === "auto" ||
-    value === "animaux" ||
-    value === "banque" ||
-    value === "streaming"
+    typeof value === "string" &&
+    value in categoryDescriptions
   );
 }
 
@@ -159,7 +189,20 @@ function getRecommendedOffer(
     };
   }
 
-  return monitoringOffers[category];
+  const monitoringOffer =
+    monitoringOffers[
+      category as keyof typeof monitoringOffers
+    ];
+
+  if (monitoringOffer) {
+    return monitoringOffer;
+  }
+
+  return {
+    provider: "Partenaires Pilo",
+    offer: "Solutions adaptées à ton besoin",
+    price: 0,
+  };
 }
 
 function getCurrentPrice(

@@ -34,6 +34,18 @@ type MonitoringCategory =
 
 type AnalyseCategory =
   | "famille"
+  | "telephoneSenior"
+  | "moto"
+  | "mutuelle"
+  | "fintech"
+  | "securite"
+  | "demenagement"
+  | "servicesAuto"
+  | "mobilitesDouces"
+  | "travaux"
+  | "logiciels"
+  | "formation"
+  | "voyage"
   | MonitoringCategory;
 
 type Result = {
@@ -76,13 +88,25 @@ function isAnalyseCategory(
   return (
     value === "famille" ||
     value === "telephone" ||
+    value === "telephoneSenior" ||
     value === "internet" ||
     value === "electricite" ||
     value === "habitation" ||
     value === "auto" ||
+    value === "moto" ||
+    value === "mutuelle" ||
     value === "animaux" ||
     value === "banque" ||
-    value === "streaming"
+    value === "streaming" ||
+    value === "fintech" ||
+    value === "securite" ||
+    value === "demenagement" ||
+    value === "servicesAuto" ||
+    value === "mobilitesDouces" ||
+    value === "travaux" ||
+    value === "logiciels" ||
+    value === "formation" ||
+    value === "voyage"
   );
 }
 
@@ -864,8 +888,102 @@ export default function AnalyseResultPage() {
   }
 
   /*
+   * Les catégories hors Monitoring disposent d'un résultat
+   * générique. Elles ne doivent pas être envoyées aux fonctions
+   * de classement réservées au Monitoring.
+   */
+  if (!isMonitoringCategory(result.category)) {
+    return (
+      <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center">
+            <div className="text-7xl">
+              {result.icon}
+            </div>
+
+            <p className="mt-4 font-bold uppercase tracking-[0.3em] text-green-400">
+              Analyse terminée
+            </p>
+
+            <h1 className="mt-4 text-5xl font-black">
+              {result.categoryLabel}
+            </h1>
+
+            <p className="mt-4 text-slate-400">
+              Voici ce que Pilo a détecté pour ta situation.
+            </p>
+          </div>
+
+          <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+              Situation analysée
+            </p>
+
+            <div className="mt-4 space-y-2 text-slate-300">
+              {Object.entries(result.values).map(
+                ([key, value]) =>
+                  value ? (
+                    <p key={key}>
+                      <span className="font-semibold text-white">
+                        {key}
+                      </span>
+                      {" : "}
+                      {value}
+                    </p>
+                  ) : null
+              )}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Recommandation Pilo
+            </p>
+
+            <h2 className="mt-4 text-2xl font-black">
+              {result.recommendedOffer ||
+                "Solutions adaptées à ton besoin"}
+            </h2>
+
+            {result.recommendedProvider && (
+              <p className="mt-3 text-slate-300">
+                Solution proposée par{" "}
+                <strong className="text-white">
+                  {result.recommendedProvider}
+                </strong>
+                .
+              </p>
+            )}
+
+            {result.advice && (
+              <p className="mt-4 text-slate-300">
+                {result.advice}
+              </p>
+            )}
+          </section>
+
+          {errorMessage && (
+            <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
+              {errorMessage}
+            </div>
+          )}
+
+          <div className="mt-10">
+            <Link
+              href="/dashboard"
+              className="block rounded-2xl bg-green-500 py-5 text-center font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Retour au Dashboard
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  /*
    * À partir d’ici, TypeScript sait que la
-   * catégorie appartient au Monitoring.
+   * catégorie appartient bien au Monitoring.
    */
   const monitoringCategory =
     result.category;

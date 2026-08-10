@@ -2405,9 +2405,37 @@ const categories: Record<
   },
 };
 
-const categoryEntries = Object.entries(
-  categories
-) as [AnalyseCategory, CategoryConfig][];
+const categoryOrder: AnalyseCategory[] = [
+  "famille",
+  "mutuelle",
+  "animaux",
+  "telephone",
+  "telephoneSenior",
+  "internet",
+  "electricite",
+  "streaming",
+  "banque",
+  "travaux",
+  "fintech",
+  "habitation",
+  "auto",
+  "moto",
+  "mobilitesDouces",
+  "servicesAuto",
+  "voyage",
+  "formation",
+  "securite",
+  "logiciels",
+  "demenagement",
+];
+
+const categoryEntries = categoryOrder.map(
+  (categoryKey) =>
+    [
+      categoryKey,
+      categories[categoryKey],
+    ] as [AnalyseCategory, CategoryConfig]
+);
 
 export default function AnalysePage() {
   const router = useRouter();
