@@ -1,9 +1,28 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
 
 export default function AssuranceObsequesOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-slate-300">
+              Chargement de ton offre...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <AssuranceObsequesOffersContent />
+    </Suspense>
+  );
+}
+
+function AssuranceObsequesOffersContent() {
   const searchParams = useSearchParams();
 
   const age = searchParams.get("age");
@@ -52,6 +71,7 @@ export default function AssuranceObsequesOffersPage() {
                   <p className="text-sm text-slate-400">
                     Budget mensuel envisagé
                   </p>
+
                   <p className="mt-1 font-bold text-white">
                     {monthlyPrice} € / mois
                   </p>
