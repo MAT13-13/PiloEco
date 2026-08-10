@@ -7,11 +7,11 @@ export default function TravauxMissionPage() {
     <MissionLayout
       icon="🛠️"
       title="Optimiser tes travaux et rénovations"
-      subtitle="Décris ton projet et Pilo t'aide à identifier les solutions et aides qui peuvent correspondre à tes travaux."
+      subtitle="Décris ton projet et Pilo t'aide à identifier les solutions adaptées à tes travaux."
       basePrice={5000}
       recommendedPrice={4000}
       recommendedName="Projet travaux optimisé"
-      advice="Selon ton projet et ton logement, certaines aides ou solutions peuvent permettre de réduire le coût de tes travaux."
+      advice="Selon ton projet, ton logement et ta situation, Pilo peut identifier différentes solutions adaptées à tes besoins."
       fields={[
         {
           name: "projectType",
@@ -19,15 +19,22 @@ export default function TravauxMissionPage() {
           type: "select",
           defaultValue: "Rénovation énergétique",
           options: [
-            "Rénovation énergétique",
-            "Isolation",
-            "Chauffage",
-            "Fenêtres",
-            "Salle de bain",
-            "Cuisine",
-            "Peinture et décoration",
-            "Aménagement intérieur",
-            "Autre",
+  "Adaptation du logement",
+  "Aménagement intérieur",
+  "Chauffage",
+  "Cuisine",
+  "Douche sécurisée",
+  "Fenêtres",
+  "Isolation",
+  "Menuiseries",
+  "Monte-escalier",
+  "Panneaux photovoltaïques",
+  "Peinture et décoration",
+  "Pompe à chaleur",
+  "Rénovation énergétique",
+  "Salle de bain",
+  "Autre",
+
           ],
         },
         {

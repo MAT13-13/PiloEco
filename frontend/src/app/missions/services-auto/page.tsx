@@ -2,12 +2,21 @@
 
 import MissionLayout from "../../components/MissionLayout";
 
+const autodistributionOffer = {
+  href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23301537",
+  buttonLabel: "Découvrir Autodistribution",
+  recommendedName: "Autodistribution – Pièces et équipements auto",
+  advice:
+    "Découvre les pièces, équipements et solutions automobiles disponibles chez Autodistribution.",
+  external: true,
+};
+
 export default function ServicesAutoMissionPage() {
   return (
     <MissionLayout
       icon="🔧"
       title="Entretenir, réparer ou équiper ton véhicule"
-      subtitle="Choisis ton besoin : trouve un garage avec AD, commande tes pièces sur Oscaro ou trouve tes pneus et jantes avec Autopink."
+      subtitle="Choisis ton besoin : trouve un garage avec AD, commande tes pièces sur Oscaro, découvre Autodistribution ou trouve tes pneus et jantes avec Autopink."
       basePrice={180}
       recommendedPrice={140}
       recommendedName="Solution partenaire automobile"
@@ -215,6 +224,8 @@ export default function ServicesAutoMissionPage() {
           external: true,
         },
       }}
+      thirdOffer={autodistributionOffer}
+      thirdOfferTitle="Autre partenaire automobile"
     />
   );
 }

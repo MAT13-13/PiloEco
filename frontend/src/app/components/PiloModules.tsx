@@ -63,6 +63,15 @@ const modules = [
     status: "🟢 Disponible",
     href: "/missions/streaming",
   },
+
+  // NOUVELLE MISSION DÉBARRAS
+  {
+    icon: "📦",
+    title: "Débarras",
+    status: "🟢 Disponible",
+    href: "/missions/debarras",
+  },
+
   {
     icon: "🌿",
     title: "PiloLife",
@@ -79,9 +88,9 @@ const modules = [
 
 export default function PiloModules() {
   return (
-    <section className="mt-12 rounded-[2rem] border border-white/10 bg-white/5 p-8">
+    <section className="mt-10">
       <div className="mb-8">
-        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+        <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
           🐦 Pilo grandit
         </p>
 
@@ -90,8 +99,8 @@ export default function PiloModules() {
         </h2>
 
         <p className="mt-3 max-w-3xl text-slate-400">
-          Je continue d'apprendre chaque mois afin de t'aider à économiser
-          dans tous les domaines de ta vie.
+          Je continue d&apos;apprendre chaque mois afin de t&apos;aider à
+          économiser dans tous les domaines de ta vie.
         </p>
       </div>
 

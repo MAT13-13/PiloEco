@@ -248,6 +248,15 @@ const stayStyleOptions = [
   "Autre",
 ];
 
+const tripComOffer = {
+  href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23301536",
+  buttonLabel: "Découvrir les offres Trip.com",
+  recommendedName: "Trip.com – Voyage",
+  advice:
+    "Découvre les offres disponibles chez Trip.com et vérifie les tarifs et conditions correspondant à ton voyage.",
+  external: true,
+};
+
 export default function VoyageMissionPage() {
   return (
     <MissionLayout
@@ -291,6 +300,8 @@ export default function VoyageMissionPage() {
       alternativeOfferField="stayStyle"
       alternativeOffers={vacancesBleuesOffers}
       alternativeTitle="Autre offre ou service partenaire"
+      thirdOffer={tripComOffer}
+      thirdOfferTitle="Autre partenaire voyage"
     />
   );
 }

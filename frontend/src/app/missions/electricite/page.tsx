@@ -7,17 +7,11 @@ export default function ElectriciteMissionPage() {
     <MissionLayout
       icon="⚡"
       title="Comparer ton contrat d'électricité"
-      subtitle="Pilo vérifie si ton contrat d'électricité est compétitif."
-
+      subtitle="Pilo analyse ton contrat d'électricité et t'indique les économies potentielles."
       basePrice={95}
       recommendedPrice={72}
-
-      recommendedName="Électricité Éco"
-
-      advice="Pilo pense que tu pourrais réduire ta facture avec une offre plus adaptée à ta consommation."
-
-      offerPath="/offres/electricite"
-
+      recommendedName="Optimisation électricité"
+      advice="Pilo pense que tu pourrais réduire ta facture avec une offre plus adaptée à ta consommation. Les partenaires énergie sont actuellement en cours d’intégration."
       fields={[
         {
           name: "monthlyPrice",

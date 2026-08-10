@@ -40,19 +40,19 @@ type MissionLayoutProps = {
   recommendedName: string;
   advice: string;
 
-  /*
-   * À renseigner uniquement pour les missions compatibles
-   * avec le parcours d’analyse Pilo.
-   */
   analysisCategory?: AnalyseCategory;
 
   offerPath?: string;
+
   dynamicOfferField?: string;
   dynamicOffers?: Record<string, DynamicOffer>;
 
   alternativeOfferField?: string;
   alternativeOffers?: Record<string, DynamicOffer>;
   alternativeTitle?: string;
+
+  thirdOffer?: DynamicOffer;
+  thirdOfferTitle?: string;
 };
 
 export default function MissionLayout({
@@ -71,6 +71,8 @@ export default function MissionLayout({
   alternativeOfferField,
   alternativeOffers,
   alternativeTitle = "Autre offre partenaire",
+  thirdOffer,
+  thirdOfferTitle = "Autre partenaire",
 }: MissionLayoutProps) {
   const router = useRouter();
 
@@ -89,7 +91,9 @@ export default function MissionLayout({
     values.monthlyPrice ?? basePrice
   );
 
-  const safeCurrentPrice = Number.isFinite(currentPrice)
+  const safeCurrentPrice = Number.isFinite(
+    currentPrice
+  )
     ? currentPrice
     : basePrice;
 
@@ -126,8 +130,28 @@ export default function MissionLayout({
         ]
       : undefined;
 
+  const buildInternalOfferHref = () => {
+    const params = new URLSearchParams();
+
+    Object.entries(values).forEach(
+      ([key, value]) => {
+        params.set(
+          key,
+          String(value ?? "")
+        );
+      }
+    );
+
+    const queryString = params.toString();
+
+    return queryString
+      ? `${offerPath}?${queryString}`
+      : offerPath;
+  };
+
   const finalHref =
-    selectedOffer?.href ?? offerPath;
+    selectedOffer?.href ??
+    buildInternalOfferHref();
 
   const finalButtonLabel =
     selectedOffer?.buttonLabel ??
@@ -138,7 +162,8 @@ export default function MissionLayout({
     recommendedName;
 
   const finalAdvice =
-    selectedOffer?.advice ?? advice;
+    selectedOffer?.advice ??
+    advice;
 
   const opensExternalWebsite =
     selectedOffer?.external === true;
@@ -164,10 +189,6 @@ export default function MissionLayout({
       return;
     }
 
-    /*
-     * La page analyse-loading attend uniquement
-     * des valeurs sous forme de chaînes de caractères.
-     */
     const normalizedValues: Record<
       string,
       string
@@ -180,10 +201,6 @@ export default function MissionLayout({
       )
     );
 
-    /*
-     * On garantit que le prix mensuel est toujours
-     * présent dans les données de l’analyse.
-     */
     normalizedValues.monthlyPrice = String(
       safeCurrentPrice
     );
@@ -201,10 +218,6 @@ export default function MissionLayout({
       JSON.stringify(analysisPayload)
     );
 
-    /*
-     * On supprime l’ancien résultat pour éviter
-     * d’afficher une analyse précédente.
-     */
     localStorage.removeItem(
       "pilo-analysis-result"
     );
@@ -350,7 +363,7 @@ export default function MissionLayout({
               <a
                 href={finalHref}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener noreferrer sponsored"
                 className={actionClassName}
               >
                 {finalButtonLabel}
@@ -390,7 +403,7 @@ export default function MissionLayout({
                     selectedAlternativeOffer.href
                   }
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer sponsored"
                   className={
                     alternativeActionClassName
                   }
@@ -411,6 +424,47 @@ export default function MissionLayout({
                   {
                     selectedAlternativeOffer.buttonLabel
                   }
+                </Link>
+              )}
+            </div>
+          )}
+
+          {thirdOffer && (
+            <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+                {thirdOfferTitle}
+              </p>
+
+              <h3 className="mt-4 text-2xl font-black">
+                {thirdOffer.recommendedName ??
+                  "Offre partenaire"}
+              </h3>
+
+              {thirdOffer.advice && (
+                <p className="mt-3 text-slate-300">
+                  {thirdOffer.advice}
+                </p>
+              )}
+
+              {thirdOffer.external ? (
+                <a
+                  href={thirdOffer.href}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className={
+                    alternativeActionClassName
+                  }
+                >
+                  {thirdOffer.buttonLabel}
+                </a>
+              ) : (
+                <Link
+                  href={thirdOffer.href}
+                  className={
+                    alternativeActionClassName
+                  }
+                >
+                  {thirdOffer.buttonLabel}
                 </Link>
               )}
             </div>
