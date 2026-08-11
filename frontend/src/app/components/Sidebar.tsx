@@ -7,34 +7,49 @@ const mainItems = [
   { label: "📈 Mon évolution", href: "/evolution" },
   { label: "🌿 PiloLife ⭐", href: "/pilolife" },
 ];
-
 const universeItems = [
   { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
+  { label: "❤️ Mutuelle santé", href: "/missions/mutuelle-sante" },
+  { label: "👴 Mutuelle senior", href: "/missions/mutuelle-senior" },
+
+  { label: "🐶 Assurance animaux", href: "/missions/assurance-animaux" },
+  { label: "🕊️ Assurance obsèques", href: "/missions/assurance-obseques" },
   { label: "📱 Téléphone", href: "/missions/mobile" },
+
   { label: "👴 Téléphone senior", href: "/missions/telephone-senior" },
   { label: "🌐 Internet", href: "/missions/internet" },
-
   { label: "⚡ Électricité", href: "/missions/electricite" },
-  { label: "🏠 Assurance habitation", href: "/missions/habitation" },
-  { label: "🚗 Assurance auto", href: "/missions/assurance-auto" },
-  { label: "🚲 Mobilités douces", href: "/missions/mobilites-douces" },
-
-  { label: "🏍️ Assurance moto", href: "/missions/assurance-moto" },
-  { label: "❤️ Mutuelle santé", href: "/missions/mutuelle-sante" },
-  { label: "🐶 Assurance animaux", href: "/missions/assurance-animaux" },
-  { label: "🏦 Banque", href: "/missions/banque" },
 
   { label: "📺 Streaming", href: "/missions/streaming" },
-  { label: "💳 Fintech & budget", href: "/missions/fintech-budget" },
-  { label: "🔐 Alarme & sécurité", href: "/missions/alarme-securite" },
-  { label: "🚚 Déménagement", href: "/missions/demenagement" },
+  { label: "🏦 Banque", href: "/missions/banque" },
+  { label: "🏠 Crédit immobilier", href: "/missions/credit-immobilier" },
 
-  { label: "🔧 Services auto", href: "/missions/services-auto" },
   { label: "🛠️ Travaux & rénovation", href: "/missions/travaux-renovation" },
-  { label: "💻 Logiciels", href: "/missions/logiciels" },
-  { label: "🎓 Formation", href: "/missions/formation" },
+  { label: "💳 Fintech & budget", href: "/missions/fintech-budget" },
+  { label: "₿ Cryptomonnaies", href: "/missions/cryptomonnaies" },
+
+  { label: "🏠 Assurance habitation", href: "/missions/habitation" },
+  { label: "🚗 Assurance auto", href: "/missions/assurance-auto" },
+  { label: "🏍️ Assurance moto", href: "/missions/assurance-moto" },
+
+  { label: "🚲 Mobilités douces", href: "/missions/mobilites-douces" },
+  { label: "🔧 Services auto", href: "/missions/services-auto" },
+  { label: "🏍️ Moto & équipement", href: "/missions/moto-equipement" },
 
   { label: "✈️ Voyage", href: "/missions/voyage" },
+  { label: "🎓 Formation", href: "/missions/formation" },
+  { label: "🔐 Alarme & sécurité", href: "/missions/alarme-securite" },
+
+  { label: "🛡️ Cybersécurité", href: "/missions/cybersecurite" },
+  { label: "🌐 Site internet pro", href: "/missions/site-internet-pro" },
+
+  // Nouvelle rubrique B2B
+  { label: "🏢 Services aux entreprises", href: "/missions/services-entreprises" },
+
+  { label: "💻 Logiciels", href: "/missions/logiciels" },
+
+  { label: "🚚 Déménagement", href: "/missions/demenagement" },
+  { label: "📦 Débarras", href: "/missions/debarras" },
 ];
 
 export default function Sidebar() {

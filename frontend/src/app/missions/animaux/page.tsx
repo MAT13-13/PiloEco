@@ -51,38 +51,42 @@ export default function AnimauxOfferPage() {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
-              🐾 Solutions pour chiens et chats
+              🐾 Solutions pour chiens, chats et NAC
             </div>
           </div>
 
           <PiloAdvice
             title="Comment Pilo t'aide ?"
-            message="Pilo te présentera uniquement des solutions provenant de partenaires réellement intégrés. Tu pourras alors obtenir un tarif, le comparer à ta dépense actuelle et poursuivre seulement si l'offre est réellement avantageuse."
+            message="Pilo te redirige vers une solution partenaire afin d'obtenir un tarif réel. Tu peux ensuite comparer ce montant à ta dépense actuelle et décider uniquement si l'offre est réellement intéressante pour toi."
           />
 
-          <div className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
-              Partenaires assurance animaux
+              Partenaire assurance animaux
             </p>
 
             <h2 className="mt-3 text-2xl font-black">
-              Partenaires en cours d&apos;intégration
+              Compare les assurances animaux
             </h2>
 
             <p className="mt-4 text-slate-300">
-              PiloEco travaille actuellement à l&apos;intégration de
-              partenaires spécialisés en assurance animaux.
+              Compare gratuitement différentes solutions d&apos;assurance
+              pour chien, chat ou NAC et obtiens un tarif adapté à ton animal.
             </p>
 
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              Aucun bouton externe n&apos;est affiché tant qu&apos;un
-              partenariat n&apos;est pas officiellement validé et que son lien
-              affilié n&apos;a pas été vérifié.
-            </p>
+            <a
+              href="https://stella-2.com/clc/PyCCpFfs3jche1T9Ly4w0w"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-6 inline-flex rounded-2xl bg-green-500 px-6 py-3 font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Comparer les assurances animaux →
+            </a>
 
-            <div className="mt-6 inline-flex rounded-full border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-bold text-green-400">
-              En cours d&apos;intégration
-            </div>
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Lien partenaire. PiloEco peut percevoir une rémunération si tu
+              effectues une action éligible auprès du partenaire.
+            </p>
           </div>
 
           <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6">
@@ -91,10 +95,10 @@ export default function AnimauxOfferPage() {
             </p>
 
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Dès qu&apos;une solution partenaire sera disponible, Pilo pourra
-              te rediriger vers celle-ci afin d&apos;obtenir ton vrai tarif.
-              Tu pourras ensuite comparer ce montant à ton contrat actuel et
-              calculer ton économie réelle.
+              Obtiens d&apos;abord ton tarif réel auprès du partenaire, puis
+              compare-le à ton contrat actuel. Pilo pourra ensuite t&apos;aider
+              à déterminer si le changement représente réellement une
+              économie.
             </p>
           </div>
         </section>
