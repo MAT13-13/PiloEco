@@ -7,8 +7,13 @@ const mainItems = [
   { label: "📈 Mon évolution", href: "/evolution" },
   { label: "🌿 PiloLife ⭐", href: "/pilolife" },
 ];
+
 const universeItems = [
   { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
+
+  // Beauté & Artisanat
+  { label: "🌸 Beauté & Artisanat", href: "/missions/beaute-artisanat" },
+
   { label: "❤️ Mutuelle santé", href: "/missions/mutuelle-sante" },
   { label: "👴 Mutuelle senior", href: "/missions/mutuelle-senior" },
 
@@ -43,7 +48,6 @@ const universeItems = [
   { label: "🛡️ Cybersécurité", href: "/missions/cybersecurite" },
   { label: "🌐 Site internet pro", href: "/missions/site-internet-pro" },
 
-  // Nouvelle rubrique B2B
   { label: "🏢 Services aux entreprises", href: "/missions/services-entreprises" },
 
   { label: "💻 Logiciels", href: "/missions/logiciels" },

@@ -8,7 +8,12 @@ const missions = [
     icon: "👨‍👩‍👧",
     href: "/missions/famille",
   },
-    {
+  {
+    title: "Beauté & Artisanat",
+    icon: "🌸",
+    href: "/missions/beaute-artisanat",
+  },
+  {
     title: "Mutuelle santé",
     icon: "❤️",
     href: "/missions/mutuelle",
@@ -23,13 +28,12 @@ const missions = [
     icon: "🐶",
     href: "/missions/animaux",
   },
-
   {
     title: "Assurance Obsèques",
     icon: "🕊️",
     href: "/missions/assurance-obseques",
   },
-  
+
   {
     title: "Téléphone",
     icon: "📱",
@@ -60,13 +64,13 @@ const missions = [
     icon: "🏦",
     href: "/missions/banque",
   },
- {
+  {
     title: "Crédit immobilier",
     icon: "🏠",
     href: "/missions/credit-immobilier",
   },
 
-   {
+  {
     title: "Travaux & rénovation",
     icon: "🛠️",
     href: "/missions/travaux",
@@ -76,8 +80,7 @@ const missions = [
     icon: "💳",
     href: "/missions/fintech",
   },
-
-    {
+  {
     title: "Cryptomonnaies",
     icon: "₿",
     href: "/missions/crypto",
@@ -98,34 +101,32 @@ const missions = [
     icon: "🏍️",
     href: "/missions/moto",
   },
-{
+  {
     title: "Mobilités douces",
     icon: "🚲",
     href: "/missions/mobilites-douces",
   },
-   {
+  {
     title: "Services auto",
     icon: "🔧",
     href: "/missions/services-auto",
   },
   {
-  title: "Moto & équipement",
-  icon: "🏍️",
-  href: "/missions/moto-equipement",
-},
+    title: "Moto & équipement",
+    icon: "🏍️",
+    href: "/missions/moto-equipement",
+  },
 
-    {
+  {
     title: "Voyage",
     icon: "✈️",
     href: "/missions/voyage",
   },
-
   {
     title: "Formation",
     icon: "🎓",
     href: "/missions/formation",
   },
-
   {
     title: "Alarme & sécurité",
     icon: "🔐",
@@ -138,11 +139,16 @@ const missions = [
   },
 
   {
+    title: "Services aux entreprises",
+    icon: "🏢",
+    href: "/missions/services-entreprises",
+  },
+  {
     title: "Site internet pro",
     icon: "🌐",
     href: "/missions/site-internet-pro",
   },
-   {
+  {
     title: "Logiciels",
     icon: "💻",
     href: "/missions/logiciels",
@@ -158,7 +164,6 @@ const missions = [
     icon: "📦",
     href: "/missions/debarras",
   },
-
 ];
 
 export default function MissionsPage() {
