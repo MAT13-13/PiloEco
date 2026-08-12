@@ -7,7 +7,7 @@ export default function MotoEquipementMissionPage() {
     <MissionLayout
       icon="🏍️"
       title="Entretenir ou équiper ta moto"
-      subtitle="Choisis ton besoin pour découvrir une solution partenaire dédiée aux pièces, accessoires et équipements deux-roues."
+      subtitle="Choisis ton besoin pour découvrir des solutions partenaires dédiées aux pièces, accessoires et équipements deux-roues."
       basePrice={150}
       recommendedPrice={120}
       recommendedName="Solution moto partenaire"
@@ -22,6 +22,10 @@ export default function MotoEquipementMissionPage() {
           options: [
             "Casques",
             "Équipement motard",
+            "Accessoires moto",
+            "Bagagerie",
+            "High-tech",
+            "Pneus moto",
             "Moto",
             "Scooter",
             "Moto 50cc",
@@ -59,6 +63,42 @@ export default function MotoEquipementMissionPage() {
           recommendedName: "La Bécanerie – Équipement motard",
           advice:
             "Découvre les équipements destinés au motard et sélectionne les produits adaptés à ton usage.",
+          external: true,
+        },
+
+        "Accessoires moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les accessoires moto",
+          recommendedName: "La Bécanerie – Accessoires moto",
+          advice:
+            "Découvre les accessoires et équipements disponibles pour compléter ou améliorer ta moto.",
+          external: true,
+        },
+
+        Bagagerie: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir la bagagerie moto",
+          recommendedName: "La Bécanerie – Bagagerie",
+          advice:
+            "Découvre les solutions de rangement et de bagagerie adaptées à ton deux-roues.",
+          external: true,
+        },
+
+        "High-tech": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les équipements high-tech",
+          recommendedName: "La Bécanerie – High-tech",
+          advice:
+            "Découvre les accessoires technologiques et équipements connectés pour la moto.",
+          external: true,
+        },
+
+        "Pneus moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les pneus moto",
+          recommendedName: "La Bécanerie – Pneus moto",
+          advice:
+            "Découvre les solutions disponibles pour remplacer ou équiper les pneus de ta moto.",
           external: true,
         },
 
@@ -158,6 +198,90 @@ export default function MotoEquipementMissionPage() {
           recommendedName: "La Bécanerie – Nouveautés",
           advice:
             "Découvre les nouveautés récemment ajoutées au catalogue La Bécanerie.",
+          external: true,
+        },
+      }}
+      alternativeOfferField="needType"
+      alternativeTitle="Comparer avec MAXXESS"
+      alternativeOffers={{
+        Casques: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fcasque-moto-15%2F%3Fcategories%3DCasque%2520int%25C3%25A9gral~Casque%2520jet~Casque%2520modulable~Casque%2520crossover~Casque%2520Cross",
+          buttonLabel: "Voir les casques chez MAXXESS",
+          recommendedName: "MAXXESS – Casques moto",
+          advice:
+            "Compare également les casques disponibles chez MAXXESS selon ton type de pratique et ton budget.",
+          external: true,
+        },
+
+        "Équipement motard": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategories%2Fequipement-du-motard-12",
+          buttonLabel: "Voir l’équipement chez MAXXESS",
+          recommendedName: "MAXXESS – Équipement du motard",
+          advice:
+            "Découvre les vêtements, protections et équipements du motard proposés par MAXXESS.",
+          external: true,
+        },
+
+        "Accessoires moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Faccessoires-de-la-moto-13",
+          buttonLabel: "Voir les accessoires chez MAXXESS",
+          recommendedName: "MAXXESS – Accessoires moto",
+          advice:
+            "Compare les accessoires moto disponibles chez MAXXESS selon ton besoin.",
+          external: true,
+        },
+
+        Bagagerie: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fbagagerie-301",
+          buttonLabel: "Voir la bagagerie chez MAXXESS",
+          recommendedName: "MAXXESS – Bagagerie",
+          advice:
+            "Découvre les sacs, top cases et solutions de transport disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "High-tech": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fhigh-tech-220",
+          buttonLabel: "Voir le high-tech chez MAXXESS",
+          recommendedName: "MAXXESS – High-tech moto",
+          advice:
+            "Découvre les équipements high-tech et accessoires connectés proposés par MAXXESS.",
+          external: true,
+        },
+
+        "Pneus moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fpneu%2Fmerchants",
+          buttonLabel: "Voir les pneus chez MAXXESS",
+          recommendedName: "MAXXESS – Pneus moto",
+          advice:
+            "Compare les pneus disponibles chez MAXXESS en fonction de ta moto et de ton utilisation.",
+          external: true,
+        },
+
+        Moto: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2F",
+          buttonLabel: "Découvrir MAXXESS",
+          recommendedName: "MAXXESS – Moto",
+          advice:
+            "Découvre également les équipements, accessoires et produits moto disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "Tout-terrain": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fcross-tt-enduro-14",
+          buttonLabel: "Voir le tout-terrain chez MAXXESS",
+          recommendedName: "MAXXESS – Cross, TT & Enduro",
+          advice:
+            "Compare les équipements dédiés au cross, tout-terrain et enduro disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "Promotions & déstockage": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fbons-plans",
+          buttonLabel: "Voir les bons plans MAXXESS",
+          recommendedName: "MAXXESS – Bons plans",
+          advice:
+            "Découvre les offres et bons plans actuellement disponibles chez MAXXESS.",
           external: true,
         },
       }}
