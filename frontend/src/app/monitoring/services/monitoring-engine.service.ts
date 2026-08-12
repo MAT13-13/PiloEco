@@ -1,4 +1,7 @@
-import type { MonitoringCard } from "../../types/monitoring";
+import type {
+  MonitoringCard,
+  MonitoringCategory,
+} from "../../types/monitoring";
 
 import {
   getRankedMonitoringOffers,
@@ -9,8 +12,46 @@ type MonitoringStatus =
   | "yellow"
   | "red";
 
+/*
+ * Catégories pour lesquelles le catalogue Monitoring
+ * possède actuellement des offres de comparaison.
+ *
+ * Les nouvelles catégories Premium peuvent quand même
+ * être surveillées (échéance, prix, etc.) même si Pilo
+ * n'a pas encore de catalogue d'offres pour elles.
+ */
+type MonitoringOfferCompatibleCategory =
+  | "telephone"
+  | "internet"
+  | "electricite"
+  | "habitation"
+  | "auto"
+  | "animaux"
+  | "banque"
+  | "streaming";
+
+const MONITORING_OFFER_CATEGORIES:
+  MonitoringOfferCompatibleCategory[] = [
+    "telephone",
+    "internet",
+    "electricite",
+    "habitation",
+    "auto",
+    "animaux",
+    "banque",
+    "streaming",
+  ];
+
 const MILLISECONDS_PER_DAY =
   1000 * 60 * 60 * 24;
+
+function isMonitoringOfferCompatibleCategory(
+  category: MonitoringCategory
+): category is MonitoringOfferCompatibleCategory {
+  return MONITORING_OFFER_CATEGORIES.includes(
+    category as MonitoringOfferCompatibleCategory
+  );
+}
 
 function isRealEndDate(
   value?: string | null
@@ -117,15 +158,6 @@ function getMonitoringPriority({
 export function enrichMonitoringCard(
   card: MonitoringCard
 ): MonitoringCard {
-  const rankedOffers =
-    getRankedMonitoringOffers(
-      card.category,
-      card.currentPrice
-    );
-
-  const bestOffer =
-    rankedOffers[0];
-
   let daysUntilEnd: number | null =
     null;
 
@@ -135,6 +167,98 @@ export function enrichMonitoringCard(
         card.endDate!
       );
   }
+
+  /*
+   * Les nouvelles catégories comme moto, mutuelle,
+   * obsèques, mobilité douce ou sécurité peuvent être
+   * surveillées même si aucun catalogue comparatif
+   * n'est encore disponible pour elles.
+   */
+  if (
+    !isMonitoringOfferCompatibleCategory(
+      card.category
+    )
+  ) {
+    let status: MonitoringStatus =
+      "green";
+
+    let alert =
+      "✅ Ton contrat est bien surveillé par Pilo.";
+
+    let button =
+      "Voir le contrat";
+
+    if (daysUntilEnd !== null) {
+      if (daysUntilEnd < 0) {
+        status = "red";
+
+        alert =
+          "📅 L’échéance de ton contrat est dépassée. Vérifie son renouvellement.";
+
+        button =
+          "📅 Vérifier le contrat";
+      } else if (daysUntilEnd === 0) {
+        status = "red";
+
+        alert =
+          "📅 Ton contrat arrive à échéance aujourd’hui.";
+
+        button =
+          "📅 Agir aujourd’hui";
+      } else if (daysUntilEnd <= 30) {
+        status = "red";
+
+        alert = `📅 Ton contrat arrive à échéance dans ${daysUntilEnd} jour${
+          daysUntilEnd > 1
+            ? "s"
+            : ""
+        }. Pense à vérifier ses conditions.`;
+
+        button =
+          "📅 Préparer l’échéance";
+      } else if (daysUntilEnd <= 90) {
+        status = "yellow";
+
+        alert = `🗓️ L’échéance de ton contrat approche dans ${daysUntilEnd} jours. Pilo continue de le surveiller.`;
+
+        button =
+          "Voir l’échéance";
+      }
+    }
+
+    return {
+      ...card,
+
+      detectedProvider: undefined,
+
+      detectedOffer: null,
+
+      detectedPrice: null,
+
+      yearlySaving: 0,
+
+      alert,
+
+      status,
+
+      button,
+
+      priority:
+        getMonitoringPriority({
+          daysUntilEnd,
+          yearlySaving: 0,
+        }),
+    };
+  }
+
+  const rankedOffers =
+    getRankedMonitoringOffers(
+      card.category,
+      card.currentPrice
+    );
+
+  const bestOffer =
+    rankedOffers[0];
 
   if (!bestOffer) {
     return {
