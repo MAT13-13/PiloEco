@@ -32,6 +32,16 @@ export type MonitoringContract = {
   last_offer_detected_at: string | null;
   end_date: string | null;
   current_offer: string | null;
+
+  subscription_date: string | null;
+  commitment_months: number | null;
+  auto_renewal: boolean | null;
+  is_promotional: boolean | null;
+  promotion_end_date: string | null;
+  price_after_promotion: number | null;
+  monthly_saving: number | null;
+  contract_source: string | null;
+
   better_offer: string | null;
   yearly_saving: number | null;
   status: string | null;
@@ -46,6 +56,15 @@ export type CreateMonitoringContractInput = {
   monthly_price: number;
   end_date?: string | null;
   current_offer?: string | null;
+
+  subscription_date?: string | null;
+  commitment_months?: number | null;
+  auto_renewal?: boolean;
+  is_promotional?: boolean;
+  promotion_end_date?: string | null;
+  price_after_promotion?: number | null;
+  monthly_saving?: number;
+  contract_source?: "manual" | "mission" | string;
 
   better_offer?: string | null;
   yearly_saving?: number;
@@ -89,10 +108,34 @@ const categoryConfig: Record<
     href: "/missions/auto",
   },
 
+  moto: {
+    icon: "🏍️",
+    title: "Assurance moto",
+    href: "/missions/moto",
+  },
+
+  mutuelle: {
+    icon: "❤️",
+    title: "Mutuelle santé",
+    href: "/missions/mutuelle",
+  },
+
+  "mutuelle-senior": {
+    icon: "👵",
+    title: "Mutuelle senior",
+    href: "/missions/mutuelle-senior",
+  },
+
   animaux: {
     icon: "🐶",
     title: "Assurance animaux",
     href: "/missions/animaux",
+  },
+
+  "assurance-obseques": {
+    icon: "🕊️",
+    title: "Assurance obsèques",
+    href: "/missions/assurance-obseques",
   },
 
   banque: {
@@ -105,6 +148,66 @@ const categoryConfig: Record<
     icon: "📺",
     title: "Streaming",
     href: "/missions/streaming",
+  },
+
+  "telephone-senior": {
+    icon: "☎️",
+    title: "Téléphone senior",
+    href: "/missions/telephone-senior",
+  },
+
+  voyage: {
+    icon: "✈️",
+    title: "Voyage",
+    href: "/missions/voyage",
+  },
+
+  "service-auto": {
+    icon: "🔧",
+    title: "Service auto",
+    href: "/missions/service-auto",
+  },
+
+  "mobilites-douces": {
+    icon: "🚲",
+    title: "Mobilités douces",
+    href: "/missions/mobilites-douces",
+  },
+
+  securite: {
+    icon: "🔐",
+    title: "Sécurité du logement",
+    href: "/missions/securite",
+  },
+
+  "nutrition-animaux": {
+    icon: "🥩",
+    title: "Nutrition animaux",
+    href: "/missions/nutrition-animaux",
+  },
+
+  travaux: {
+    icon: "🛠️",
+    title: "Travaux / rénovation",
+    href: "/missions/travaux",
+  },
+
+  demenagement: {
+    icon: "📦",
+    title: "Déménagement",
+    href: "/missions/demenagement",
+  },
+
+  "moto-equipement": {
+    icon: "🏍️",
+    title: "Moto / équipement",
+    href: "/missions/moto-equipement",
+  },
+
+  "beaute-artisanat": {
+    icon: "🌸",
+    title: "Beauté & Artisanat",
+    href: "/missions/beaute-artisanat",
   },
 };
 
@@ -119,17 +222,37 @@ function normalizeCategory(
     return "telephone";
   }
 
+  const allowedCategories: MonitoringCategory[] = [
+    "telephone",
+    "internet",
+    "electricite",
+    "habitation",
+    "auto",
+    "moto",
+    "mutuelle",
+    "mutuelle-senior",
+    "animaux",
+    "assurance-obseques",
+    "banque",
+    "streaming",
+    "telephone-senior",
+    "voyage",
+    "service-auto",
+    "mobilites-douces",
+    "securite",
+    "nutrition-animaux",
+    "travaux",
+    "demenagement",
+    "moto-equipement",
+    "beaute-artisanat",
+  ];
+
   if (
-    normalizedCategory === "telephone" ||
-    normalizedCategory === "internet" ||
-    normalizedCategory === "electricite" ||
-    normalizedCategory === "habitation" ||
-    normalizedCategory === "auto" ||
-    normalizedCategory === "animaux" ||
-    normalizedCategory === "banque" ||
-    normalizedCategory === "streaming"
+    allowedCategories.includes(
+      normalizedCategory as MonitoringCategory
+    )
   ) {
-    return normalizedCategory;
+    return normalizedCategory as MonitoringCategory;
   }
 
   return "telephone";
@@ -349,6 +472,21 @@ export async function createMonitoringContract(
     Number(input.yearly_saving ?? 0)
   );
 
+  const commitmentMonths =
+    input.commitment_months == null
+      ? null
+      : Math.max(0, Number(input.commitment_months));
+
+  const priceAfterPromotion =
+    input.price_after_promotion == null
+      ? null
+      : Math.max(0, Number(input.price_after_promotion));
+
+  const monthlySaving = Math.max(
+    0,
+    Number(input.monthly_saving ?? 0)
+  );
+
   if (!input.provider.trim()) {
     throw new Error(
       "Le fournisseur est obligatoire."
@@ -361,6 +499,30 @@ export async function createMonitoringContract(
   ) {
     throw new Error(
       "Le prix mensuel est invalide."
+    );
+  }
+
+  if (
+    commitmentMonths !== null &&
+    !Number.isFinite(commitmentMonths)
+  ) {
+    throw new Error(
+      "La durée d’engagement est invalide."
+    );
+  }
+
+  if (
+    priceAfterPromotion !== null &&
+    !Number.isFinite(priceAfterPromotion)
+  ) {
+    throw new Error(
+      "Le prix après promotion est invalide."
+    );
+  }
+
+  if (!Number.isFinite(monthlySaving)) {
+    throw new Error(
+      "L’économie mensuelle est invalide."
     );
   }
 
@@ -409,6 +571,24 @@ export async function createMonitoringContract(
       end_date: input.end_date || null,
       current_offer:
         input.current_offer?.trim() || null,
+      subscription_date:
+        input.subscription_date || null,
+      commitment_months: commitmentMonths,
+      auto_renewal:
+        input.auto_renewal ?? false,
+      is_promotional:
+        input.is_promotional ?? false,
+      promotion_end_date:
+        input.is_promotional
+          ? input.promotion_end_date || null
+          : null,
+      price_after_promotion:
+        input.is_promotional
+          ? priceAfterPromotion
+          : null,
+      monthly_saving: monthlySaving,
+      contract_source:
+        input.contract_source?.trim() || "manual",
       better_offer: betterOffer,
       yearly_saving: yearlySaving,
       status,
@@ -460,6 +640,21 @@ export async function updateMonitoringContract(
     Number(input.yearly_saving ?? 0)
   );
 
+  const commitmentMonths =
+    input.commitment_months == null
+      ? null
+      : Math.max(0, Number(input.commitment_months));
+
+  const priceAfterPromotion =
+    input.price_after_promotion == null
+      ? null
+      : Math.max(0, Number(input.price_after_promotion));
+
+  const monthlySaving = Math.max(
+    0,
+    Number(input.monthly_saving ?? 0)
+  );
+
   if (!input.provider.trim()) {
     throw new Error(
       "Le fournisseur est obligatoire."
@@ -472,6 +667,30 @@ export async function updateMonitoringContract(
   ) {
     throw new Error(
       "Le prix mensuel est invalide."
+    );
+  }
+
+  if (
+    commitmentMonths !== null &&
+    !Number.isFinite(commitmentMonths)
+  ) {
+    throw new Error(
+      "La durée d’engagement est invalide."
+    );
+  }
+
+  if (
+    priceAfterPromotion !== null &&
+    !Number.isFinite(priceAfterPromotion)
+  ) {
+    throw new Error(
+      "Le prix après promotion est invalide."
+    );
+  }
+
+  if (!Number.isFinite(monthlySaving)) {
+    throw new Error(
+      "L’économie mensuelle est invalide."
     );
   }
 
@@ -524,6 +743,26 @@ export async function updateMonitoringContract(
       current_offer:
         input.current_offer?.trim() || null,
       end_date: input.end_date || null,
+      subscription_date:
+        input.subscription_date || null,
+      commitment_months: commitmentMonths,
+      auto_renewal:
+        input.auto_renewal ?? false,
+      is_promotional:
+        input.is_promotional ?? false,
+      promotion_end_date:
+        input.is_promotional
+          ? input.promotion_end_date || null
+          : null,
+      price_after_promotion:
+        input.is_promotional
+          ? priceAfterPromotion
+          : null,
+      monthly_saving: monthlySaving,
+      contract_source:
+        input.contract_source?.trim() ||
+        existingContract.contract_source ||
+        "manual",
       better_offer: betterOffer,
       yearly_saving: yearlySaving,
       status,

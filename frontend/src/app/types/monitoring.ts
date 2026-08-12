@@ -4,9 +4,23 @@ export type MonitoringCategory =
   | "electricite"
   | "habitation"
   | "auto"
+  | "moto"
+  | "mutuelle"
+  | "mutuelle-senior"
   | "animaux"
+  | "assurance-obseques"
   | "banque"
-  | "streaming";
+  | "streaming"
+  | "telephone-senior"
+  | "voyage"
+  | "service-auto"
+  | "mobilites-douces"
+  | "securite"
+  | "nutrition-animaux"
+  | "travaux"
+  | "demenagement"
+  | "moto-equipement"
+  | "beaute-artisanat";
 
 export type MonitoringColor =
   | "green"
@@ -25,7 +39,6 @@ export type MonitoringCard = {
   category: MonitoringCategory;
 
   icon: string;
-
   title: string;
 
   /*

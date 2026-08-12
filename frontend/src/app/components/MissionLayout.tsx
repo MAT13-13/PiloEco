@@ -12,25 +12,47 @@ type Field = {
   options?: string[];
 };
 
+type CompletionType =
+  | "contract"
+  | "purchase"
+  | "none";
+
+type MonitoringCategory =
+  | "telephone"
+  | "internet"
+  | "electricite"
+  | "habitation"
+  | "auto"
+  | "moto"
+  | "mutuelle"
+  | "mutuelle-senior"
+  | "animaux"
+  | "assurance-obseques"
+  | "banque"
+  | "streaming"
+  | "mobilites-douces"
+  | "securite";
+
 type DynamicOffer = {
   href: string;
   buttonLabel: string;
   recommendedName?: string;
   advice?: string;
   external?: boolean;
+
+  /*
+   * Facultatif : permet de personnaliser le suivi
+   * après une souscription / un achat.
+   */
+  completionType?: CompletionType;
+  monitoringCategory?: MonitoringCategory;
+  provider?: string;
+  offerName?: string;
 };
 
 type PricingMode = "quote" | "known";
 
-type AnalyseCategory =
-  | "telephone"
-  | "internet"
-  | "electricite"
-  | "habitation"
-  | "auto"
-  | "animaux"
-  | "banque"
-  | "streaming";
+type AnalyseCategory = MonitoringCategory;
 
 type MissionLayoutProps = {
   icon: string;
@@ -76,6 +98,25 @@ type MissionLayoutProps = {
 
   thirdOffer?: DynamicOffer;
   thirdOfferTitle?: string;
+
+  /*
+   * Suivi après consultation d'une offre partenaire.
+   *
+   * contract :
+   * redirige vers le Monitoring Premium avec les
+   * informations connues préremplies.
+   *
+   * purchase :
+   * confirme un achat / une prestation ponctuelle
+   * sans créer de contrat Monitoring.
+   *
+   * none :
+   * aucun bouton de confirmation supplémentaire.
+   */
+  completionType?: CompletionType;
+  monitoringCategory?: MonitoringCategory;
+  partnerName?: string;
+  purchaseLabel?: string;
 };
 
 export default function MissionLayout({
@@ -97,8 +138,17 @@ export default function MissionLayout({
   alternativeTitle = "Autre offre partenaire",
   thirdOffer,
   thirdOfferTitle = "Autre partenaire",
+  completionType,
+  monitoringCategory,
+  partnerName,
+  purchaseLabel = "✅ J’ai réalisé cet achat",
 }: MissionLayoutProps) {
   const router = useRouter();
+
+  const [
+    confirmedPurchaseHref,
+    setConfirmedPurchaseHref,
+  ] = useState<string | null>(null);
 
   const [values, setValues] = useState<
     Record<string, string | number>
@@ -203,6 +253,202 @@ export default function MissionLayout({
 
   const alternativeActionClassName =
     "mt-6 inline-block rounded-xl border border-green-400/40 bg-green-500/10 px-7 py-3 font-bold text-green-300 transition hover:bg-green-500/20";
+
+
+  const completionActionClassName =
+    "mt-4 inline-flex items-center justify-center rounded-xl border border-white/10 bg-slate-950/60 px-6 py-3 text-sm font-black text-white transition hover:border-green-400/40 hover:bg-green-500/10 hover:text-green-300";
+
+  const getCompletionType = (
+    offer?: DynamicOffer
+  ): CompletionType => {
+    if (offer?.completionType) {
+      return offer.completionType;
+    }
+
+    if (completionType) {
+      return completionType;
+    }
+
+    const category =
+      offer?.monitoringCategory ??
+      monitoringCategory ??
+      analysisCategory;
+
+    return category ? "contract" : "none";
+  };
+
+  const getMonitoringCategory = (
+    offer?: DynamicOffer
+  ): MonitoringCategory | undefined =>
+    offer?.monitoringCategory ??
+    monitoringCategory ??
+    analysisCategory;
+
+  const buildMonitoringHref = (
+    offer: DynamicOffer | undefined,
+    offerName: string
+  ) => {
+    const category =
+      getMonitoringCategory(offer);
+
+    if (!category) {
+      return "/monitoring/add";
+    }
+
+    const params = new URLSearchParams();
+
+    params.set("source", "mission");
+    params.set("category", category);
+
+    const provider =
+      offer?.provider?.trim() ||
+      partnerName?.trim() ||
+      "";
+
+    if (provider) {
+      params.set("provider", provider);
+    }
+
+    const selectedOfferName =
+      offer?.offerName?.trim() ||
+      offer?.recommendedName?.trim() ||
+      offerName.trim();
+
+    if (selectedOfferName) {
+      params.set(
+        "offer",
+        selectedOfferName
+      );
+    }
+
+    /*
+     * En mode "known", Pilo connaît le tarif.
+     * En mode devis, on laisse le prix vide car
+     * seul le partenaire peut fournir le montant réel.
+     */
+    if (pricingMode === "known") {
+      params.set(
+        "price",
+        String(recommendedPrice)
+      );
+
+      if (monthlySaving > 0) {
+        params.set(
+          "saving",
+          String(monthlySaving)
+        );
+      }
+    }
+
+    return `/monitoring/add?${params.toString()}`;
+  };
+
+  const confirmPurchase = (
+    offerHref: string,
+    offerName: string
+  ) => {
+    const payload = {
+      missionTitle: title,
+      offerName,
+      offerHref,
+      confirmedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(
+      "pilo-last-purchase",
+      JSON.stringify(payload)
+    );
+
+    setConfirmedPurchaseHref(
+      offerHref
+    );
+  };
+
+  const renderCompletionAction = (
+    offer: DynamicOffer | undefined,
+    offerHref: string,
+    offerName: string
+  ) => {
+    const type = getCompletionType(
+      offer
+    );
+
+    if (type === "none") {
+      return null;
+    }
+
+    if (type === "contract") {
+      const category =
+        getMonitoringCategory(offer);
+
+      if (!category) {
+        return null;
+      }
+
+      return (
+        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+          <p className="font-bold text-white">
+            Tu as choisi cette offre ?
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            Confirme ta souscription pour enregistrer le nouveau
+            contrat dans Pilo Monitoring et suivre son prix,
+            son engagement et ses échéances.
+          </p>
+
+          <Link
+            href={buildMonitoringHref(
+              offer,
+              offerName
+            )}
+            className={
+              completionActionClassName
+            }
+          >
+            ✅ J’ai souscrit
+          </Link>
+        </div>
+      );
+    }
+
+    const purchaseConfirmed =
+      confirmedPurchaseHref ===
+      offerHref;
+
+    return (
+      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+        <p className="font-bold text-white">
+          Achat ou prestation ponctuelle
+        </p>
+
+        <p className="mt-2 text-sm leading-6 text-slate-400">
+          Cette action ne crée pas de contrat dans le Monitoring.
+        </p>
+
+        {purchaseConfirmed ? (
+          <p className="mt-4 font-bold text-green-300">
+            ✅ Achat confirmé dans Pilo.
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={() =>
+              confirmPurchase(
+                offerHref,
+                offerName
+              )
+            }
+            className={
+              completionActionClassName
+            }
+          >
+            {purchaseLabel}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   const updateValue = (
     fieldName: string,
@@ -418,6 +664,12 @@ export default function MissionLayout({
                   {finalButtonLabel}
                 </Link>
               )}
+
+              {renderCompletionAction(
+                selectedOffer,
+                finalHref,
+                finalRecommendedName
+              )}
             </div>
           ) : (
             <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
@@ -500,6 +752,12 @@ export default function MissionLayout({
                 </Link>
               )}
 
+              {renderCompletionAction(
+                selectedOffer,
+                finalHref,
+                finalRecommendedName
+              )}
+
               <div className="mt-7 border-t border-white/10 pt-5">
                 <p className="text-sm font-bold text-white">
                   Une fois ton tarif obtenu
@@ -566,6 +824,13 @@ export default function MissionLayout({
                   }
                 </Link>
               )}
+
+              {renderCompletionAction(
+                selectedAlternativeOffer,
+                selectedAlternativeOffer.href,
+                selectedAlternativeOffer.recommendedName ??
+                  "Offre partenaire"
+              )}
             </div>
           )}
 
@@ -612,6 +877,13 @@ export default function MissionLayout({
                 >
                   {thirdOffer.buttonLabel}
                 </Link>
+              )}
+
+              {renderCompletionAction(
+                thirdOffer,
+                thirdOffer.href,
+                thirdOffer.recommendedName ??
+                  "Offre partenaire"
               )}
             </div>
           )}
