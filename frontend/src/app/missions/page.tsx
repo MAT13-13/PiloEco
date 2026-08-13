@@ -28,10 +28,36 @@ const missions = [
     icon: "🐶",
     href: "/missions/animaux",
   },
+
+  {
+    title: "Assurance emprunteur",
+    icon: "🏦",
+    href: "/missions/assurance-emprunteur",
+  },
+  {
+    title: "Assurance habitation",
+    icon: "🏠",
+    href: "/missions/habitation",
+  },
   {
     title: "Assurance Obsèques",
     icon: "🕊️",
     href: "/missions/assurance-obseques",
+  },
+  {
+    title: "Assurance auto",
+    icon: "🚗",
+    href: "/missions/auto",
+  },
+  {
+    title: "Assurance moto",
+    icon: "🏍️",
+    href: "/missions/moto",
+  },
+  {
+    title: "Ambassadeur GSelect",
+    icon: "💼",
+    href: "/missions/ambassadeur",
   },
 
   {
@@ -54,11 +80,7 @@ const missions = [
     icon: "⚡",
     href: "/missions/electricite",
   },
-  {
-    title: "Streaming",
-    icon: "📺",
-    href: "/missions/streaming",
-  },
+
   {
     title: "Banque",
     icon: "🏦",
@@ -87,20 +109,11 @@ const missions = [
   },
 
   {
-    title: "Assurance habitation",
-    icon: "🏠",
-    href: "/missions/habitation",
+    title: "Voyage",
+    icon: "✈️",
+    href: "/missions/voyage",
   },
-  {
-    title: "Assurance auto",
-    icon: "🚗",
-    href: "/missions/auto",
-  },
-  {
-    title: "Assurance moto",
-    icon: "🏍️",
-    href: "/missions/moto",
-  },
+  
   {
     title: "Mobilités douces",
     icon: "🚲",
@@ -116,11 +129,10 @@ const missions = [
     icon: "🏍️",
     href: "/missions/moto-equipement",
   },
-
   {
-    title: "Voyage",
-    icon: "✈️",
-    href: "/missions/voyage",
+    title: "Streaming",
+    icon: "📺",
+    href: "/missions/streaming",
   },
   {
     title: "Formation",
@@ -179,7 +191,8 @@ export default function MissionsPage() {
         </h1>
 
         <p className="mt-4 text-slate-300">
-          Choisis une mission pour trouver une économie.
+          Choisis une mission pour économiser ou découvrir de nouvelles
+          opportunités avec Pilo.
         </p>
 
         <PiloNavigation />
@@ -200,7 +213,9 @@ export default function MissionsPage() {
               </h2>
 
               <p className="mt-2 text-sm text-slate-400">
-                Voir les recommandations →
+                {mission.href === "/missions/ambassadeur"
+                  ? "Découvrir l'opportunité →"
+                  : "Voir les recommandations →"}
               </p>
             </Link>
           ))}

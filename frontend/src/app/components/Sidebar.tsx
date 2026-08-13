@@ -11,46 +11,74 @@ const mainItems = [
 const universeItems = [
   { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
 
-  // Beauté & Artisanat
   { label: "🌸 Beauté & Artisanat", href: "/missions/beaute-artisanat" },
 
-  { label: "❤️ Mutuelle santé", href: "/missions/mutuelle-sante" },
+  { label: "❤️ Mutuelle santé", href: "/missions/mutuelle" },
   { label: "👴 Mutuelle senior", href: "/missions/mutuelle-senior" },
 
-  { label: "🐶 Assurance animaux", href: "/missions/assurance-animaux" },
-  { label: "🕊️ Assurance obsèques", href: "/missions/assurance-obseques" },
-  { label: "📱 Téléphone", href: "/missions/mobile" },
+  { label: "🐶 Assurance animaux", href: "/missions/animaux" },
 
+  {
+    label: "🏦 Assurance emprunteur",
+    href: "/missions/assurance-emprunteur",
+  },
+  {
+    label: "🏠 Assurance habitation",
+    href: "/missions/habitation",
+  },
+  {
+    label: "🕊️ Assurance obsèques",
+    href: "/missions/assurance-obseques",
+  },
+  {
+    label: "🚗 Assurance auto",
+    href: "/missions/auto",
+  },
+  {
+    label: "🏍️ Assurance moto",
+    href: "/missions/moto",
+  },
+  {
+    label: "💼 Ambassadeur GSelect",
+    href: "/missions/ambassadeur",
+  },
+
+  { label: "📱 Téléphone", href: "/missions/mobile" },
   { label: "👴 Téléphone senior", href: "/missions/telephone-senior" },
   { label: "🌐 Internet", href: "/missions/internet" },
   { label: "⚡ Électricité", href: "/missions/electricite" },
 
-  { label: "📺 Streaming", href: "/missions/streaming" },
   { label: "🏦 Banque", href: "/missions/banque" },
   { label: "🏠 Crédit immobilier", href: "/missions/credit-immobilier" },
 
-  { label: "🛠️ Travaux & rénovation", href: "/missions/travaux-renovation" },
-  { label: "💳 Fintech & budget", href: "/missions/fintech-budget" },
-  { label: "₿ Cryptomonnaies", href: "/missions/cryptomonnaies" },
+  { label: "🛠️ Travaux & rénovation", href: "/missions/travaux" },
+  { label: "💳 Fintech & budget", href: "/missions/fintech" },
+  { label: "₿ Cryptomonnaies", href: "/missions/crypto" },
 
-  { label: "🏠 Assurance habitation", href: "/missions/habitation" },
-  { label: "🚗 Assurance auto", href: "/missions/assurance-auto" },
-  { label: "🏍️ Assurance moto", href: "/missions/assurance-moto" },
+  { label: "✈️ Voyage", href: "/missions/voyage" },
 
   { label: "🚲 Mobilités douces", href: "/missions/mobilites-douces" },
   { label: "🔧 Services auto", href: "/missions/services-auto" },
   { label: "🏍️ Moto & équipement", href: "/missions/moto-equipement" },
 
-  { label: "✈️ Voyage", href: "/missions/voyage" },
+  { label: "📺 Streaming", href: "/missions/streaming" },
   { label: "🎓 Formation", href: "/missions/formation" },
-  { label: "🔐 Alarme & sécurité", href: "/missions/alarme-securite" },
+  { label: "🔐 Alarme & sécurité", href: "/missions/securite" },
 
   { label: "🛡️ Cybersécurité", href: "/missions/cybersecurite" },
-  { label: "🌐 Site internet pro", href: "/missions/site-internet-pro" },
 
-  { label: "🏢 Services aux entreprises", href: "/missions/services-entreprises" },
-
-  { label: "💻 Logiciels", href: "/missions/logiciels" },
+  {
+    label: "🏢 Services aux entreprises",
+    href: "/missions/services-entreprises",
+  },
+  {
+    label: "🌐 Site internet pro",
+    href: "/missions/site-internet-pro",
+  },
+  {
+    label: "💻 Logiciels",
+    href: "/missions/logiciels",
+  },
 
   { label: "🚚 Déménagement", href: "/missions/demenagement" },
   { label: "📦 Débarras", href: "/missions/debarras" },

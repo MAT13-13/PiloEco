@@ -35,6 +35,14 @@ const assurances = [
     saving: "Opportunité d'économie",
     href: "/missions/animaux",
   },
+  {
+    icon: "🏦",
+    title: "Assurance emprunteur",
+    description:
+      "Analyse ton assurance de prêt et découvre si une solution partenaire peut t'aider à réduire son coût.",
+    saving: "Opportunité d'économie",
+    href: "/missions/assurance-emprunteur",
+  },
 ];
 
 export default function AssuranceHubPage() {
@@ -58,9 +66,8 @@ export default function AssuranceHubPage() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-xl text-slate-300">
-            Pilo regroupe ici les missions liées aux assurances afin
-            de t&apos;aider à identifier les contrats qui peuvent être
-            optimisés.
+            Pilo regroupe ici les missions liées aux assurances afin de
+            t&apos;aider à identifier les contrats qui peuvent être optimisés.
           </p>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2">

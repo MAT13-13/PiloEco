@@ -117,6 +117,14 @@ type MissionLayoutProps = {
   monitoringCategory?: MonitoringCategory;
   partnerName?: string;
   purchaseLabel?: string;
+
+  /*
+   * Permet d'afficher un message spécifique pour les parcours
+   * entièrement réalisés par l'utilisateur, sans démarchage téléphonique.
+   *
+   * Exemple : assurance emprunteur GSelect.
+   */
+  selfServiceQuote?: boolean;
 };
 
 export default function MissionLayout({
@@ -142,6 +150,7 @@ export default function MissionLayout({
   monitoringCategory,
   partnerName,
   purchaseLabel = "✅ J’ai réalisé cet achat",
+  selfServiceQuote = false,
 }: MissionLayoutProps) {
   const router = useRouter();
 
@@ -677,27 +686,58 @@ export default function MissionLayout({
                 💡 Opportunité d&apos;économie détectée
               </p>
 
-              <h2 className="mt-3 text-3xl font-black text-white">
-                Vérifie si tu peux réellement payer moins cher
-              </h2>
+              {selfServiceQuote ? (
+                <>
+                  <div className="mt-5 rounded-2xl border border-green-500/20 bg-slate-950/40 p-5">
+                    <p className="font-bold text-white">
+                      🛡️ Aucune démarche téléphonique
+                    </p>
 
-              <p className="mt-4 text-slate-300">
-                Pilo a identifié une ou plusieurs solutions
-                susceptibles de correspondre à ton besoin.
-              </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                      Aucune démarche téléphonique ne sera effectuée par la
+                      suite. Tu restes maître de ta démarche et avances à ton
+                      rythme.
+                    </p>
+                  </div>
 
-              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-                <p className="font-bold text-white">
-                  Plusieurs partenaires peuvent t&apos;être proposés
-                </p>
+                  <div className="mt-4 rounded-2xl border border-green-500/20 bg-slate-950/40 p-5">
+                    <p className="font-bold text-green-300">
+                      ✅ Tu réalises ta démarche toi-même
+                    </p>
 
-                <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Les solutions affichées dépendent de tes réponses
-                  et de ton besoin. Lorsque le tarif est personnalisé,
-                  Pilo ne peut pas annoncer une économie avant que
-                  le partenaire ait calculé ton prix ou ton devis.
-                </p>
-              </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                      Tu consultes la solution proposée et poursuis toi-même
+                      les différentes étapes jusqu&apos;à la souscription si
+                      tu le souhaites. Aucune action n&apos;est réalisée sans
+                      ton accord.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="mt-3 text-3xl font-black text-white">
+                    Vérifie si tu peux réellement payer moins cher
+                  </h2>
+
+                  <p className="mt-4 text-slate-300">
+                    Pilo a identifié une ou plusieurs solutions
+                    susceptibles de correspondre à ton besoin.
+                  </p>
+
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+                    <p className="font-bold text-white">
+                      Plusieurs partenaires peuvent t&apos;être proposés
+                    </p>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-300">
+                      Les solutions affichées dépendent de tes réponses
+                      et de ton besoin. Lorsque le tarif est personnalisé,
+                      Pilo ne peut pas annoncer une économie avant que
+                      le partenaire ait calculé ton prix ou ton devis.
+                    </p>
+                  </div>
+                </>
+              )}
 
               <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/5 p-5">
                 <p className="font-bold text-green-300">
