@@ -9,9 +9,10 @@ export default function DemenagementMissionPage() {
       title="Préparer et optimiser ton déménagement"
       subtitle="Choisis le service dont tu as besoin pour mieux maîtriser les dépenses liées à ton déménagement."
       basePrice={900}
-      recommendedPrice={700}
+      recommendedPrice={900}
       recommendedName="Solution de déménagement adaptée"
-      advice="Compare plusieurs prestataires et vérifie précisément les services inclus avant de réserver."
+      pricingMode="quote"
+      advice="Compare les services inclus dans ton devis avant de confirmer ton déménagement."
       fields={[
         {
           name: "moveType",
@@ -40,6 +41,30 @@ export default function DemenagementMissionPage() {
           defaultValue: 900,
         },
       ]}
+      dynamicOfferField="moveType"
+      dynamicOffers={{
+        "Déménageur professionnel": {
+          href: "https://www.gentlemen-demenagement.com/piloeco",
+          buttonLabel: "🚚 Obtenir mon devis avec -8 %",
+          recommendedName:
+            "Les Gentlemen du Déménagement",
+          advice:
+            "Grâce au partenariat PiloEco, bénéficie de 8 % de remise sur ton déménagement avec Les Gentlemen du Déménagement.",
+          external: true,
+
+          exclusivePartner: true,
+
+          contactPhone: "+33475460404",
+          contactPhoneLabel: "Parler à un conseiller",
+          contactCode: "PILO26GDD",
+
+          completionType: "purchase",
+          provider: "Les Gentlemen du Déménagement",
+          offerName: "Déménagement — avantage PiloEco -8 %",
+        },
+      }}
+      completionType="purchase"
+      purchaseLabel="✅ J’ai réalisé mon déménagement"
       offerPath="/missions"
     />
   );

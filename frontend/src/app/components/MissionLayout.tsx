@@ -40,6 +40,14 @@ type DynamicOffer = {
   advice?: string;
   external?: boolean;
 
+  // Partenaire exclusif sur cette mission
+  exclusivePartner?: boolean;
+
+  // Contact humain facultatif
+  contactPhone?: string;
+  contactPhoneLabel?: string;
+  contactCode?: string;
+
   /*
    * Facultatif : permet de personnaliser le suivi
    * après une souscription / un achat.
@@ -159,6 +167,8 @@ export default function MissionLayout({
     setConfirmedPurchaseHref,
   ] = useState<string | null>(null);
 
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+
   const [values, setValues] = useState<
     Record<string, string | number>
   >(
@@ -256,6 +266,9 @@ export default function MissionLayout({
 
   const opensExternalWebsite =
     selectedOffer?.external === true;
+
+  const isExclusivePartner =
+    selectedOffer?.exclusivePartner === true;
 
   const actionClassName =
     "mt-8 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-black transition hover:bg-green-400";
@@ -715,27 +728,55 @@ export default function MissionLayout({
                 </>
               ) : (
                 <>
-                  <h2 className="mt-3 text-3xl font-black text-white">
-                    Vérifie si tu peux réellement payer moins cher
-                  </h2>
+                  {isExclusivePartner ? (
+                    <>
+                      <h2 className="mt-3 text-3xl font-black text-white">
+                        Ton avantage partenaire PiloEco
+                      </h2>
 
-                  <p className="mt-4 text-slate-300">
-                    Pilo a identifié une ou plusieurs solutions
-                    susceptibles de correspondre à ton besoin.
-                  </p>
+                      <p className="mt-4 text-slate-300">
+                        Pilo a sélectionné un partenaire dédié pour répondre
+                        à ton besoin.
+                      </p>
 
-                  <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-                    <p className="font-bold text-white">
-                      Plusieurs partenaires peuvent t&apos;être proposés
-                    </p>
+                      <div className="mt-5 rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
+                        <p className="text-lg font-black text-green-300">
+                          🎁 Avantage exclusif PiloEco
+                        </p>
 
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      Les solutions affichées dépendent de tes réponses
-                      et de ton besoin. Lorsque le tarif est personnalisé,
-                      Pilo ne peut pas annoncer une économie avant que
-                      le partenaire ait calculé ton prix ou ton devis.
-                    </p>
-                  </div>
+                        <p className="mt-2 text-sm leading-6 text-slate-300">
+                          Profite de l&apos;avantage négocié par PiloEco auprès
+                          de notre partenaire. Le tarif final dépend de ton
+                          déménagement et sera calculé directement lors de
+                          ta demande de devis.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="mt-3 text-3xl font-black text-white">
+                        Vérifie si tu peux réellement payer moins cher
+                      </h2>
+
+                      <p className="mt-4 text-slate-300">
+                        Pilo a identifié une ou plusieurs solutions
+                        susceptibles de correspondre à ton besoin.
+                      </p>
+
+                      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+                        <p className="font-bold text-white">
+                          Plusieurs partenaires peuvent t&apos;être proposés
+                        </p>
+
+                        <p className="mt-2 text-sm leading-6 text-slate-300">
+                          Les solutions affichées dépendent de tes réponses
+                          et de ton besoin. Lorsque le tarif est personnalisé,
+                          Pilo ne peut pas annoncer une économie avant que
+                          le partenaire ait calculé ton prix ou ton devis.
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
@@ -790,6 +831,68 @@ export default function MissionLayout({
                 >
                   {finalButtonLabel}
                 </Link>
+              )}
+
+              {selectedOffer?.contactPhone && (
+                <div className="mt-6 rounded-2xl border border-green-500/20 bg-slate-950/50 p-5">
+                  <p className="font-bold text-white">
+                    📞 Tu préfères parler à quelqu&apos;un ?
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Si tu souhaites être rassuré ou accompagné, tu peux
+                    contacter directement le partenaire. Ce contact reste
+                    entièrement facultatif.
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <a
+                      href={`tel:${selectedOffer.contactPhone}`}
+                      className="inline-flex items-center justify-center rounded-xl border border-green-400/40 bg-green-500/10 px-5 py-3 font-bold text-green-300 transition hover:bg-green-500/20"
+                    >
+                      📞 {selectedOffer.contactPhoneLabel ?? selectedOffer.contactPhone}
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(
+                            selectedOffer.contactPhone ?? ""
+                          );
+                          setCopiedPhone(selectedOffer.contactPhone ?? null);
+                          window.setTimeout(() => setCopiedPhone(null), 2000);
+                        } catch {
+                          setCopiedPhone(null);
+                        }
+                      }}
+                      className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-slate-950/60 px-5 py-3 text-sm font-bold text-white transition hover:border-green-400/40 hover:text-green-300"
+                    >
+                      {copiedPhone === selectedOffer.contactPhone
+                        ? "✅ Numéro copié"
+                        : "📋 Copier le numéro"}
+                    </button>
+                  </div>
+
+                  <p className="mt-3 text-sm font-semibold text-white">
+                    {selectedOffer.contactPhone.replace(
+                      "+33",
+                      "0"
+                    ).replace(
+                      /(\d{2})(?=\d)/g,
+                      "$1 "
+                    ).trim()}
+                  </p>
+
+                  {selectedOffer.contactCode && (
+                    <p className="mt-3 text-sm text-slate-300">
+                      Code avantage à communiquer :{" "}
+                      <span className="font-black text-green-300">
+                        {selectedOffer.contactCode}
+                      </span>
+                    </p>
+                  )}
+                </div>
               )}
 
               {renderCompletionAction(
