@@ -14,6 +14,10 @@ const universeItems = [
   { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
   { label: "🌸 Beauté & Artisanat", href: "/missions/beaute-artisanat" },
   { label: "✈️ Voyage", href: "/missions/voyage" },
+  {
+  label: "⚡ Électricité",
+  href: "/missions/electricite",
+},
   { label: "📱 Téléphone", href: "/missions/mobile" },
   { label: "👵 Téléphone senior", href: "/missions/telephone-senior" },
   { label: "🌐 Site internet pro", href: "/missions/site-internet-pro" },
