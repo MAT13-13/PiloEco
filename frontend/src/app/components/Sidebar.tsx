@@ -104,7 +104,6 @@ const universeItems = [
 const upcomingItems = [
   { label: "❤️ Mutuelle santé" },
   { label: "🌐 Internet" },
-  { label: "⚡ Électricité" },
   { label: "🏦 Banque" },
   { label: "📺 Streaming" },
   { label: "💻 Logiciels" },
@@ -145,7 +144,6 @@ export default function Sidebar() {
 
         <div className="my-6 border-t border-slate-800" />
 
-        {/* PREMIUM */}
         <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -170,26 +168,23 @@ export default function Sidebar() {
             </Link>
 
             <Link
-  href="/monitoring"
-  className="block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
->
-  📊 Monitoring
-</Link>
+              href="/monitoring"
+              className="block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
+            >
+              📊 Monitoring
+            </Link>
 
-<Link
-  href="/pilolife"
-  className="mt-2 block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
->
-  🌿 PiloLife
-</Link>
-
-       
-            </div>
+            <Link
+              href="/pilolife"
+              className="mt-2 block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
+            >
+              🌿 PiloLife
+            </Link>
+          </div>
         </div>
 
         <div className="my-6 border-t border-slate-800" />
 
-        {/* UNIVERS PILO */}
         <button
           type="button"
           onClick={() => setUniversOpen((value) => !value)}
@@ -226,7 +221,6 @@ export default function Sidebar() {
 
         <div className="my-6 border-t border-slate-800" />
 
-        {/* EN COURS DE PARTENARIAT */}
         <button
           type="button"
           onClick={() => setUpcomingOpen((value) => !value)}
