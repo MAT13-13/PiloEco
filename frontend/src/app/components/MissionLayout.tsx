@@ -484,55 +484,15 @@ export default function MissionLayout({
 
   const startAnalysis = () => {
     if (!analysisCategory) {
+      router.push("/analyse");
       return;
     }
 
-    const normalizedValues: Record<
-      string,
-      string
-    > = Object.fromEntries(
-      Object.entries(values).map(
-        ([key, value]) => [
-          key,
-          String(value ?? ""),
-        ]
-      )
+    router.push(
+      `/analyse?category=${encodeURIComponent(
+        analysisCategory
+      )}`
     );
-
-    normalizedValues.monthlyPrice = String(
-      safeCurrentPrice
-    );
-
-    const analysisPayload = {
-      category: analysisCategory,
-      categoryLabel: title,
-      icon,
-      values: normalizedValues,
-
-      /*
-       * Permet aux prochaines étapes de savoir
-       * si Pilo connaît réellement un tarif
-       * ou s'il faut attendre un devis.
-       */
-      pricingMode,
-
-      createdAt: new Date().toISOString(),
-    };
-
-    localStorage.setItem(
-      "pilo-analysis",
-      JSON.stringify(analysisPayload)
-    );
-
-    localStorage.removeItem(
-      "pilo-analysis-result"
-    );
-
-    localStorage.removeItem(
-      "pilo-ai-advice"
-    );
-
-    router.push("/analyse-loading");
   };
 
   return (
