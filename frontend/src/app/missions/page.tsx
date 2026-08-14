@@ -117,22 +117,55 @@ export default function MissionsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
-        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-green-400 sm:text-sm">
           PiloEco
         </p>
 
-        <h1 className="text-4xl font-black">
+        <h1 className="mt-2 text-3xl font-black sm:text-4xl">
           Mes missions
         </h1>
 
-        <p className="mt-4 max-w-2xl text-slate-300">
-          Choisis une mission pour économiser ou
-          découvrir de nouvelles opportunités avec Pilo.
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+          Découvre les solutions déjà disponibles
+          et les nouvelles catégories que Pilo prépare.
         </p>
 
         <PiloNavigation />
+
+        {/* RÉSUMÉ */}
+        {!loading && !errorMessage && (
+          <section className="mt-8 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-green-400">
+                Disponibles
+              </p>
+
+              <p className="mt-2 text-3xl font-black text-white">
+                {availableMissions.length}
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                missions accessibles maintenant
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
+                En préparation
+              </p>
+
+              <p className="mt-2 text-3xl font-black text-white">
+                {pendingMissions.length}
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                catégories en cours de partenariat
+              </p>
+            </div>
+          </section>
+        )}
 
         {/* CHARGEMENT */}
         {loading && (
@@ -170,7 +203,7 @@ export default function MissionsPage() {
             {/* MISSIONS DISPONIBLES */}
             <section className="mt-10">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400 sm:text-sm">
                   Disponibles maintenant
                 </p>
 
@@ -178,7 +211,7 @@ export default function MissionsPage() {
                   Missions disponibles
                 </h2>
 
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
                   Ces missions disposent déjà
                   d&apos;une solution ou d&apos;un
                   partenaire sélectionné par Pilo.
@@ -197,7 +230,7 @@ export default function MissionsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {availableMissions.map(
                     (mission) => {
                       const missionRoute =
@@ -208,28 +241,32 @@ export default function MissionsPage() {
                         <Link
                           key={mission.id}
                           href={missionRoute}
-                          className="group relative rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800"
+                          className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800 sm:p-6"
                         >
+                          <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
+
                           {mission.is_premium && (
-                            <div className="absolute right-4 top-4 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-[10px] font-black uppercase text-purple-300">
+                            <div className="absolute right-4 top-4 rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-purple-300">
                               Premium
                             </div>
                           )}
 
-                          <div className="text-4xl">
-                            {mission.icon}
+                          <div className="relative">
+                            <div className="text-3xl sm:text-4xl">
+                              {mission.icon}
+                            </div>
+
+                            <h2 className="mt-4 pr-16 text-lg font-black leading-6 sm:text-xl">
+                              {mission.title}
+                            </h2>
+
+                            <p className="mt-2 text-xs leading-5 text-slate-500 transition group-hover:text-green-300 sm:text-sm">
+                              {mission.slug ===
+                              "ambassadeur"
+                                ? "Découvrir l'opportunité →"
+                                : "Voir les recommandations →"}
+                            </p>
                           </div>
-
-                          <h2 className="mt-4 text-xl font-black">
-                            {mission.title}
-                          </h2>
-
-                          <p className="mt-2 text-sm text-slate-400 transition group-hover:text-green-300">
-                            {mission.slug ===
-                            "ambassadeur"
-                              ? "Découvrir l'opportunité →"
-                              : "Voir les recommandations →"}
-                          </p>
                         </Link>
                       );
                     }
@@ -240,9 +277,9 @@ export default function MissionsPage() {
 
             {/* MISSIONS EN COURS DE PARTENARIAT */}
             {pendingMissions.length > 0 && (
-              <section className="mt-20 border-t border-slate-800 pt-12">
+              <section className="mt-14 border-t border-slate-800 pt-10 sm:mt-20 sm:pt-12">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-400">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-400 sm:text-sm">
                     Prochainement
                   </p>
 
@@ -250,7 +287,7 @@ export default function MissionsPage() {
                     En cours de partenariat
                   </h2>
 
-                  <p className="mt-2 max-w-2xl text-sm text-slate-400">
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
                     Pilo prépare actuellement de
                     nouvelles solutions pour ces
                     catégories. Elles seront
@@ -260,29 +297,34 @@ export default function MissionsPage() {
                   </p>
                 </div>
 
-                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {pendingMissions.map(
                     (mission) => (
                       <div
                         key={mission.id}
-                        className="relative rounded-2xl border border-slate-800 bg-slate-900/50 p-6 opacity-75"
+                        className="relative overflow-hidden rounded-2xl border border-amber-500/15 bg-slate-900/60 p-5 sm:p-6"
                       >
-                        <div className="absolute right-4 top-4 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">
-                          En cours de partenariat
+                        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-500/5 blur-2xl" />
+
+                        <div className="relative">
+                          <div className="mb-4 flex items-start justify-between gap-3">
+                            <div className="text-3xl sm:text-4xl">
+                              {mission.icon}
+                            </div>
+
+                            <div className="max-w-[150px] rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-center text-[9px] font-black uppercase leading-4 text-amber-300">
+                              En cours de partenariat
+                            </div>
+                          </div>
+
+                          <h2 className="text-lg font-black leading-6 sm:text-xl">
+                            {mission.title}
+                          </h2>
+
+                          <p className="mt-2 text-xs leading-5 text-slate-500 sm:text-sm">
+                            Solution partenaire en préparation
+                          </p>
                         </div>
-
-                        <div className="text-4xl">
-                          {mission.icon}
-                        </div>
-
-                        <h2 className="mt-4 pr-24 text-xl font-black">
-                          {mission.title}
-                        </h2>
-
-                        <p className="mt-2 text-sm text-slate-500">
-                          Solution partenaire en
-                          préparation
-                        </p>
                       </div>
                     )
                   )}
@@ -291,6 +333,8 @@ export default function MissionsPage() {
             )}
           </>
         )}
+
+        <div className="h-10" />
       </div>
     </main>
   );
