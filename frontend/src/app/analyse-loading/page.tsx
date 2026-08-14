@@ -8,8 +8,6 @@ import {
 
 import { useRouter } from "next/navigation";
 
-import { monitoringOffers } from "../monitoring/services/monitoring-offers.service";
-
 type AnalyseCategory =
   | "famille"
   | "telephone"
@@ -56,133 +54,22 @@ type AnalysisPayload = {
   createdAt: string;
 };
 
-type RecommendedOffer = {
-  provider: string;
-  offer: string;
-  price: number;
-};
-
-const loadingSteps: Record<
-  AnalyseCategory,
-  string[]
-> = {
-  famille: [
-    "Analyse de la composition de ton foyer",
-    "Étude de ta situation familiale",
-    "Recherche des aides disponibles",
-    "Vérification des dispositifs officiels",
-    "Préparation du conseil de Pilo",
-  ],
-
-  telephone: [
-    "Lecture de ton opérateur mobile",
-    "Analyse du volume de données",
-    "Comparaison du prix de ton forfait",
-    "Recherche d’une offre plus avantageuse",
-    "Préparation du conseil de Pilo",
-  ],
-
-  internet: [
-    "Lecture de ton fournisseur Internet",
-    "Vérification de ta technologie de connexion",
-    "Comparaison du prix de ta box",
-    "Recherche des offres disponibles",
-    "Préparation du conseil de Pilo",
-  ],
-
-  electricite: [
-    "Lecture de ton fournisseur d’électricité",
-    "Vérification de ton option tarifaire",
-    "Analyse de ta mensualité",
-    "Comparaison avec une offre de référence",
-    "Préparation du conseil de Pilo",
-  ],
-
-  habitation: [
-    "Lecture de ton assureur habitation",
-    "Vérification du type de logement",
-    "Analyse de ta cotisation",
-    "Comparaison des contrats habitation",
-    "Préparation du conseil de Pilo",
-  ],
-
-  auto: [
-    "Lecture de ton assureur auto",
-    "Vérification de ta formule",
-    "Analyse de ta cotisation",
-    "Comparaison des assurances auto",
-    "Préparation du conseil de Pilo",
-  ],
-
-  animaux: [
-    "Lecture de ton assureur",
-    "Vérification de l’animal assuré",
-    "Analyse de ta cotisation",
-    "Comparaison des protections disponibles",
-    "Préparation du conseil de Pilo",
-  ],
-
-  banque: [
-    "Lecture de ta banque actuelle",
-    "Vérification de ta carte ou formule",
-    "Analyse de tes frais bancaires",
-    "Comparaison des offres bancaires",
-    "Préparation du conseil de Pilo",
-  ],
-
-  streaming: [
-    "Lecture de ton abonnement",
-    "Vérification de ta formule",
-    "Analyse du prix mensuel",
-    "Recherche d’une formule optimisée",
-    "Préparation du conseil de Pilo",
-  ],
-
-  telephoneSenior: ["Lecture de ton besoin", "Analyse de ton budget", "Recherche des solutions", "Comparaison des options", "Préparation du conseil de Pilo"],
-  moto: ["Lecture de ton assurance moto", "Analyse de ta couverture", "Étude de ta cotisation", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  mutuelle: ["Lecture de ta mutuelle", "Analyse de ta couverture", "Étude de ta cotisation", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  fintech: ["Lecture de ta situation", "Analyse de ton besoin", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  securite: ["Lecture de ton besoin", "Analyse de ton logement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  demenagement: ["Lecture de ton projet", "Analyse de ton déménagement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  servicesAuto: ["Lecture de ton besoin automobile", "Analyse de ton véhicule", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  mobilitesDouces: ["Lecture de ton besoin", "Analyse de ta mobilité", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  travaux: ["Lecture de ton projet", "Analyse de tes travaux", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  logiciels: ["Lecture de ton besoin", "Analyse de ton équipement", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  formation: ["Lecture de ton projet", "Analyse de tes besoins", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  voyage: ["Lecture de ton projet", "Analyse de ta destination", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  beauteArtisanat: ["Lecture de ton besoin", "Analyse de tes préférences", "Étude de ton budget", "Recherche des créations disponibles", "Préparation du conseil de Pilo"],
-  siteInternetPro: ["Lecture de ton activité", "Analyse de ton projet web", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  assuranceEmprunteur: ["Lecture de ton prêt", "Analyse de ta couverture", "Étude de ton coût actuel", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  ambassadeur: ["Lecture de ton profil", "Analyse de tes disponibilités", "Étude de ton objectif", "Recherche de la solution", "Préparation du conseil de Pilo"],
-  assuranceObseques: ["Lecture de ta situation", "Analyse de ta couverture", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  creditImmobilier: ["Lecture de ton projet", "Analyse de ton financement", "Étude de ton apport et revenus", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  diagnosticImmobilier: ["Lecture du bien", "Analyse de la situation", "Étude des diagnostics utiles", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  mutuelleSenior: ["Lecture de ton profil", "Analyse de tes besoins santé", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  epargneRetraite: ["Lecture de ton objectif", "Analyse de ton horizon", "Étude de ton effort d'épargne", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  motoEquipement: ["Lecture de ton besoin", "Analyse de ta moto", "Étude de ton budget", "Recherche des équipements", "Préparation du conseil de Pilo"],
-  crypto: ["Lecture de ton profil", "Analyse de ton besoin", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  cybersecurite: ["Lecture de tes usages", "Analyse de tes appareils", "Étude de ton besoin de protection", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  servicesEntreprises: ["Lecture de ton activité", "Analyse de ton besoin professionnel", "Étude de ton budget", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  debarras: ["Lecture du lieu", "Analyse du volume", "Étude des contraintes d'accès", "Recherche des solutions", "Préparation du conseil de Pilo"],
-  gaz: ["Lecture de ton fournisseur de gaz", "Analyse de ta consommation", "Étude de ta mensualité", "Recherche des solutions", "Préparation du conseil de Pilo"],
-};
-
 const categoryDescriptions: Record<
   AnalyseCategory,
   string
 > = {
   famille: "Famille & aides",
-  telephone: "Forfait mobile",
+  telephone: "Téléphone",
+  telephoneSenior: "Téléphone senior",
   internet: "Internet",
   electricite: "Électricité",
   habitation: "Assurance habitation",
   auto: "Assurance auto",
+  moto: "Assurance moto",
+  mutuelle: "Mutuelle santé",
   animaux: "Assurance animaux",
   banque: "Banque",
   streaming: "Streaming",
-  telephoneSenior: "Téléphone senior",
-  moto: "Assurance moto",
-  mutuelle: "Mutuelle santé",
   fintech: "Fintech & budget",
   securite: "Alarme & sécurité",
   demenagement: "Déménagement",
@@ -209,6 +96,77 @@ const categoryDescriptions: Record<
   gaz: "Gaz",
 };
 
+const genericPartnerSteps = [
+  "Lecture de ton besoin",
+  "Analyse de ton budget",
+  "Recherche de la solution partenaire",
+  "Vérification de la solution proposée",
+  "Préparation du conseil de Pilo",
+];
+
+const loadingSteps: Record<
+  AnalyseCategory,
+  string[]
+> = {
+  famille: [
+    "Lecture de la composition de ton foyer",
+    "Analyse de ta situation familiale",
+    "Étude de ta situation de logement",
+    "Recherche des aides disponibles",
+    "Préparation du conseil de Pilo",
+  ],
+
+  diagnosticImmobilier: [
+    "Lecture de ton besoin immobilier",
+    "Analyse du type de bien",
+    "Identification des diagnostics adaptés",
+    "Recherche de la solution partenaire",
+    "Préparation du conseil de Pilo",
+  ],
+
+  ambassadeur: [
+    "Lecture de ton objectif",
+    "Analyse de ta disponibilité",
+    "Vérification de ton besoin",
+    "Recherche de la solution partenaire",
+    "Préparation du conseil de Pilo",
+  ],
+
+  telephone: genericPartnerSteps,
+  telephoneSenior: genericPartnerSteps,
+  internet: genericPartnerSteps,
+  electricite: genericPartnerSteps,
+  habitation: genericPartnerSteps,
+  auto: genericPartnerSteps,
+  moto: genericPartnerSteps,
+  mutuelle: genericPartnerSteps,
+  animaux: genericPartnerSteps,
+  banque: genericPartnerSteps,
+  streaming: genericPartnerSteps,
+  fintech: genericPartnerSteps,
+  securite: genericPartnerSteps,
+  demenagement: genericPartnerSteps,
+  servicesAuto: genericPartnerSteps,
+  mobilitesDouces: genericPartnerSteps,
+  travaux: genericPartnerSteps,
+  logiciels: genericPartnerSteps,
+  formation: genericPartnerSteps,
+  voyage: genericPartnerSteps,
+  beauteArtisanat: genericPartnerSteps,
+  siteInternetPro: genericPartnerSteps,
+  assuranceEmprunteur: genericPartnerSteps,
+  assuranceObseques: genericPartnerSteps,
+  creditImmobilier: genericPartnerSteps,
+  mutuelleSenior: genericPartnerSteps,
+  epargneRetraite: genericPartnerSteps,
+  motoEquipement: genericPartnerSteps,
+  crypto: genericPartnerSteps,
+  cybersecurite: genericPartnerSteps,
+  servicesEntreprises: genericPartnerSteps,
+  debarras: genericPartnerSteps,
+  gaz: genericPartnerSteps,
+};
+
 function isAnalyseCategory(
   value: unknown
 ): value is AnalyseCategory {
@@ -218,109 +176,18 @@ function isAnalyseCategory(
   );
 }
 
-function isMonitoringCategory(
-  category: AnalyseCategory
-) {
-  return (
-    category === "telephone" ||
-    category === "internet" ||
-    category === "electricite" ||
-    category === "habitation" ||
-    category === "auto" ||
-    category === "animaux" ||
-    category === "banque" ||
-    category === "streaming"
-  );
-}
-
-function getRecommendedOffer(
-  category: AnalyseCategory
-): RecommendedOffer | undefined {
-  /*
-   * Famille ne correspond pas à un contrat classique.
-   * On utilise donc les dispositifs officiels comme
-   * recommandation de référence.
-   */
-  if (category === "famille") {
-    return {
-      provider: "Service-Public.fr",
-      offer: "Aides et dispositifs officiels",
-      price: 0,
-    };
-  }
-
-  if (isMonitoringCategory(category)) {
-    const monitoringOffer =
-      monitoringOffers[
-        category as keyof typeof monitoringOffers
-      ];
-
-    if (monitoringOffer) {
-      return monitoringOffer;
-    }
-  }
-
-  return {
-    provider: "Partenaires Pilo",
-    offer: "Solution partenaire adaptée à ton besoin",
-    price: 0,
-  };
-}
-
-function getCurrentPrice(
+function getBudget(
   analysis: AnalysisPayload
-): number {
-  const rawPrice =
-    analysis.values.monthlyPrice ??
+) {
+  const rawBudget =
     analysis.values.budget ??
     "0";
 
-  const parsedPrice = Number(rawPrice);
+  const budget = Number(rawBudget);
 
-  return Number.isFinite(parsedPrice)
-    ? parsedPrice
+  return Number.isFinite(budget)
+    ? budget
     : 0;
-}
-
-function getProvider(
-  analysis: AnalysisPayload
-): string {
-  if (analysis.category === "famille") {
-    return (
-      analysis.values.householdStatus ??
-      "Foyer non renseigné"
-    );
-  }
-
-  return (
-    analysis.values.provider ??
-    analysis.values.operator ??
-    ""
-  );
-}
-
-function getCurrentOffer(
-  analysis: AnalysisPayload
-): string {
-  if (analysis.category === "famille") {
-    const children =
-      analysis.values.childrenCount ?? "0";
-
-    const housing =
-      analysis.values.housingStatus ??
-      "Logement non renseigné";
-
-    return `${children} enfant(s) — ${housing}`;
-  }
-
-  return (
-    analysis.values.formula ??
-    analysis.values.offer ??
-    analysis.values.connectionType ??
-    analysis.values.tariff ??
-    analysis.values.commitment ??
-    ""
-  );
 }
 
 export default function AnalyseLoadingPage() {
@@ -344,14 +211,16 @@ export default function AnalyseLoadingPage() {
     if (!analysis) {
       return [
         "Lecture de tes informations",
-        "Analyse de ta situation",
-        "Recherche des solutions",
-        "Étude des économies possibles",
+        "Analyse de ton besoin",
+        "Recherche de la solution partenaire",
+        "Vérification de la solution",
         "Préparation du conseil de Pilo",
       ];
     }
 
-    return loadingSteps[analysis.category];
+    return loadingSteps[
+      analysis.category
+    ];
   }, [analysis]);
 
   useEffect(() => {
@@ -408,152 +277,99 @@ export default function AnalyseLoadingPage() {
 
         setAnalysis(validAnalysis);
 
-        const currentPrice =
-          getCurrentPrice(validAnalysis);
+        const budget =
+          getBudget(validAnalysis);
 
-        const recommendedOffer =
-          getRecommendedOffer(
-            validAnalysis.category
-          );
-
-        if (!recommendedOffer) {
-          throw new Error(
-            "Aucune offre de référence n’est disponible pour cette catégorie."
-          );
-        }
-
-        /*
-         * Pour Famille & aides, on ne présente pas
-         * une économie commerciale automatique.
-         * Le résultat dépendra des aides accessibles
-         * selon la situation du foyer.
-         */
-        const canCalculateSavings =
-          isMonitoringCategory(
-            validAnalysis.category
-          );
-
-        const savings =
-          canCalculateSavings
-            ? Math.max(
-                0,
-                Math.round(
-                  (currentPrice -
-                    recommendedOffer.price) *
-                    12
-                )
-              )
-            : 0;
-
-        const score =
-          !canCalculateSavings
-            ? 70
-            : currentPrice <= 0
-              ? 50
-              : Math.max(
-                  0,
-                  Math.min(
-                    100,
-                    Math.round(
-                      100 -
-                        (savings /
-                          (currentPrice *
-                            12)) *
-                          100
-                    )
-                  )
-                );
-
-        const response = await fetch(
-          "/api/pilo",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body: JSON.stringify({
-              score,
-              savings,
-
-              depenses: [
-                {
-                  description:
-                    categoryDescriptions[
-                      validAnalysis.category
-                    ],
-
-                  category:
-                    validAnalysis.category,
-
-                  amount: currentPrice,
-
-                  provider:
-                    getProvider(
-                      validAnalysis
-                    ),
-
-                  currentOffer:
-                    getCurrentOffer(
-                      validAnalysis
-                    ),
-
-                  recommendedProvider:
-                    recommendedOffer.provider,
-
-                  recommendedOffer:
-                    recommendedOffer.offer,
-
-                  recommendedPrice:
-                    recommendedOffer.price,
-                },
-              ],
-            }),
-          }
-        );
-
-        let data: {
-          success?: boolean;
-          advice?: string;
-          error?: string;
-        } = {};
+        let advice: string | null = null;
 
         try {
-          data = await response.json();
-        } catch {
-          data = {};
-        }
+          const response = await fetch(
+            "/api/pilo",
+            {
+              method: "POST",
 
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Le conseil de Pilo n’a pas pu être généré."
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                score: 70,
+                savings: 0,
+
+                depenses: [
+                  {
+                    description:
+                      categoryDescriptions[
+                        validAnalysis.category
+                      ],
+
+                    category:
+                      validAnalysis.category,
+
+                    amount: budget,
+
+                    provider: "",
+
+                    currentOffer: "",
+
+                    recommendedProvider:
+                      validAnalysis.category ===
+                      "famille"
+                        ? "Service-Public.fr"
+                        : "Partenaire Pilo",
+
+                    recommendedOffer:
+                      validAnalysis.category ===
+                      "famille"
+                        ? "Aides et dispositifs officiels"
+                        : "Solution partenaire adaptée",
+
+                    recommendedPrice: 0,
+                  },
+                ],
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const data =
+              await response.json();
+
+            if (
+              data.success &&
+              typeof data.advice ===
+                "string" &&
+              data.advice.trim() &&
+              !data.advice
+                .toLowerCase()
+                .includes("undefined")
+            ) {
+              advice = data.advice;
+            }
+          }
+        } catch (error) {
+          console.error(
+            "Conseil IA indisponible :",
+            error
           );
         }
 
         const fallbackAdvice =
-          validAnalysis.category === "famille"
-            ? "Selon la composition de ton foyer, tes revenus et ta situation de logement, plusieurs aides publiques peuvent être accessibles. Consulte les dispositifs officiels proposés dans les recommandations de Pilo."
-            : isMonitoringCategory(
-                validAnalysis.category
-              )
-              ? savings > 0
-                ? `Pilo estime que tu pourrais économiser jusqu’à ${savings} € par an en étudiant une offre mieux adaptée.`
-                : "Ta situation semble déjà correctement positionnée. Pilo te conseille néanmoins de vérifier régulièrement les nouvelles offres disponibles."
-              : `Pilo a analysé ton besoin ${categoryDescriptions[
-                  validAnalysis.category
-                ].toLowerCase()}. Consulte la solution partenaire proposée pour poursuivre ta démarche.`;
+          validAnalysis.category ===
+          "famille"
+            ? "Pilo a analysé les informations utiles de ton foyer. Consulte les aides et dispositifs officiels proposés."
+            : "Pilo a identifié la mission correspondant à ton besoin. Consulte la solution partenaire pour poursuivre.";
 
         const safeAdvice =
-          data.success &&
-          typeof data.advice === "string" &&
-          data.advice.trim() &&
-          !data.advice
+          advice &&
+          !advice
             .toLowerCase()
-            .includes("undefined")
-            ? data.advice
+            .includes("économis") &&
+          !advice
+            .toLowerCase()
+            .includes("offre classée")
+            ? advice
             : fallbackAdvice;
 
         const result = {
@@ -565,20 +381,25 @@ export default function AnalyseLoadingPage() {
           comparisonDate:
             new Date().toISOString(),
 
-          currentPrice,
+          currentPrice: budget,
 
           recommendedProvider:
-            recommendedOffer.provider,
+            validAnalysis.category ===
+            "famille"
+              ? "Service-Public.fr"
+              : "Partenaire Pilo",
 
           recommendedOffer:
-            recommendedOffer.offer,
+            validAnalysis.category ===
+            "famille"
+              ? "Aides et dispositifs officiels"
+              : "Solution partenaire adaptée",
 
-          recommendedPrice:
-            recommendedOffer.price,
+          recommendedPrice: 0,
 
-          yearlySaving: savings,
+          yearlySaving: 0,
 
-          score,
+          score: 70,
 
           advice: safeAdvice,
         };
@@ -608,7 +429,7 @@ export default function AnalyseLoadingPage() {
       }
     }
 
-    startAnalysis();
+    void startAnalysis();
   }, [router]);
 
   useEffect(() => {
@@ -683,9 +504,9 @@ export default function AnalyseLoadingPage() {
         </h1>
 
         <p className="mt-4 text-slate-400">
-          Je compare tes informations et
-          je recherche les solutions et les
-          économies possibles.
+          J’analyse ton besoin et je recherche
+          la solution partenaire la plus adaptée
+          à ta demande.
         </p>
 
         <div className="mt-10 space-y-4 text-left">
@@ -702,7 +523,7 @@ export default function AnalyseLoadingPage() {
 
               return (
                 <div
-                  key={stepLabel}
+                  key={`${stepLabel}-${index}`}
                   className="flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-white/5 px-5 py-4"
                 >
                   <span
