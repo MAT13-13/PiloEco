@@ -11,6 +11,7 @@ export default function ElectriciteMissionPage() {
       basePrice={95}
       recommendedPrice={72}
       recommendedName="Optimisation électricité"
+      offerPath="/offres/electricite"
       advice="Pilo pense que tu pourrais réduire ta facture avec une offre plus adaptée à ta consommation. Les partenaires énergie sont actuellement en cours d’intégration."
       fields={[
         {
