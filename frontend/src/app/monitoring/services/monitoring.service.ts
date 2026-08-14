@@ -78,137 +78,25 @@ const categoryConfig: Record<
     href: string;
   }
 > = {
-  telephone: {
-    icon: "📱",
-    title: "Téléphone",
-    href: "/missions/mobile",
-  },
-
-  internet: {
-    icon: "🌐",
-    title: "Internet",
-    href: "/missions/internet",
-  },
-
-  electricite: {
-    icon: "⚡",
-    title: "Électricité",
-    href: "/missions/electricite",
-  },
-
-  habitation: {
-    icon: "🏠",
-    title: "Assurance habitation",
-    href: "/missions/habitation",
-  },
-
-  auto: {
-    icon: "🚗",
-    title: "Assurance auto",
-    href: "/missions/auto",
-  },
-
-  moto: {
-    icon: "🏍️",
-    title: "Assurance moto",
-    href: "/missions/moto",
-  },
-
-  mutuelle: {
-    icon: "❤️",
-    title: "Mutuelle santé",
-    href: "/missions/mutuelle",
-  },
-
-  "mutuelle-senior": {
-    icon: "👵",
-    title: "Mutuelle senior",
-    href: "/missions/mutuelle-senior",
-  },
-
-  animaux: {
-    icon: "🐶",
-    title: "Assurance animaux",
-    href: "/missions/animaux",
-  },
-
-  "assurance-obseques": {
-    icon: "🕊️",
-    title: "Assurance obsèques",
-    href: "/missions/assurance-obseques",
-  },
-
-  banque: {
-    icon: "🏦",
-    title: "Banque",
-    href: "/missions/banque",
-  },
-
-  streaming: {
-    icon: "📺",
-    title: "Streaming",
-    href: "/missions/streaming",
-  },
-
-  "telephone-senior": {
-    icon: "☎️",
-    title: "Téléphone senior",
-    href: "/missions/telephone-senior",
-  },
-
-  voyage: {
-    icon: "✈️",
-    title: "Voyage",
-    href: "/missions/voyage",
-  },
-
-  "service-auto": {
-    icon: "🔧",
-    title: "Service auto",
-    href: "/missions/service-auto",
-  },
-
-  "mobilites-douces": {
-    icon: "🚲",
-    title: "Mobilités douces",
-    href: "/missions/mobilites-douces",
-  },
-
-  securite: {
-    icon: "🔐",
-    title: "Sécurité du logement",
-    href: "/missions/securite",
-  },
-
-  "nutrition-animaux": {
-    icon: "🥩",
-    title: "Nutrition animaux",
-    href: "/missions/nutrition-animaux",
-  },
-
-  travaux: {
-    icon: "🛠️",
-    title: "Travaux / rénovation",
-    href: "/missions/travaux",
-  },
-
-  demenagement: {
-    icon: "📦",
-    title: "Déménagement",
-    href: "/missions/demenagement",
-  },
-
-  "moto-equipement": {
-    icon: "🏍️",
-    title: "Moto / équipement",
-    href: "/missions/moto-equipement",
-  },
-
-  "beaute-artisanat": {
-    icon: "🌸",
-    title: "Beauté & Artisanat",
-    href: "/missions/beaute-artisanat",
-  },
+  telephone: { icon: "📱", title: "Téléphone", href: "/missions/mobile" },
+  "telephone-senior": { icon: "👴", title: "Téléphone senior", href: "/missions/telephone-senior" },
+  internet: { icon: "🌐", title: "Internet", href: "/missions/internet" },
+  electricite: { icon: "⚡", title: "Électricité", href: "/missions/electricite" },
+  gaz: { icon: "🔥", title: "Gaz", href: "/missions/gaz" },
+  habitation: { icon: "🏠", title: "Assurance habitation", href: "/missions/habitation" },
+  auto: { icon: "🚗", title: "Assurance auto", href: "/missions/auto" },
+  moto: { icon: "🏍️", title: "Assurance moto", href: "/missions/moto" },
+  animaux: { icon: "🐶", title: "Assurance animaux", href: "/missions/animaux" },
+  mutuelle: { icon: "❤️", title: "Mutuelle santé", href: "/missions/mutuelle" },
+  "mutuelle-senior": { icon: "👵", title: "Mutuelle senior", href: "/missions/mutuelle-senior" },
+  "assurance-emprunteur": { icon: "🏦", title: "Assurance emprunteur", href: "/missions/assurance-emprunteur" },
+  "assurance-obseques": { icon: "🕊️", title: "Assurance obsèques", href: "/missions/assurance-obseques" },
+  banque: { icon: "🏦", title: "Banque", href: "/missions/banque" },
+  streaming: { icon: "📺", title: "Streaming", href: "/missions/streaming" },
+  "mobilites-douces": { icon: "🚲", title: "Assurance vélo / NVEI", href: "/missions/mobilites-douces" },
+  securite: { icon: "🔐", title: "Sécurité / télésurveillance", href: "/missions/securite" },
+  logiciels: { icon: "💻", title: "Logiciels / abonnements", href: "/missions/logiciels" },
+  cybersecurite: { icon: "🛡️", title: "Cybersécurité", href: "/missions/cybersecurite" },
 };
 
 function normalizeCategory(
@@ -224,27 +112,24 @@ function normalizeCategory(
 
   const allowedCategories: MonitoringCategory[] = [
     "telephone",
+    "telephone-senior",
     "internet",
     "electricite",
+    "gaz",
     "habitation",
     "auto",
     "moto",
+    "animaux",
     "mutuelle",
     "mutuelle-senior",
-    "animaux",
+    "assurance-emprunteur",
     "assurance-obseques",
     "banque",
     "streaming",
-    "telephone-senior",
-    "voyage",
-    "service-auto",
     "mobilites-douces",
     "securite",
-    "nutrition-animaux",
-    "travaux",
-    "demenagement",
-    "moto-equipement",
-    "beaute-artisanat",
+    "logiciels",
+    "cybersecurite",
   ];
 
   if (
@@ -525,26 +410,6 @@ export async function createMonitoringContract(
       "L’économie mensuelle est invalide."
     );
   }
-
-  const {
-    data: existingContract,
-    error: existingContractError,
-  } = await supabase
-    .from("monitoring_contracts")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("category", category)
-    .maybeSingle();
-
-  if (existingContractError) {
-    throw existingContractError;
-  }
-
-  if (existingContract) {
-  return {
-    ...existingContract,
-  } as MonitoringContract;
-}
 
   const now = new Date().toISOString();
 
@@ -1169,4 +1034,4 @@ export async function getMonitoringHistory(): Promise<
   }
 
   return (data ?? []) as MonitoringHistory[];
-}
+  }

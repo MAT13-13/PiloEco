@@ -1,26 +1,23 @@
 export type MonitoringCategory =
   | "telephone"
+  | "telephone-senior"
   | "internet"
   | "electricite"
+  | "gaz"
   | "habitation"
   | "auto"
   | "moto"
+  | "animaux"
   | "mutuelle"
   | "mutuelle-senior"
-  | "animaux"
+  | "assurance-emprunteur"
   | "assurance-obseques"
   | "banque"
   | "streaming"
-  | "telephone-senior"
-  | "voyage"
-  | "service-auto"
   | "mobilites-douces"
   | "securite"
-  | "nutrition-animaux"
-  | "travaux"
-  | "demenagement"
-  | "moto-equipement"
-  | "beaute-artisanat";
+  | "logiciels"
+  | "cybersecurite";
 
 export type MonitoringColor =
   | "green"

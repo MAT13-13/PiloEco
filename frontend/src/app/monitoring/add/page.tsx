@@ -5,124 +5,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import PremiumGate from "../../components/PremiumGate";
+import { supabase } from "../../lib/supabase";
 
 import {
   createMonitoringContract,
 } from "../services/monitoring.service";
 
-const categories = [
-  { value: "mobile", label: "Téléphone", icon: "📱" },
-  { value: "internet", label: "Internet", icon: "🌐" },
-  { value: "electricite", label: "Électricité", icon: "⚡" },
-  { value: "habitation", label: "Assurance habitation", icon: "🏠" },
-  { value: "auto", label: "Assurance auto", icon: "🚗" },
-  { value: "moto", label: "Assurance moto", icon: "🏍️" },
-  { value: "mutuelle", label: "Mutuelle santé", icon: "❤️" },
-  { value: "mutuelle-senior", label: "Mutuelle senior", icon: "👵" },
-  { value: "animaux", label: "Assurance animaux", icon: "🐶" },
-  { value: "assurance-obseques", label: "Assurance obsèques", icon: "🕊️" },
-  { value: "banque", label: "Banque", icon: "🏦" },
-  { value: "streaming", label: "Streaming", icon: "📺" },
-  { value: "mobilites-douces", label: "Assurance vélo / NVEI", icon: "🚲" },
-  { value: "securite", label: "Sécurité / télésurveillance", icon: "🔐" },
-] as const;
-
-const categoryConfig = {
-  mobile: {
-    provider: "Free, Orange, SFR, Bouygues...",
-    offer: "Forfait 150 Go",
-    offerLabel: "Forfait actuel",
-  },
-
-  internet: {
-    provider: "Free, Orange, SFR...",
-    offer: "Fibre 1 Gb/s",
-    offerLabel: "Offre actuelle",
-  },
-
-  electricite: {
-    provider: "EDF, TotalEnergies, Octopus...",
-    offer: "Offre électricité",
-    offerLabel: "Offre actuelle",
-  },
-
-  habitation: {
-    provider: "Leocare, MAIF, AXA...",
-    offer: "Formule Confort",
-    offerLabel: "Contrat actuel",
-  },
-
-  auto: {
-    provider: "Leocare, Allianz, MAIF...",
-    offer: "Tous risques",
-    offerLabel: "Formule actuelle",
-  },
-
-  moto: {
-    provider: "Leocare, AMV, April Moto...",
-    offer: "Tous risques",
-    offerLabel: "Formule actuelle",
-  },
-
-  mutuelle: {
-    provider: "Nom de la mutuelle",
-    offer: "Formule santé",
-    offerLabel: "Formule actuelle",
-  },
-
-  "mutuelle-senior": {
-    provider: "Nom de la mutuelle",
-    offer: "Formule senior",
-    offerLabel: "Formule actuelle",
-  },
-
-  animaux: {
-    provider: "SantéVet, Kozoo, Bulle Bleue...",
-    offer: "Formule Premium",
-    offerLabel: "Formule actuelle",
-  },
-
-  "assurance-obseques": {
-    provider: "Nom de l’assureur",
-    offer: "Contrat obsèques",
-    offerLabel: "Contrat actuel",
-  },
-
-  banque: {
-    provider: "BoursoBank, Fortuneo, Crédit Agricole...",
-    offer: "Compte / carte bancaire",
-    offerLabel: "Offre actuelle",
-  },
-
-  streaming: {
-    provider: "Netflix, Disney+, Spotify...",
-    offer: "Premium",
-    offerLabel: "Abonnement",
-  },
-
-  "mobilites-douces": {
-    provider: "Ulygo...",
-    offer: "Assurance vélo / NVEI",
-    offerLabel: "Contrat actuel",
-  },
-
-  securite: {
-    provider: "Verisure, Sector Alarm...",
-    offer: "Télésurveillance",
-    offerLabel: "Abonnement actuel",
-  },
-} as const;
-
-type CategoryValue =
-  (typeof categories)[number]["value"];
-
-function isCategoryValue(
-  value: string
-): value is CategoryValue {
-  return categories.some(
-    (category) => category.value === value
-  );
-}
+type MonitoringCatalogItem = {
+  id: string;
+  category: string;
+  label: string;
+  icon: string;
+  provider_placeholder: string | null;
+  offer_placeholder: string | null;
+  sort_order: number;
+  enabled: boolean;
+};
 
 function addMonthsToDate(
   date: string,
@@ -146,8 +44,18 @@ function addMonthsToDate(
 function AddMonitoringContractForm() {
   const router = useRouter();
 
+  const [categories, setCategories] = useState<
+    MonitoringCatalogItem[]
+  >([]);
+
   const [category, setCategory] =
-    useState<CategoryValue>("mobile");
+    useState("telephone");
+
+  const [catalogLoading, setCatalogLoading] =
+    useState(true);
+
+  const [catalogError, setCatalogError] =
+    useState("");
 
   const [provider, setProvider] =
     useState("");
@@ -210,74 +118,153 @@ function AddMonitoringContractForm() {
     useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(
-      window.location.search
-    );
+    let mounted = true;
 
-    const categoryParam =
-      params.get("category")?.trim() ?? "";
+    async function loadCatalog() {
+      try {
+        setCatalogLoading(true);
+        setCatalogError("");
 
-    const normalizedCategory =
-      categoryParam === "telephone"
-        ? "mobile"
-        : categoryParam;
+        const { data, error } = await supabase
+          .from("monitoring_catalog")
+          .select(
+            `
+              id,
+              category,
+              label,
+              icon,
+              provider_placeholder,
+              offer_placeholder,
+              sort_order,
+              enabled
+            `
+          )
+          .eq("enabled", true)
+          .order("sort_order", {
+            ascending: true,
+          });
 
-    if (isCategoryValue(normalizedCategory)) {
-      setCategory(normalizedCategory);
+        if (!mounted) return;
+
+        if (error) {
+          console.error(
+            "Erreur monitoring_catalog :",
+            error
+          );
+
+          setCatalogError(
+            "Impossible de charger les catégories."
+          );
+          return;
+        }
+
+        const catalog =
+          (data as MonitoringCatalogItem[] | null) ?? [];
+
+        setCategories(catalog);
+
+        const params = new URLSearchParams(
+          window.location.search
+        );
+
+        const rawCategory =
+          params.get("category")?.trim().toLowerCase() ??
+          "";
+
+        const requestedCategory =
+          rawCategory === "mobile"
+            ? "telephone"
+            : rawCategory;
+
+        const selectedFromUrl = catalog.find(
+          (item) =>
+            item.category === requestedCategory
+        );
+
+        const fallback =
+          catalog.find(
+            (item) =>
+              item.category === "telephone"
+          ) ?? catalog[0];
+
+        if (selectedFromUrl) {
+          setCategory(selectedFromUrl.category);
+        } else if (fallback) {
+          setCategory(fallback.category);
+        }
+
+        const providerParam =
+          params.get("provider")?.trim();
+
+        const offerParam =
+          params.get("offer")?.trim();
+
+        const priceParam =
+          params.get("price")?.trim();
+
+        const sourceParam =
+          params.get("source")?.trim();
+
+        const savingParam =
+          params.get("saving")?.trim();
+
+        const subscriptionDateParam =
+          params.get("subscriptionDate")?.trim();
+
+        if (providerParam) {
+          setProvider(providerParam);
+        }
+
+        if (offerParam) {
+          setCurrentOffer(offerParam);
+        }
+
+        if (priceParam) {
+          setMonthlyPrice(priceParam);
+        }
+
+        if (savingParam) {
+          setMonthlySaving(savingParam);
+        }
+
+        if (subscriptionDateParam) {
+          setSubscriptionDate(
+            subscriptionDateParam
+          );
+        }
+
+        if (sourceParam === "mission") {
+          setContractSource("mission");
+        }
+      } catch (error) {
+        console.error(
+          "Erreur chargement monitoring_catalog :",
+          error
+        );
+
+        if (mounted) {
+          setCatalogError(
+            "Une erreur est survenue pendant le chargement."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setCatalogLoading(false);
+        }
+      }
     }
 
-    const providerParam =
-      params.get("provider")?.trim();
+    void loadCatalog();
 
-    const offerParam =
-      params.get("offer")?.trim();
-
-    const priceParam =
-      params.get("price")?.trim();
-
-    const sourceParam =
-      params.get("source")?.trim();
-
-    const savingParam =
-      params.get("saving")?.trim();
-
-    const subscriptionDateParam =
-      params.get("subscriptionDate")?.trim();
-
-    if (providerParam) {
-      setProvider(providerParam);
-    }
-
-    if (offerParam) {
-      setCurrentOffer(offerParam);
-    }
-
-    if (priceParam) {
-      setMonthlyPrice(priceParam);
-    }
-
-    if (savingParam) {
-      setMonthlySaving(savingParam);
-    }
-
-    if (subscriptionDateParam) {
-      setSubscriptionDate(
-        subscriptionDateParam
-      );
-    }
-
-    if (sourceParam === "mission") {
-      setContractSource("mission");
-    }
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const selectedCategory =
     categories.find(
-      (item) => item.value === category
+      (item) => item.category === category
     ) ?? categories[0];
-
-  const config =
-    categoryConfig[category];
 
   const calculatedEndDate = useMemo(() => {
     const months = Number(commitmentMonths);
@@ -304,7 +291,7 @@ function AddMonitoringContractForm() {
   ) {
     event.preventDefault();
 
-    if (saving) return;
+    if (saving || catalogLoading || !category) return;
 
     const normalizedPrice =
       Number(monthlyPrice);
@@ -490,6 +477,18 @@ function AddMonitoringContractForm() {
             ne sont pas ajoutés ici.
           </div>
 
+          {catalogLoading && (
+            <div className="mt-5 rounded-2xl border border-purple-500/20 bg-purple-500/10 p-4 text-sm text-purple-200">
+              Chargement des catégories Monitoring...
+            </div>
+          )}
+
+          {catalogError && (
+            <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+              {catalogError}
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
             className="mt-8 space-y-7"
@@ -502,16 +501,16 @@ function AddMonitoringContractForm() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                 {categories.map((item) => {
                   const active =
-                    category === item.value;
+                    category === item.category;
 
                   return (
                     <button
-                      key={item.value}
+                      key={item.id}
                       type="button"
                       onClick={() =>
-                        setCategory(item.value)
+                        setCategory(item.category)
                       }
-                      disabled={saving}
+                      disabled={saving || catalogLoading}
                       className={`rounded-2xl border p-4 text-left transition disabled:opacity-60 ${
                         active
                           ? "border-green-400 bg-green-500/20"
@@ -533,8 +532,8 @@ function AddMonitoringContractForm() {
 
             <div className="rounded-3xl bg-slate-950/70 p-6">
               <p className="font-bold text-green-400">
-                {selectedCategory.icon}{" "}
-                {selectedCategory.label}
+                {selectedCategory?.icon ?? "📋"}{" "}
+{selectedCategory?.label ?? "Chargement..."}
               </p>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
@@ -555,7 +554,7 @@ function AddMonitoringContractForm() {
                         event.target.value
                       )
                     }
-                    placeholder={config.provider}
+                    placeholder={selectedCategory?.provider_placeholder ?? "Nom du fournisseur"}
                     disabled={saving}
                     className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 outline-none transition focus:border-green-500 disabled:opacity-60"
                   />
@@ -597,7 +596,7 @@ function AddMonitoringContractForm() {
                     htmlFor="current-offer"
                     className="text-sm font-bold text-slate-300"
                   >
-                    {config.offerLabel}
+                    Offre actuelle
                   </label>
 
                   <input
@@ -609,7 +608,7 @@ function AddMonitoringContractForm() {
                         event.target.value
                       )
                     }
-                    placeholder={config.offer}
+                    placeholder={selectedCategory?.offer_placeholder ?? "Nom de l’offre"}
                     disabled={saving}
                     className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 outline-none transition focus:border-green-500 disabled:opacity-60"
                   />
