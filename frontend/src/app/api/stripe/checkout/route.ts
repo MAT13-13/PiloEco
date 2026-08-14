@@ -33,13 +33,28 @@ function getBearerToken(
     request.headers.get("authorization");
 
   if (
-    !authorization?.startsWith("Bearer ")
+    authorization?.startsWith("Bearer ")
   ) {
-    return null;
+    const bearerToken =
+      authorization.slice(7).trim();
+
+    if (bearerToken) {
+      return bearerToken;
+    }
   }
 
-  return authorization.slice(7).trim();
+  const piloToken =
+    request.headers.get(
+      "x-pilo-access-token"
+    );
+
+  if (piloToken?.trim()) {
+    return piloToken.trim();
+  }
+
+  return null;
 }
+
 
 function normalizeAppUrl(
   value: string
