@@ -3398,162 +3398,57 @@ const fallbackPendingCategoryOrder: AnalyseCategory[] = [
   "logiciels",
 ];
 
-const analyseAliases: Partial<
-  Record<AnalyseCategory, string[]>
+const missionSlugToAnalyseCategory: Record<
+  string,
+  AnalyseCategory
 > = {
-  famille: [
-    "famille",
-    "famille-aides",
-  ],
-  telephone: [
-    "telephone",
-    "mobile",
-  ],
-  telephoneSenior: [
-    "telephone-senior",
-    "telephone senior",
-  ],
-  internet: [
-    "internet",
-  ],
-  electricite: [
-    "electricite",
-    "électricité",
-    "energie",
-    "énergie",
-  ],
-  habitation: [
-    "habitation",
-    "assurance-habitation",
-  ],
-  auto: [
-    "auto",
-    "assurance-auto",
-  ],
-  moto: [
-    "moto",
-    "assurance-moto",
-  ],
-  mutuelle: [
-    "mutuelle",
-    "mutuelle-sante",
-    "mutuelle santé",
-  ],
-  animaux: [
-    "animaux",
-    "assurance-animaux",
-  ],
-  banque: [
-    "banque",
-  ],
-  streaming: [
-    "streaming",
-  ],
-  securite: [
-    "securite",
-    "sécurité",
-    "alarme-securite",
-  ],
-  demenagement: [
-    "demenagement",
-    "déménagement",
-  ],
-  servicesAuto: [
-    "services-auto",
-    "service-auto",
-    "services auto",
-  ],
-  mobilitesDouces: [
-    "mobilites-douces",
-    "mobilités-douces",
-    "mobilites douces",
-  ],
-  travaux: [
-    "travaux",
-    "travaux-renovation",
-    "rénovation",
-  ],
-  logiciels: [
-    "logiciels",
-    "logiciel",
-  ],
-  formation: [
-    "formation",
-    "formations",
-  ],
-  voyage: [
-    "voyage",
-  ],
-  beauteArtisanat: [
-    "beaute-artisanat",
-    "beauté-artisanat",
-    "beaute & artisanat",
-    "beauté & artisanat",
-  ],
-  siteInternetPro: [
-    "site-internet-pro",
-    "site internet pro",
-  ],
-  assuranceEmprunteur: [
-    "assurance-emprunteur",
-    "assurance emprunteur",
-  ],
-  ambassadeur: [
-    "ambassadeur",
-    "ambassadeur-gselect",
-    "gselect",
-  ],
-  assuranceObseques: [
-    "assurance-obseques",
-    "assurance obsèques",
-    "obseques",
-    "obsèques",
-  ],
-  creditImmobilier: [
-    "credit-immobilier",
-    "crédit-immobilier",
-    "credit immobilier",
-  ],
-  diagnosticImmobilier: [
-    "diagnostic-immobilier",
-    "diagnostic immobilier",
-  ],
-  mutuelleSenior: [
-    "mutuelle-senior",
-    "mutuelle senior",
-  ],
-  epargneRetraite: [
-    "epargne-retraite",
-    "épargne-retraite",
-    "epargne retraite",
-    "épargne retraite",
-  ],
-  motoEquipement: [
-    "moto-equipement",
-    "moto équipement",
-    "moto equipement",
-  ],
-  crypto: [
-    "crypto",
-    "cryptomonnaies",
-    "cryptomonnaie",
-  ],
-  cybersecurite: [
-    "cybersecurite",
-    "cybersécurité",
-  ],
-  servicesEntreprises: [
-    "services-entreprises",
-    "services aux entreprises",
-    "services-aux-entreprises",
-  ],
-  debarras: [
-    "debarras",
-    "débarras",
-  ],
-  gaz: [
-    "gaz",
-  ],
+  "famille": "famille",
+  "beaute-artisanat": "beauteArtisanat",
+  "voyage": "voyage",
+  "mobile": "telephone",
+  "telephone": "telephone",
+  "telephone-senior": "telephoneSenior",
+  "site-internet-pro": "siteInternetPro",
+  "animaux": "animaux",
+  "assurance-animaux": "animaux",
+  "assurance-emprunteur": "assuranceEmprunteur",
+  "ambassadeur": "ambassadeur",
+  "ambassadeur-gselect": "ambassadeur",
+  "assurance-obseques": "assuranceObseques",
+  "credit-immobilier": "creditImmobilier",
+  "diagnostic-immobilier": "diagnosticImmobilier",
+  "habitation": "habitation",
+  "assurance-habitation": "habitation",
+  "travaux": "travaux",
+  "mutuelle-senior": "mutuelleSenior",
+  "epargne-retraite": "epargneRetraite",
+  "auto": "auto",
+  "assurance-auto": "auto",
+  "moto": "moto",
+  "assurance-moto": "moto",
+  "mobilites-douces": "mobilitesDouces",
+  "services-auto": "servicesAuto",
+  "service-auto": "servicesAuto",
+  "moto-equipement": "motoEquipement",
+  "formation": "formation",
+  "securite": "securite",
+  "alarme-securite": "securite",
+  "crypto": "crypto",
+  "cryptomonnaies": "crypto",
+  "cybersecurite": "cybersecurite",
+  "services-entreprises": "servicesEntreprises",
+  "demenagement": "demenagement",
+  "debarras": "debarras",
+  "electricite": "electricite",
+  "gaz": "gaz",
+
+  // En attente
+  "mutuelle": "mutuelle",
+  "mutuelle-sante": "mutuelle",
+  "internet": "internet",
+  "banque": "banque",
+  "streaming": "streaming",
+  "logiciels": "logiciels",
 };
 
 function normalizeMissionValue(
@@ -3564,7 +3459,11 @@ function normalizeMissionValue(
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " ")
+    .replace(/^https?:\/\/[^/]+/i, "")
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/^missions\//, "")
+    .replace(/^offres\//, "")
+    .replace(/&/g, "-")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -3572,34 +3471,38 @@ function normalizeMissionValue(
 function findAnalyseCategory(
   mission: MissionCatalog
 ): AnalyseCategory | null {
-  const missionValues = [
+  /*
+   * IMPORTANT :
+   * On ne fait plus aucun rapprochement "approximatif".
+   * Une mission doit correspondre exactement à son slug ou à sa route.
+   * Cela évite qu'"assurance-obseques" soit pris pour "habitation",
+   * ou qu'"assurance-animaux" ouvre une autre assurance.
+   */
+  const candidates = [
     mission.slug,
-    mission.category,
-    mission.title,
     mission.route,
-  ].map(normalizeMissionValue);
+  ]
+    .map(normalizeMissionValue)
+    .filter(Boolean);
 
-  for (const [
-    categoryKey,
-    aliases,
-  ] of Object.entries(analyseAliases)) {
-    const normalizedAliases =
-      (aliases ?? []).map(normalizeMissionValue);
+  for (const candidate of candidates) {
+    const exactMatch =
+      missionSlugToAnalyseCategory[candidate];
 
-    const matches = normalizedAliases.some(
-      (alias) =>
-        missionValues.some(
-          (value) =>
-            value === alias ||
-            value.startsWith(`${alias}-`) ||
-            alias.startsWith(`${value}-`)
-        )
-    );
-
-    if (matches) {
-      return categoryKey as AnalyseCategory;
+    if (exactMatch) {
+      return exactMatch;
     }
   }
+
+  console.warn(
+    "Mission sans correspondance Analyse exacte :",
+    {
+      slug: mission.slug,
+      route: mission.route,
+      title: mission.title,
+      category: mission.category,
+    }
+  );
 
   return null;
 }
