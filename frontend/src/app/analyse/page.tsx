@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
 import PiloMascot from "../components/PiloMascot";
+import { supabase } from "../lib/supabase";
 
 type AnalyseCategory =
   | "famille"
@@ -26,7 +27,22 @@ type AnalyseCategory =
   | "travaux"
   | "logiciels"
   | "formation"
-  | "voyage";
+  | "voyage"
+  | "beauteArtisanat"
+  | "siteInternetPro"
+  | "assuranceEmprunteur"
+  | "ambassadeur"
+  | "assuranceObseques"
+  | "creditImmobilier"
+  | "diagnosticImmobilier"
+  | "mutuelleSenior"
+  | "epargneRetraite"
+  | "motoEquipement"
+  | "crypto"
+  | "cybersecurite"
+  | "servicesEntreprises"
+  | "debarras"
+  | "gaz";
 
 type QuestionType =
   | "text"
@@ -2275,52 +2291,1345 @@ const categories: Record<
       },
     ],
   },
+
+  beauteArtisanat: {
+    label: "Beauté & Artisanat",
+    icon: "🌸",
+    message:
+      "Je vais préciser le type de création ou de prestation artisanale qui correspond à ton besoin.",
+    questions: [
+      {
+        key: "creationType",
+        type: "select",
+        emoji: "🌸",
+        title: "Que recherches-tu ?",
+        description:
+          "Choisis le type de création ou de prestation qui t'intéresse.",
+        options: [
+          "Press-on nails personnalisés",
+          "Bougie artisanale",
+          "Savon artisanal",
+          "Macramé",
+          "Cadre ou décoration florale",
+          "Coffret cadeau personnalisé",
+          "Autre création artisanale",
+        ],
+      },
+      {
+        key: "occasion",
+        type: "select",
+        emoji: "🎁",
+        title: "Pour quelle occasion ?",
+        description:
+          "Cela aide Pilo à mieux orienter la création.",
+        options: [
+          "Pour moi",
+          "Anniversaire",
+          "Naissance",
+          "Mariage",
+          "Fête",
+          "Cadeau",
+          "Autre",
+        ],
+      },
+      {
+        key: "personalization",
+        type: "select",
+        emoji: "✨",
+        title: "Souhaites-tu une création personnalisée ?",
+        description:
+          "Choisis le niveau de personnalisation souhaité.",
+        options: [
+          "Oui, entièrement personnalisée",
+          "Quelques personnalisations",
+          "Non, un modèle existant me convient",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget maximum approximatif en euros.",
+        placeholder: "Ex : 45",
+      },
+    ],
+  },
+
+  siteInternetPro: {
+    label: "Site internet pro",
+    icon: "🌐",
+    message:
+      "Je vais identifier le type de site professionnel adapté à ton activité et à ton budget.",
+    questions: [
+      {
+        key: "siteStatus",
+        type: "select",
+        emoji: "🌐",
+        title: "As-tu déjà un site internet professionnel ?",
+        description:
+          "Indique si tu pars de zéro ou si tu souhaites améliorer un site existant.",
+        options: [
+          "Je n'ai pas encore de site",
+          "J'ai déjà un site à améliorer",
+          "Je souhaite refaire complètement mon site",
+        ],
+      },
+      {
+        key: "businessType",
+        type: "text",
+        emoji: "🏢",
+        title: "Quelle est ton activité ?",
+        description:
+          "Décris brièvement ton activité professionnelle.",
+        placeholder: "Ex : artisan, coach, commerce, consultant...",
+      },
+      {
+        key: "siteGoal",
+        type: "select",
+        emoji: "🎯",
+        title: "Quel est l'objectif principal du site ?",
+        description:
+          "Choisis la fonction la plus importante.",
+        options: [
+          "Présenter mon activité",
+          "Recevoir des demandes de contact",
+          "Prendre des rendez-vous",
+          "Vendre en ligne",
+          "Présenter un portfolio",
+          "Plusieurs objectifs",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget souhaites-tu consacrer au projet ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 800",
+      },
+    ],
+  },
+
+  assuranceEmprunteur: {
+    label: "Assurance emprunteur",
+    icon: "🏦",
+    message:
+      "Je vais analyser les principaux éléments de ton assurance de prêt pour identifier une solution adaptée.",
+    questions: [
+      {
+        key: "loanStatus",
+        type: "select",
+        emoji: "🏦",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si ton prêt existe déjà ou si ton financement est en préparation.",
+        options: [
+          "J'ai déjà un prêt immobilier",
+          "Mon prêt est en cours de mise en place",
+          "Je prépare un projet immobilier",
+        ],
+      },
+      {
+        key: "remainingCapital",
+        type: "number",
+        emoji: "💶",
+        title: "Quel capital reste environ à rembourser ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 180000",
+        showIf: {
+          key: "loanStatus",
+          equals: "J'ai déjà un prêt immobilier",
+        },
+      },
+      {
+        key: "loanAmount",
+        type: "number",
+        emoji: "🏠",
+        title: "Quel montant souhaites-tu emprunter ?",
+        description:
+          "Indique le montant approximatif du financement.",
+        placeholder: "Ex : 220000",
+        showIf: {
+          key: "loanStatus",
+          equals: "Mon prêt est en cours de mise en place",
+        },
+      },
+      {
+        key: "currentMonthlyInsurance",
+        type: "number",
+        emoji: "🛡️",
+        title: "Combien coûte ton assurance emprunteur par mois ?",
+        description:
+          "Indique le montant mensuel approximatif si tu le connais.",
+        placeholder: "Ex : 42",
+        showIf: {
+          key: "loanStatus",
+          equals: "J'ai déjà un prêt immobilier",
+        },
+      },
+      {
+        key: "borrowersCount",
+        type: "select",
+        emoji: "👥",
+        title: "Combien d'emprunteurs sont concernés ?",
+        description:
+          "Choisis la situation correspondant au prêt.",
+        options: [
+          "1 emprunteur",
+          "2 emprunteurs",
+          "Plus de 2 emprunteurs",
+        ],
+      },
+    ],
+  },
+
+  ambassadeur: {
+    label: "Ambassadeur GSelect",
+    icon: "💼",
+    message:
+      "Je vais t'aider à vérifier si une activité d'ambassadeur peut correspondre à ton profil et à tes disponibilités.",
+    questions: [
+      {
+        key: "employmentStatus",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est ta situation actuelle ?",
+        description:
+          "Choisis ta situation principale.",
+        options: [
+          "Salarié",
+          "Indépendant",
+          "Demandeur d'emploi",
+          "Étudiant",
+          "Retraité",
+          "Autre",
+        ],
+      },
+      {
+        key: "availability",
+        type: "select",
+        emoji: "🕐",
+        title: "Combien de temps pourrais-tu y consacrer ?",
+        description:
+          "Choisis une disponibilité approximative.",
+        options: [
+          "Moins de 5 h par semaine",
+          "5 à 10 h par semaine",
+          "10 à 20 h par semaine",
+          "Plus de 20 h par semaine",
+        ],
+      },
+      {
+        key: "contactComfort",
+        type: "select",
+        emoji: "🤝",
+        title: "Es-tu à l'aise pour parler d'une offre autour de toi ?",
+        description:
+          "Cela permet de vérifier si le modèle d'ambassadeur te convient.",
+        options: [
+          "Oui",
+          "Plutôt oui",
+          "Plutôt non",
+          "Non",
+        ],
+      },
+      {
+        key: "goal",
+        type: "select",
+        emoji: "🎯",
+        title: "Quel est ton objectif principal ?",
+        description:
+          "Choisis ce que tu recherches avec cette activité.",
+        options: [
+          "Complément de revenus",
+          "Nouvelle activité",
+          "Activité flexible",
+          "Découvrir le métier",
+        ],
+      },
+    ],
+  },
+
+  assuranceObseques: {
+    label: "Assurance obsèques",
+    icon: "🕊️",
+    message:
+      "Je vais analyser les éléments essentiels d'un contrat obsèques ou t'aider à préciser la couverture recherchée.",
+    questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🕊️",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un contrat ou si tu recherches une couverture.",
+        options: [
+          "J'ai déjà un contrat obsèques",
+          "Je cherche un contrat obsèques",
+        ],
+      },
+      {
+        key: "provider",
+        type: "text",
+        emoji: "🏢",
+        title: "Quel organisme gère ton contrat actuel ?",
+        description:
+          "Indique le nom de l'assureur si tu le connais.",
+        placeholder: "Ex : assureur ou organisme...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J'ai déjà un contrat obsèques",
+        },
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien paies-tu chaque mois ?",
+        description:
+          "Indique le montant mensuel approximatif.",
+        placeholder: "Ex : 35",
+        showIf: {
+          key: "contractStatus",
+          equals: "J'ai déjà un contrat obsèques",
+        },
+      },
+      {
+        key: "desiredCapital",
+        type: "number",
+        emoji: "🛡️",
+        title: "Quel capital souhaites-tu prévoir ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 5000",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat obsèques",
+        },
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "🎯",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget approximatif.",
+        placeholder: "Ex : 30",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat obsèques",
+        },
+      },
+    ],
+  },
+
+  creditImmobilier: {
+    label: "Crédit immobilier",
+    icon: "🏠",
+    message:
+      "Je vais structurer les informations principales de ton projet immobilier pour identifier une solution de financement adaptée.",
+    questions: [
+      {
+        key: "projectType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel est ton projet immobilier ?",
+        description:
+          "Choisis le type de projet concerné.",
+        options: [
+          "Résidence principale",
+          "Résidence secondaire",
+          "Investissement locatif",
+          "Rachat de crédit immobilier",
+          "Autre projet",
+        ],
+      },
+      {
+        key: "projectAmount",
+        type: "number",
+        emoji: "💶",
+        title: "Quel est le montant approximatif du projet ?",
+        description:
+          "Indique le prix ou le budget global estimé.",
+        placeholder: "Ex : 250000",
+      },
+      {
+        key: "downPayment",
+        type: "number",
+        emoji: "💰",
+        title: "Quel apport personnel prévois-tu ?",
+        description:
+          "Indique le montant approximatif de ton apport.",
+        placeholder: "Ex : 25000",
+      },
+      {
+        key: "monthlyIncome",
+        type: "number",
+        emoji: "📊",
+        title: "Quel est le revenu mensuel net approximatif du foyer ?",
+        description:
+          "Indique une estimation globale.",
+        placeholder: "Ex : 4200",
+      },
+      {
+        key: "desiredDuration",
+        type: "select",
+        emoji: "📅",
+        title: "Quelle durée de financement envisages-tu ?",
+        description:
+          "Choisis la durée qui correspond le mieux à ton projet.",
+        options: [
+          "10 ans",
+          "15 ans",
+          "20 ans",
+          "25 ans",
+          "Je souhaite être conseillé",
+        ],
+      },
+    ],
+  },
+
+  diagnosticImmobilier: {
+    label: "Diagnostic immobilier",
+    icon: "📋",
+    message:
+      "Je vais préciser les caractéristiques du bien afin de t'orienter vers les diagnostics adaptés.",
+    questions: [
+      {
+        key: "transactionType",
+        type: "select",
+        emoji: "📋",
+        title: "Pourquoi as-tu besoin d'un diagnostic ?",
+        description:
+          "Choisis la situation correspondant au bien.",
+        options: [
+          "Vente",
+          "Location",
+          "Travaux",
+          "Mise en copropriété",
+          "Autre",
+        ],
+      },
+      {
+        key: "housingType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel type de bien est concerné ?",
+        description:
+          "Choisis le type de logement ou de local.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Local professionnel",
+          "Autre",
+        ],
+      },
+      {
+        key: "surface",
+        type: "number",
+        emoji: "📐",
+        title: "Quelle est la surface approximative ?",
+        description:
+          "Indique la surface en mètres carrés.",
+        placeholder: "Ex : 75",
+      },
+      {
+        key: "postalCode",
+        type: "text",
+        emoji: "📍",
+        title: "Dans quel secteur se trouve le bien ?",
+        description:
+          "Indique le code postal du bien.",
+        placeholder: "Ex : 06000",
+      },
+      {
+        key: "deadline",
+        type: "date",
+        emoji: "📅",
+        title: "Pour quelle date souhaites-tu le diagnostic ?",
+        description:
+          "Cette information reste facultative.",
+      },
+    ],
+  },
+
+  mutuelleSenior: {
+    label: "Mutuelle Senior",
+    icon: "👵",
+    message:
+      "Je vais t'aider à préciser les garanties santé les plus importantes pour une couverture senior.",
+    questions: [
+      {
+        key: "ageRange",
+        type: "select",
+        emoji: "👵",
+        title: "Quelle est ta tranche d'âge ?",
+        description:
+          "Choisis la tranche correspondant à la personne principale à couvrir.",
+        options: [
+          "55 à 64 ans",
+          "65 à 74 ans",
+          "75 à 84 ans",
+          "85 ans et plus",
+        ],
+      },
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "❤️",
+        title: "As-tu déjà une mutuelle ?",
+        description:
+          "Indique si tu souhaites comparer un contrat existant ou en trouver un nouveau.",
+        options: [
+          "J'ai déjà une mutuelle",
+          "Je cherche une mutuelle",
+        ],
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Combien paies-tu actuellement par mois ?",
+        description:
+          "Indique le montant mensuel total.",
+        placeholder: "Ex : 95",
+        showIf: {
+          key: "contractStatus",
+          equals: "J'ai déjà une mutuelle",
+        },
+      },
+      {
+        key: "priorityNeed",
+        type: "select",
+        emoji: "🩺",
+        title: "Quelle garantie est prioritaire pour toi ?",
+        description:
+          "Choisis le poste le plus important.",
+        options: [
+          "Hospitalisation",
+          "Dentaire",
+          "Optique",
+          "Appareillage auditif",
+          "Soins courants",
+          "Couverture équilibrée",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "🎯",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 100",
+      },
+    ],
+  },
+
+  epargneRetraite: {
+    label: "Épargne & retraite",
+    icon: "💰",
+    message:
+      "Je vais clarifier ton objectif d'épargne afin de t'orienter vers les solutions partenaires correspondant à ton projet.",
+    questions: [
+      {
+        key: "savingGoal",
+        type: "select",
+        emoji: "🎯",
+        title: "Quel est ton objectif principal ?",
+        description:
+          "Choisis le projet pour lequel tu souhaites épargner.",
+        options: [
+          "Préparer ma retraite",
+          "Constituer une épargne de précaution",
+          "Financer un projet",
+          "Faire fructifier une épargne",
+          "Préparer une transmission",
+          "Je souhaite être conseillé",
+        ],
+      },
+      {
+        key: "investmentHorizon",
+        type: "select",
+        emoji: "📅",
+        title: "Quel est ton horizon de placement ?",
+        description:
+          "Choisis la durée pendant laquelle tu peux envisager de laisser l'argent placé.",
+        options: [
+          "Moins de 3 ans",
+          "3 à 5 ans",
+          "5 à 10 ans",
+          "Plus de 10 ans",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "initialAmount",
+        type: "number",
+        emoji: "💶",
+        title: "Quel montant souhaites-tu placer au départ ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 5000",
+      },
+      {
+        key: "monthlySaving",
+        type: "number",
+        emoji: "💰",
+        title: "Combien pourrais-tu épargner chaque mois ?",
+        description:
+          "Indique une estimation mensuelle.",
+        placeholder: "Ex : 150",
+      },
+      {
+        key: "riskPreference",
+        type: "select",
+        emoji: "📊",
+        title: "Quelle variation de ton épargne serais-tu prêt à accepter ?",
+        description:
+          "Cette réponse sert uniquement à mieux comprendre ton profil.",
+        options: [
+          "Je privilégie la stabilité",
+          "J'accepte des variations modérées",
+          "J'accepte des variations importantes",
+          "Je ne sais pas",
+        ],
+      },
+    ],
+  },
+
+  motoEquipement: {
+    label: "Moto & équipement",
+    icon: "🏍️",
+    message:
+      "Je vais identifier l'équipement moto correspondant à ton besoin et à ton budget.",
+    questions: [
+      {
+        key: "needType",
+        type: "select",
+        emoji: "🏍️",
+        title: "Que recherches-tu ?",
+        description:
+          "Choisis la catégorie d'équipement concernée.",
+        options: [
+          "Casque",
+          "Équipement du motard",
+          "Accessoires moto",
+          "Bagagerie",
+          "High-tech",
+          "Tout-terrain / cross / enduro",
+          "Pneus",
+          "Pièces ou entretien",
+          "Autre",
+        ],
+      },
+      {
+        key: "bikeType",
+        type: "select",
+        emoji: "🏍️",
+        title: "Quel type de moto possèdes-tu ?",
+        description:
+          "Choisis la catégorie la plus proche.",
+        options: [
+          "Roadster",
+          "Sportive",
+          "Trail",
+          "Custom",
+          "Scooter",
+          "Tout-terrain",
+          "Autre",
+        ],
+      },
+      {
+        key: "priority",
+        type: "select",
+        emoji: "⭐",
+        title: "Quel est ton critère principal ?",
+        description:
+          "Choisis ce qui compte le plus pour toi.",
+        options: [
+          "Prix",
+          "Sécurité",
+          "Confort",
+          "Style",
+          "Performance",
+          "Je souhaite être conseillé",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget maximum approximatif.",
+        placeholder: "Ex : 180",
+      },
+    ],
+  },
+
+  crypto: {
+    label: "Cryptomonnaies",
+    icon: "₿",
+    message:
+      "Je vais préciser ton besoin afin de t'orienter vers une plateforme ou un service adapté à ton niveau.",
+    questions: [
+      {
+        key: "experience",
+        type: "select",
+        emoji: "₿",
+        title: "Quel est ton niveau d'expérience ?",
+        description:
+          "Choisis la situation qui te correspond.",
+        options: [
+          "Je débute complètement",
+          "J'ai déjà acheté des cryptomonnaies",
+          "J'utilise régulièrement une plateforme",
+          "Utilisateur expérimenté",
+        ],
+      },
+      {
+        key: "mainNeed",
+        type: "select",
+        emoji: "🎯",
+        title: "Que souhaites-tu principalement faire ?",
+        description:
+          "Choisis ton besoin principal.",
+        options: [
+          "Découvrir le fonctionnement",
+          "Acheter ou vendre",
+          "Conserver mes actifs",
+          "Suivre mon portefeuille",
+          "Comparer des plateformes",
+        ],
+      },
+      {
+        key: "securityPriority",
+        type: "select",
+        emoji: "🔐",
+        title: "Quel niveau d'accompagnement recherches-tu ?",
+        description:
+          "Choisis ce qui te rassure le plus.",
+        options: [
+          "Interface très simple",
+          "Sécurité renforcée",
+          "Frais réduits",
+          "Large choix d'actifs",
+          "Je souhaite être guidé",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel montant envisages-tu de consacrer à ce projet ?",
+        description:
+          "Indique uniquement un ordre de grandeur en euros.",
+        placeholder: "Ex : 500",
+      },
+    ],
+  },
+
+  cybersecurite: {
+    label: "Cybersécurité",
+    icon: "🛡️",
+    message:
+      "Je vais identifier les protections numériques utiles selon tes appareils et tes usages.",
+    questions: [
+      {
+        key: "protectionType",
+        type: "select",
+        emoji: "🛡️",
+        title: "Quel est ton besoin principal ?",
+        description:
+          "Choisis le type de protection recherché.",
+        options: [
+          "VPN",
+          "Antivirus",
+          "Protection de la vie privée",
+          "Gestionnaire de mots de passe",
+          "Protection de plusieurs appareils",
+          "Je souhaite être conseillé",
+        ],
+      },
+      {
+        key: "devicesCount",
+        type: "number",
+        emoji: "💻",
+        title: "Combien d'appareils souhaites-tu protéger ?",
+        description:
+          "Compte les ordinateurs, téléphones et tablettes concernés.",
+        placeholder: "Ex : 4",
+      },
+      {
+        key: "usage",
+        type: "select",
+        emoji: "🌐",
+        title: "Quel est ton usage principal ?",
+        description:
+          "Choisis l'utilisation la plus importante.",
+        options: [
+          "Navigation quotidienne",
+          "Télétravail",
+          "Voyages",
+          "Streaming",
+          "Wi-Fi public",
+          "Usage professionnel",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget approximatif.",
+        placeholder: "Ex : 6",
+      },
+    ],
+  },
+
+  servicesEntreprises: {
+    label: "Services aux entreprises",
+    icon: "🏢",
+    message:
+      "Je vais préciser le besoin de ton entreprise afin de t'orienter vers le bon service partenaire.",
+    questions: [
+      {
+        key: "serviceType",
+        type: "select",
+        emoji: "🏢",
+        title: "Quel service recherches-tu ?",
+        description:
+          "Choisis le besoin principal de ton activité.",
+        options: [
+          "Création ou gestion d'entreprise",
+          "Comptabilité",
+          "Communication / marketing",
+          "Téléphonie ou outils numériques",
+          "Financement",
+          "Assurance professionnelle",
+          "Autre",
+        ],
+      },
+      {
+        key: "companyStatus",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est la situation de ton entreprise ?",
+        description:
+          "Choisis la situation actuelle.",
+        options: [
+          "Projet de création",
+          "Micro-entreprise",
+          "Société",
+          "Association",
+          "Autre structure",
+        ],
+      },
+      {
+        key: "companySize",
+        type: "select",
+        emoji: "👥",
+        title: "Quelle est la taille de la structure ?",
+        description:
+          "Choisis l'effectif approximatif.",
+        options: [
+          "1 personne",
+          "2 à 5 personnes",
+          "6 à 20 personnes",
+          "Plus de 20 personnes",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget souhaites-tu prévoir ?",
+        description:
+          "Indique un budget approximatif en euros.",
+        placeholder: "Ex : 300",
+      },
+    ],
+  },
+
+  debarras: {
+    label: "Débarras",
+    icon: "📦",
+    message:
+      "Je vais préciser le volume et les contraintes du débarras pour t'orienter vers une solution adaptée.",
+    questions: [
+      {
+        key: "propertyType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel lieu faut-il débarrasser ?",
+        description:
+          "Choisis le type de lieu concerné.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Cave",
+          "Garage",
+          "Local professionnel",
+          "Autre",
+        ],
+      },
+      {
+        key: "volume",
+        type: "select",
+        emoji: "📦",
+        title: "Quel volume faut-il environ débarrasser ?",
+        description:
+          "Choisis l'estimation la plus proche.",
+        options: [
+          "Quelques objets",
+          "Une pièce",
+          "Plusieurs pièces",
+          "Logement complet",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "access",
+        type: "select",
+        emoji: "🚪",
+        title: "Comment est l'accès au lieu ?",
+        description:
+          "Cette information peut influencer l'organisation du débarras.",
+        options: [
+          "Rez-de-chaussée",
+          "Étage avec ascenseur",
+          "Étage sans ascenseur",
+          "Accès difficile",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "deadline",
+        type: "date",
+        emoji: "📅",
+        title: "Pour quelle date souhaites-tu le débarras ?",
+        description:
+          "Cette information reste facultative.",
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel budget souhaites-tu prévoir ?",
+        description:
+          "Indique une estimation en euros.",
+        placeholder: "Ex : 350",
+      },
+    ],
+  },
+
+  gaz: {
+    label: "Gaz",
+    icon: "🔥",
+    message:
+      "Je vais analyser ton contrat de gaz actuel ou t'aider à préciser les besoins de ton logement.",
+    questions: [
+      {
+        key: "contractStatus",
+        type: "select",
+        emoji: "🔥",
+        title: "Quelle est ta situation ?",
+        description:
+          "Indique si tu possèdes déjà un contrat de gaz ou si tu recherches une nouvelle offre.",
+        options: [
+          "J'ai déjà un contrat de gaz",
+          "Je cherche un contrat de gaz",
+        ],
+      },
+      {
+        key: "provider",
+        type: "text",
+        emoji: "🔥",
+        title: "Quel est ton fournisseur de gaz ?",
+        description:
+          "Indique le nom de ton fournisseur actuel.",
+        placeholder: "Ex : Engie, EDF, TotalEnergies, OHM Énergie...",
+        showIf: {
+          key: "contractStatus",
+          equals: "J'ai déjà un contrat de gaz",
+        },
+      },
+      {
+        key: "monthlyPrice",
+        type: "number",
+        emoji: "💶",
+        title: "Quelle est ta mensualité de gaz ?",
+        description:
+          "Indique le montant mensuel approximatif.",
+        placeholder: "Ex : 85",
+        showIf: {
+          key: "contractStatus",
+          equals: "J'ai déjà un contrat de gaz",
+        },
+      },
+      {
+        key: "housingType",
+        type: "select",
+        emoji: "🏠",
+        title: "Quel logement est concerné ?",
+        description:
+          "Choisis le type de logement alimenté au gaz.",
+        options: [
+          "Appartement",
+          "Maison",
+          "Autre",
+        ],
+      },
+      {
+        key: "surface",
+        type: "number",
+        emoji: "📐",
+        title: "Quelle est la surface approximative du logement ?",
+        description:
+          "Indique la surface en mètres carrés.",
+        placeholder: "Ex : 80",
+      },
+      {
+        key: "gasUsage",
+        type: "select",
+        emoji: "🔥",
+        title: "À quoi sert principalement le gaz ?",
+        description:
+          "Choisis les usages concernés.",
+        options: [
+          "Chauffage",
+          "Eau chaude",
+          "Cuisson",
+          "Chauffage + eau chaude",
+          "Plusieurs usages",
+          "Je ne sais pas",
+        ],
+      },
+      {
+        key: "occupants",
+        type: "number",
+        emoji: "👥",
+        title: "Combien de personnes vivent dans le logement ?",
+        description:
+          "Indique le nombre d'occupants.",
+        placeholder: "Ex : 2",
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "🎯",
+        title: "Quel budget mensuel souhaites-tu prévoir ?",
+        description:
+          "Indique ton budget approximatif.",
+        placeholder: "Ex : 80",
+        showIf: {
+          key: "contractStatus",
+          equals: "Je cherche un contrat de gaz",
+        },
+      },
+    ],
+  },
+
 };
 
-const availableCategoryOrder: AnalyseCategory[] = [
+type MissionCatalog = {
+  id: string;
+  slug: string;
+  title: string;
+  icon: string;
+  category: string | null;
+  status: "available" | "pending" | "disabled";
+  route: string | null;
+  sort_order: number;
+  is_premium?: boolean;
+};
+
+type AnalyseCatalogEntry = {
+  mission: MissionCatalog;
+  analyseCategory: AnalyseCategory | null;
+  config: CategoryConfig | null;
+};
+
+const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "famille",
-  "animaux",
+  "beauteArtisanat",
+  "voyage",
   "telephone",
   "telephoneSenior",
+  "siteInternetPro",
+  "animaux",
+  "assuranceEmprunteur",
+  "ambassadeur",
+  "assuranceObseques",
+  "creditImmobilier",
+  "diagnosticImmobilier",
   "habitation",
+  "travaux",
+  "mutuelleSenior",
+  "epargneRetraite",
   "auto",
   "moto",
   "mobilitesDouces",
   "servicesAuto",
-  "travaux",
-  "voyage",
+  "motoEquipement",
   "formation",
   "securite",
+  "crypto",
+  "cybersecurite",
+  "servicesEntreprises",
   "demenagement",
+  "debarras",
+  "electricite",
+  "gaz",
 ];
 
-const pendingCategoryOrder: AnalyseCategory[] = [
+const fallbackPendingCategoryOrder: AnalyseCategory[] = [
   "mutuelle",
   "internet",
-  "electricite",
   "banque",
   "streaming",
   "logiciels",
 ];
 
-const availableCategoryEntries = availableCategoryOrder.map(
-  (categoryKey) =>
-    [
-      categoryKey,
-      categories[categoryKey],
-    ] as [AnalyseCategory, CategoryConfig]
-);
+const analyseAliases: Partial<
+  Record<AnalyseCategory, string[]>
+> = {
+  famille: [
+    "famille",
+    "famille-aides",
+  ],
+  telephone: [
+    "telephone",
+    "mobile",
+  ],
+  telephoneSenior: [
+    "telephone-senior",
+    "telephone senior",
+  ],
+  internet: [
+    "internet",
+  ],
+  electricite: [
+    "electricite",
+    "électricité",
+    "energie",
+    "énergie",
+  ],
+  habitation: [
+    "habitation",
+    "assurance-habitation",
+  ],
+  auto: [
+    "auto",
+    "assurance-auto",
+  ],
+  moto: [
+    "moto",
+    "assurance-moto",
+  ],
+  mutuelle: [
+    "mutuelle",
+    "mutuelle-sante",
+    "mutuelle santé",
+  ],
+  animaux: [
+    "animaux",
+    "assurance-animaux",
+  ],
+  banque: [
+    "banque",
+  ],
+  streaming: [
+    "streaming",
+  ],
+  securite: [
+    "securite",
+    "sécurité",
+    "alarme-securite",
+  ],
+  demenagement: [
+    "demenagement",
+    "déménagement",
+  ],
+  servicesAuto: [
+    "services-auto",
+    "service-auto",
+    "services auto",
+  ],
+  mobilitesDouces: [
+    "mobilites-douces",
+    "mobilités-douces",
+    "mobilites douces",
+  ],
+  travaux: [
+    "travaux",
+    "travaux-renovation",
+    "rénovation",
+  ],
+  logiciels: [
+    "logiciels",
+    "logiciel",
+  ],
+  formation: [
+    "formation",
+    "formations",
+  ],
+  voyage: [
+    "voyage",
+  ],
+  beauteArtisanat: [
+    "beaute-artisanat",
+    "beauté-artisanat",
+    "beaute & artisanat",
+    "beauté & artisanat",
+  ],
+  siteInternetPro: [
+    "site-internet-pro",
+    "site internet pro",
+  ],
+  assuranceEmprunteur: [
+    "assurance-emprunteur",
+    "assurance emprunteur",
+  ],
+  ambassadeur: [
+    "ambassadeur",
+    "ambassadeur-gselect",
+    "gselect",
+  ],
+  assuranceObseques: [
+    "assurance-obseques",
+    "assurance obsèques",
+    "obseques",
+    "obsèques",
+  ],
+  creditImmobilier: [
+    "credit-immobilier",
+    "crédit-immobilier",
+    "credit immobilier",
+  ],
+  diagnosticImmobilier: [
+    "diagnostic-immobilier",
+    "diagnostic immobilier",
+  ],
+  mutuelleSenior: [
+    "mutuelle-senior",
+    "mutuelle senior",
+  ],
+  epargneRetraite: [
+    "epargne-retraite",
+    "épargne-retraite",
+    "epargne retraite",
+    "épargne retraite",
+  ],
+  motoEquipement: [
+    "moto-equipement",
+    "moto équipement",
+    "moto equipement",
+  ],
+  crypto: [
+    "crypto",
+    "cryptomonnaies",
+    "cryptomonnaie",
+  ],
+  cybersecurite: [
+    "cybersecurite",
+    "cybersécurité",
+  ],
+  servicesEntreprises: [
+    "services-entreprises",
+    "services aux entreprises",
+    "services-aux-entreprises",
+  ],
+  debarras: [
+    "debarras",
+    "débarras",
+  ],
+  gaz: [
+    "gaz",
+  ],
+};
 
-const pendingCategoryEntries = pendingCategoryOrder.map(
-  (categoryKey) =>
-    [
-      categoryKey,
-      categories[categoryKey],
-    ] as [AnalyseCategory, CategoryConfig]
-);
+function normalizeMissionValue(
+  value: string | null | undefined
+) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function findAnalyseCategory(
+  mission: MissionCatalog
+): AnalyseCategory | null {
+  const missionValues = [
+    mission.slug,
+    mission.category,
+    mission.title,
+    mission.route,
+  ].map(normalizeMissionValue);
+
+  for (const [
+    categoryKey,
+    aliases,
+  ] of Object.entries(analyseAliases)) {
+    const normalizedAliases =
+      (aliases ?? []).map(normalizeMissionValue);
+
+    const matches = normalizedAliases.some(
+      (alias) =>
+        missionValues.some(
+          (value) =>
+            value === alias ||
+            value.startsWith(`${alias}-`) ||
+            alias.startsWith(`${value}-`)
+        )
+    );
+
+    if (matches) {
+      return categoryKey as AnalyseCategory;
+    }
+  }
+
+  return null;
+}
+
+function missionToAnalyseEntry(
+  mission: MissionCatalog
+): AnalyseCatalogEntry {
+  const analyseCategory =
+    findAnalyseCategory(mission);
+
+  return {
+    mission,
+    analyseCategory,
+    config: analyseCategory
+      ? categories[analyseCategory]
+      : null,
+  };
+}
 
 export default function AnalysePage() {
   const router = useRouter();
+
+  const [missionCatalog, setMissionCatalog] =
+    useState<MissionCatalog[]>([]);
+
+  const [catalogLoading, setCatalogLoading] =
+    useState(true);
+
+  const [catalogError, setCatalogError] =
+    useState("");
 
   const [selectedCategory, setSelectedCategory] =
     useState<AnalyseCategory | null>(null);
@@ -2334,6 +3643,79 @@ export default function AnalysePage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadMissionCatalog() {
+      try {
+        setCatalogLoading(true);
+        setCatalogError("");
+
+        const { data, error } = await supabase
+          .from("mission_catalog")
+          .select(
+            `
+              id,
+              slug,
+              title,
+              icon,
+              category,
+              status,
+              route,
+              sort_order,
+              is_premium
+            `
+          )
+          .neq("status", "disabled")
+          .order("sort_order", {
+            ascending: true,
+          });
+
+        if (!mounted) {
+          return;
+        }
+
+        if (error) {
+          console.error(
+            "Erreur mission_catalog Analyse :",
+            error
+          );
+
+          setCatalogError(
+            "Impossible de synchroniser les catégories avec les missions."
+          );
+
+          return;
+        }
+
+        setMissionCatalog(
+          (data as MissionCatalog[] | null) ?? []
+        );
+      } catch (error) {
+        console.error(
+          "Erreur chargement catalogue Analyse :",
+          error
+        );
+
+        if (mounted) {
+          setCatalogError(
+            "Impossible de synchroniser les catégories avec les missions."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setCatalogLoading(false);
+        }
+      }
+    }
+
+    void loadMissionCatalog();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -2380,6 +3762,71 @@ export default function AnalysePage() {
   const currentValue = question
     ? values[question.key] ?? ""
     : "";
+
+  const availableCategoryEntries: AnalyseCatalogEntry[] =
+    missionCatalog.length > 0
+      ? missionCatalog
+          .filter(
+            (mission) =>
+              mission.status === "available"
+          )
+          .map(missionToAnalyseEntry)
+      : fallbackAvailableCategoryOrder.map(
+          (categoryKey, index) => ({
+            mission: {
+              id: `fallback-available-${categoryKey}`,
+              slug: categoryKey,
+              title: categories[categoryKey].label,
+              icon: categories[categoryKey].icon,
+              category: categoryKey,
+              status: "available",
+              route: null,
+              sort_order: index,
+            },
+            analyseCategory: categoryKey,
+            config: categories[categoryKey],
+          })
+        );
+
+  const pendingCategoryEntries: AnalyseCatalogEntry[] =
+    missionCatalog.length > 0
+      ? missionCatalog
+          .filter(
+            (mission) =>
+              mission.status === "pending"
+          )
+          .map(missionToAnalyseEntry)
+      : fallbackPendingCategoryOrder.map(
+          (categoryKey, index) => ({
+            mission: {
+              id: `fallback-pending-${categoryKey}`,
+              slug: categoryKey,
+              title: categories[categoryKey].label,
+              icon: categories[categoryKey].icon,
+              category: categoryKey,
+              status: "pending",
+              route: null,
+              sort_order: index,
+            },
+            analyseCategory: categoryKey,
+            config: categories[categoryKey],
+          })
+        );
+
+  function openCatalogMission(
+    entry: AnalyseCatalogEntry
+  ) {
+    if (entry.analyseCategory) {
+      selectCategory(entry.analyseCategory);
+      return;
+    }
+
+    const missionRoute =
+      entry.mission.route ||
+      `/missions/${entry.mission.slug}`;
+
+    router.push(missionRoute);
+  }
 
   function selectCategory(
     categoryKey: AnalyseCategory
@@ -2631,6 +4078,18 @@ export default function AnalysePage() {
               uniquement les questions utiles pour ce
               contrat.
             </p>
+
+            {catalogLoading && (
+              <p className="mt-4 text-sm font-semibold text-slate-500">
+                Synchronisation des missions...
+              </p>
+            )}
+
+            {catalogError && (
+              <p className="mx-auto mt-4 max-w-2xl rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                {catalogError} Pilo affiche temporairement la dernière liste connue.
+              </p>
+            )}
           </div>
 
           {/* CATÉGORIES DISPONIBLES */}
@@ -2645,28 +4104,36 @@ export default function AnalysePage() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
               {availableCategoryEntries.map(
-                ([categoryKey, item]) => (
-                  <button
-                    key={categoryKey}
-                    type="button"
-                    onClick={() =>
-                      selectCategory(categoryKey)
-                    }
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
-                  >
-                    <span className="text-5xl">
-                      {item.icon}
-                    </span>
+                (entry) => {
+                  const item = entry.config;
 
-                    <h2 className="mt-5 text-xl font-black">
-                      {item.label}
-                    </h2>
+                  return (
+                    <button
+                      key={entry.mission.id}
+                      type="button"
+                      onClick={() =>
+                        openCatalogMission(entry)
+                      }
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
+                    >
+                      <span className="text-5xl">
+                        {entry.mission.icon ||
+                          item?.icon ||
+                          "🎯"}
+                      </span>
 
-                    <p className="mt-2 text-sm leading-6 text-slate-400">
-                      {item.message}
-                    </p>
-                  </button>
-                )
+                      <h2 className="mt-5 text-xl font-black">
+                        {entry.mission.title ||
+                          item?.label}
+                      </h2>
+
+                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                        {item?.message ??
+                          "Cette mission est disponible. Ouvre-la pour découvrir la solution proposée par Pilo."}
+                      </p>
+                    </button>
+                  );
+                }
               )}
             </div>
           </div>
@@ -2689,9 +4156,9 @@ export default function AnalysePage() {
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pendingCategoryEntries.map(
-                ([categoryKey, item]) => (
+                (entry) => (
                   <div
-                    key={categoryKey}
+                    key={entry.mission.id}
                     className="relative rounded-2xl border border-amber-500/20 bg-white/[0.03] p-5 opacity-80"
                   >
                     <div className="absolute right-4 top-4 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
@@ -2699,11 +4166,14 @@ export default function AnalysePage() {
                     </div>
 
                     <span className="text-3xl">
-                      {item.icon}
+                      {entry.mission.icon ||
+                        entry.config?.icon ||
+                        "⏳"}
                     </span>
 
                     <h3 className="mt-4 font-black text-white">
-                      {item.label}
+                      {entry.mission.title ||
+                        entry.config?.label}
                     </h3>
 
                     <p className="mt-2 text-xs text-slate-500">
