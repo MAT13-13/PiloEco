@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
 import PiloMascot from "../components/PiloMascot";
-import QuestionCard from "../components/QuestionCard";
 
 type AnalyseCategory =
   | "famille"
@@ -2554,7 +2553,7 @@ export default function AnalysePage() {
 
                   setErrorMessage("");
                 }}
-                className={`rounded-2xl border p-4 text-left font-bold transition ${
+                className={`w-full min-w-0 rounded-2xl border px-4 py-4 text-left text-sm font-bold leading-5 transition sm:p-4 sm:text-base ${
                   active
                     ? "border-green-400 bg-green-500/20 text-green-300"
                     : "border-white/10 bg-white/5 text-white hover:border-green-500/40"
@@ -2599,19 +2598,19 @@ export default function AnalysePage() {
           }
         }}
         placeholder={question.placeholder}
-        className="mt-8 w-full rounded-2xl bg-white p-5 text-center text-2xl font-bold text-slate-950 placeholder:text-slate-400"
+        className="mt-6 w-full min-w-0 rounded-2xl bg-white px-4 py-4 text-center text-base font-bold text-slate-950 placeholder:text-slate-400 sm:mt-8 sm:p-5 sm:text-2xl"
       />
     );
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-6 py-20 text-white">
+    <main className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden bg-slate-950 px-4 pb-10 pt-24 text-white sm:px-6 sm:py-20 md:justify-center">
       <button
         type="button"
         onClick={() =>
           router.push("/dashboard")
         }
-        className="absolute left-6 top-6 z-20 rounded-xl border border-white/10 bg-slate-900/80 px-4 py-3 font-semibold text-slate-200 transition hover:border-green-500/40 hover:text-green-400"
+        className="absolute left-4 top-4 z-20 max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-green-500/40 hover:text-green-400 sm:left-6 sm:top-6 sm:px-4 sm:py-3 sm:text-base"
       >
         ← Retour au dashboard
       </button>
@@ -2623,7 +2622,7 @@ export default function AnalysePage() {
               Analyse Pilo
             </p>
 
-            <h1 className="mt-4 text-4xl font-black md:text-5xl">
+            <h1 className="mt-4 text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
               Que veux-tu analyser ?
             </h1>
 
@@ -2644,7 +2643,7 @@ export default function AnalysePage() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
               {availableCategoryEntries.map(
                 ([categoryKey, item]) => (
                   <button
@@ -2653,7 +2652,7 @@ export default function AnalysePage() {
                     onClick={() =>
                       selectCategory(categoryKey)
                     }
-                    className="rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
                   >
                     <span className="text-5xl">
                       {item.icon}
@@ -2720,37 +2719,40 @@ export default function AnalysePage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${selectedCategory}-${step}`}
-            className="w-full max-w-2xl"
+            className="w-full min-w-0 max-w-2xl"
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -80 }}
             transition={{ duration: 0.35 }}
           >
             {question && category && (
-              <QuestionCard title={question.title}>
+              <div className="w-full min-w-0 overflow-hidden rounded-3xl border border-green-500/20 bg-slate-900/95 p-4 shadow-2xl shadow-black/20 sm:p-8">
+                <h2 className="break-words text-center text-2xl font-black leading-tight text-white sm:text-4xl">
+                  {question.title}
+                </h2>
                 <div className="text-center">
-                  <div className="mx-auto mb-6 flex h-24 w-24 animate-bounce items-center justify-center rounded-full bg-green-500/10 text-6xl">
+                  <div className="mx-auto mb-4 mt-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-4xl sm:mb-6 sm:h-24 sm:w-24 sm:text-6xl">
                     🐦
                   </div>
 
-                  <p className="text-sm font-bold uppercase tracking-wide text-green-400">
+                  <p className="break-words text-xs font-bold uppercase tracking-wide text-green-400 sm:text-sm">
                     {category.icon} {category.label}
                   </p>
 
-                  <p className="mt-2 text-sm font-bold text-slate-500">
+                  <p className="mt-2 text-xs font-bold text-slate-500 sm:text-sm">
                     Question {step + 1} /{" "}
                     {visibleQuestions.length}
                   </p>
 
-                  <div className="mt-6 text-6xl">
+                  <div className="mt-5 text-4xl sm:mt-6 sm:text-6xl">
                     {question.emoji}
                   </div>
 
-                  <p className="mt-4 text-slate-400">
+                  <p className="mt-3 break-words text-sm leading-6 text-slate-400 sm:mt-4 sm:text-base">
                     {question.description}
                   </p>
 
-                  <p className="mt-6 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-green-300">
+                  <p className="mt-5 break-words rounded-2xl border border-green-500/20 bg-green-500/10 p-3 text-sm leading-6 text-green-300 sm:mt-6 sm:p-4 sm:text-base">
                     {category.message}
                   </p>
                 </div>
@@ -2770,12 +2772,12 @@ export default function AnalysePage() {
                   </p>
                 )}
 
-                <div className="mt-8 flex gap-4">
+                <div className="mt-6 flex w-full gap-3 sm:mt-8 sm:gap-4">
                   <button
                     type="button"
                     onClick={handlePreviousStep}
                     disabled={loading}
-                    className="w-1/3 rounded-2xl border border-white/10 bg-white/5 py-5 text-lg font-bold text-white transition hover:bg-white/10 disabled:opacity-50"
+                    className="w-[38%] min-w-0 rounded-2xl border border-white/10 bg-white/5 px-2 py-4 text-sm font-bold text-white transition hover:bg-white/10 disabled:opacity-50 sm:w-1/3 sm:py-5 sm:text-lg"
                   >
                     ← Retour
                   </button>
@@ -2788,7 +2790,7 @@ export default function AnalysePage() {
                       (!currentValue &&
                         question.type !== "date")
                     }
-                    className="flex-1 rounded-2xl bg-green-500 py-5 text-lg font-bold text-slate-950 transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="min-w-0 flex-1 rounded-2xl bg-green-500 px-3 py-4 text-sm font-bold text-slate-950 transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-50 sm:py-5 sm:text-lg"
                   >
                     {loading
                       ? "Analyse en cours..."
@@ -2800,7 +2802,7 @@ export default function AnalysePage() {
                   </button>
                 </div>
 
-                <div className="mt-8 flex gap-2">
+                <div className="mt-6 flex gap-2 sm:mt-8">
                   {visibleQuestions.map(
                     (item, index) => (
                       <div
@@ -2814,13 +2816,15 @@ export default function AnalysePage() {
                     )
                   )}
                 </div>
-              </QuestionCard>
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
       )}
 
-      <PiloMascot />
+      <div className="hidden md:block">
+        <PiloMascot />
+      </div>
     </main>
    );
 }
