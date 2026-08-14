@@ -20,7 +20,6 @@ type AnalyseCategory =
   | "animaux"
   | "banque"
   | "streaming"
-  | "fintech"
   | "securite"
   | "demenagement"
   | "servicesAuto"
@@ -1637,132 +1636,6 @@ const categories: Record<
   },
 
 
-    fintech: {
-    label: "Fintech & budget",
-    icon: "💳",
-    message:
-      "Je vais analyser le service financier que tu utilises ou t’aider à choisir une nouvelle solution.",
-    questions: [
-      {
-        key: "contractStatus",
-        type: "select",
-        emoji: "💳",
-        title: "Quelle est ta situation ?",
-        description:
-          "Indique si tu utilises déjà un service financier ou si tu recherches une nouvelle solution.",
-        options: [
-          "J’utilise déjà un service financier",
-          "Je cherche un service financier",
-        ],
-      },
-
-      {
-        key: "provider",
-        type: "text",
-        emoji: "💳",
-        title: "Quel service financier utilises-tu ?",
-        description:
-          "Indique l’application ou le service concerné.",
-        placeholder:
-          "Ex : Revolut, Lydia, N26, une application de budget...",
-        showIf: {
-          key: "contractStatus",
-          equals: "J’utilise déjà un service financier",
-        },
-      },
-
-      {
-        key: "serviceType",
-        type: "select",
-        emoji: "📊",
-        title: "Quel type de service est concerné ?",
-        description:
-          "Choisis l’usage principal du service.",
-        options: [
-          "Compte ou carte",
-          "Gestion de budget",
-          "Cashback",
-          "Épargne",
-          "Investissement",
-          "Autre",
-        ],
-      },
-
-      {
-        key: "monthlyPrice",
-        type: "number",
-        emoji: "💶",
-        title:
-          "Combien ce service te coûte-t-il chaque mois ?",
-        description:
-          "Indique 0 si le service est actuellement gratuit.",
-        placeholder: "Ex : 9.99",
-        showIf: {
-          key: "contractStatus",
-          equals: "J’utilise déjà un service financier",
-        },
-      },
-
-      {
-        key: "mainGoal",
-        type: "select",
-        emoji: "🎯",
-        title: "Quel est ton objectif principal ?",
-        description:
-          "Choisis ce que tu souhaites améliorer avec ce service.",
-        options: [
-          "Réduire mes frais",
-          "Mieux gérer mon budget",
-          "Obtenir du cashback",
-          "Épargner automatiquement",
-          "Investir",
-          "Voyager avec moins de frais",
-          "Je souhaite être conseillé",
-        ],
-        showIf: {
-          key: "contractStatus",
-          equals: "Je cherche un service financier",
-        },
-      },
-
-      {
-        key: "priorityFeature",
-        type: "select",
-        emoji: "⭐",
-        title:
-          "Quelle fonctionnalité est la plus importante pour toi ?",
-        description:
-          "Choisis le critère prioritaire.",
-        options: [
-          "Simplicité",
-          "Frais réduits",
-          "Application complète",
-          "Cashback",
-          "Automatisation",
-          "Accompagnement",
-        ],
-        showIf: {
-          key: "contractStatus",
-          equals: "Je cherche un service financier",
-        },
-      },
-
-      {
-        key: "budget",
-        type: "number",
-        emoji: "💶",
-        title:
-          "Quel budget mensuel acceptes-tu pour ce service ?",
-        description:
-          "Indique 0 si tu recherches une solution gratuite.",
-        placeholder: "Ex : 0",
-        showIf: {
-          key: "contractStatus",
-          equals: "Je cherche un service financier",
-        },
-      },
-    ],
-  },
 
     securite: {
     label: "Alarme & sécurité",
@@ -2405,31 +2278,41 @@ const categories: Record<
   },
 };
 
-const categoryOrder: AnalyseCategory[] = [
+const availableCategoryOrder: AnalyseCategory[] = [
   "famille",
-  "mutuelle",
   "animaux",
   "telephone",
   "telephoneSenior",
-  "internet",
-  "electricite",
-  "streaming",
-  "banque",
-  "travaux",
-  "fintech",
   "habitation",
   "auto",
   "moto",
   "mobilitesDouces",
   "servicesAuto",
+  "travaux",
   "voyage",
   "formation",
   "securite",
-  "logiciels",
   "demenagement",
 ];
 
-const categoryEntries = categoryOrder.map(
+const pendingCategoryOrder: AnalyseCategory[] = [
+  "mutuelle",
+  "internet",
+  "electricite",
+  "banque",
+  "streaming",
+  "logiciels",
+];
+
+const availableCategoryEntries = availableCategoryOrder.map(
+  (categoryKey) =>
+    [
+      categoryKey,
+      categories[categoryKey],
+    ] as [AnalyseCategory, CategoryConfig]
+);
+
+const pendingCategoryEntries = pendingCategoryOrder.map(
   (categoryKey) =>
     [
       categoryKey,
@@ -2727,31 +2610,86 @@ export default function AnalysePage() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categoryEntries.map(
-              ([categoryKey, item]) => (
-                <button
-                  key={categoryKey}
-                  type="button"
-                  onClick={() =>
-                    selectCategory(categoryKey)
-                  }
-                  className="rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
-                >
-                  <span className="text-5xl">
-                    {item.icon}
-                  </span>
+          {/* CATÉGORIES DISPONIBLES */}
+          <div className="mt-10">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
 
-                  <h2 className="mt-5 text-xl font-black">
-                    {item.label}
-                  </h2>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-green-400">
+                Catégories disponibles
+              </p>
+            </div>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
-                    {item.message}
-                  </p>
-                </button>
-              )
-            )}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {availableCategoryEntries.map(
+                ([categoryKey, item]) => (
+                  <button
+                    key={categoryKey}
+                    type="button"
+                    onClick={() =>
+                      selectCategory(categoryKey)
+                    }
+                    className="rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                  >
+                    <span className="text-5xl">
+                      {item.icon}
+                    </span>
+
+                    <h2 className="mt-5 text-xl font-black">
+                      {item.label}
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {item.message}
+                    </p>
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* EN COURS DE PARTENARIAT */}
+          <div className="mt-14 border-t border-white/10 pt-10">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400">
+                Prochainement
+              </p>
+
+              <h2 className="mt-2 text-2xl font-black text-white">
+                En cours de partenariat
+              </h2>
+
+              <p className="mt-2 text-sm text-slate-400">
+                Pilo prépare actuellement de nouvelles solutions pour ces catégories.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {pendingCategoryEntries.map(
+                ([categoryKey, item]) => (
+                  <div
+                    key={categoryKey}
+                    className="relative rounded-2xl border border-amber-500/20 bg-white/[0.03] p-5 opacity-80"
+                  >
+                    <div className="absolute right-4 top-4 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
+                      En cours
+                    </div>
+
+                    <span className="text-3xl">
+                      {item.icon}
+                    </span>
+
+                    <h3 className="mt-4 font-black text-white">
+                      {item.label}
+                    </h3>
+
+                    <p className="mt-2 text-xs text-slate-500">
+                      Solution partenaire en préparation
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </section>
       ) : (

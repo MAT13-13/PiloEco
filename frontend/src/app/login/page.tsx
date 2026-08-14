@@ -12,6 +12,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [mode, setMode] = useState<AuthMode>("login");
+
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,6 +23,11 @@ export default function LoginPage() {
 
   function validateForm() {
     const cleanEmail = email.trim().toLowerCase();
+
+    if (mode === "signup" && !firstName.trim()) {
+      setErrorMessage("Entre ton prénom.");
+      return false;
+    }
 
     if (!cleanEmail) {
       setErrorMessage("Entre ton adresse e-mail.");
@@ -48,55 +55,131 @@ export default function LoginPage() {
   }
 
   async function handleSubmit(
-  event: FormEvent<HTMLFormElement>
-) {
-  event.preventDefault();
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
 
-  setErrorMessage("");
-  setSuccessMessage("");
+    setErrorMessage("");
+    setSuccessMessage("");
 
-  if (!validateForm()) {
-    return;
-  }
+    if (!validateForm()) {
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const cleanEmail =
-      email.trim().toLowerCase();
+      const cleanEmail =
+        email.trim().toLowerCase();
 
-    if (mode === "login") {
-      const {
-        data,
-        error,
-      } =
-        await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password,
-        });
+      if (mode === "login") {
+        const {
+          data,
+          error,
+        } =
+          await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password,
+          });
 
-      if (error) {
-        const errorText =
-          error.message.toLowerCase();
+        if (error) {
+          const errorText =
+            error.message.toLowerCase();
 
-        if (
-          errorText.includes(
-            "invalid login credentials"
-          )
-        ) {
+          if (
+            errorText.includes(
+              "invalid login credentials"
+            )
+          ) {
+            setErrorMessage(
+              "Adresse e-mail ou mot de passe incorrect."
+            );
+            return;
+          }
+
+          if (
+            errorText.includes(
+              "email not confirmed"
+            )
+          ) {
+            setErrorMessage(
+              "Confirme d’abord ton adresse e-mail avant de te connecter."
+            );
+            return;
+          }
+
+          setErrorMessage(error.message);
+          return;
+        }
+
+        const userId = data.user?.id;
+
+        if (!userId) {
           setErrorMessage(
-            "Adresse e-mail ou mot de passe incorrect."
+            "Impossible de récupérer ton compte."
           );
           return;
         }
 
+        const {
+          data: profile,
+          error: profileError,
+        } = await supabase
+          .from("profils")
+          .select("role")
+          .eq("id", userId)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error(
+            "Erreur lecture du rôle :",
+            profileError
+          );
+
+          setErrorMessage(
+            "Impossible de déterminer ton espace."
+          );
+          return;
+        }
+
+        if (profile?.role === "partner") {
+          router.replace(
+            "/partner-dashboard"
+          );
+        } else {
+          router.replace("/dashboard");
+        }
+
+        router.refresh();
+        return;
+      }
+
+      const cleanFirstName =
+        firstName.trim();
+
+      const {
+        data,
+        error,
+      } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: {
+            first_name: cleanFirstName,
+          },
+          emailRedirectTo:
+            `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) {
         if (
-          errorText.includes(
-            "email not confirmed"
-          )
+          error.message
+            .toLowerCase()
+            .includes("already registered")
         ) {
           setErrorMessage(
-            "Confirme d’abord ton adresse e-mail avant de te connecter."
+            "Un compte existe déjà avec cette adresse e-mail."
           );
           return;
         }
@@ -105,106 +188,38 @@ export default function LoginPage() {
         return;
       }
 
-      const userId = data.user?.id;
-
-      if (!userId) {
-        setErrorMessage(
-          "Impossible de récupérer ton compte."
-        );
-        return;
-      }
-
-      const {
-        data: profile,
-        error: profileError,
-      } = await supabase
-        .from("profils")
-        .select("role")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error(
-          "Erreur lecture du rôle :",
-          profileError
-        );
-
-        setErrorMessage(
-          "Impossible de déterminer ton espace."
-        );
-        return;
-      }
-
-      if (profile?.role === "partner") {
-        router.replace(
-          "/partner-dashboard"
-        );
-      } else {
+      if (data.session) {
         router.replace("/dashboard");
-      }
-
-      router.refresh();
-      return;
-    }
-
-    const {
-      data,
-      error,
-    } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password,
-      options: {
-        emailRedirectTo:
-          `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      if (
-        error.message
-          .toLowerCase()
-          .includes("already registered")
-      ) {
-        setErrorMessage(
-          "Un compte existe déjà avec cette adresse e-mail."
-        );
+        router.refresh();
         return;
       }
 
-      setErrorMessage(error.message);
-      return;
+      setSuccessMessage(
+        "Ton compte a été créé. Ouvre l’e-mail envoyé par PiloEco pour confirmer ton adresse."
+      );
+
+      setMode("login");
+      setFirstName("");
+      setPassword("");
+    } catch (error) {
+      console.error(
+        "Erreur pendant l’authentification :",
+        error
+      );
+
+      setErrorMessage(
+        "Une erreur inattendue est survenue. Réessaie dans quelques instants."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (data.session) {
-      router.replace("/dashboard");
-      router.refresh();
-      return;
-    }
-
-    setSuccessMessage(
-      "Ton compte a été créé. Ouvre l’e-mail envoyé par PiloEco pour confirmer ton adresse."
-    );
-
-    setMode("login");
-    setPassword("");
-  } catch (error) {
-    console.error(
-      "Erreur pendant l’authentification :",
-      error
-    );
-
-    setErrorMessage(
-      "Une erreur inattendue est survenue. Réessaie dans quelques instants."
-    );
-  } finally {
-    setLoading(false);
   }
-}
 
   function changeMode(nextMode: AuthMode) {
     setMode(nextMode);
     setErrorMessage("");
     setSuccessMessage("");
+    setFirstName("");
     setPassword("");
   }
 
@@ -283,6 +298,32 @@ export default function LoginPage() {
             onSubmit={handleSubmit}
             className="mt-7"
           >
+            {mode === "signup" && (
+              <div className="mb-5">
+                <label
+                  htmlFor="firstName"
+                  className="text-sm font-bold text-slate-300"
+                >
+                  Prénom
+                </label>
+
+                <input
+                  id="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  placeholder="Ton prénom"
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-4 font-bold text-slate-950 outline-none transition focus:border-green-400 focus:ring-4 focus:ring-green-500/10"
+                  value={firstName}
+                  onChange={(event) =>
+                    setFirstName(
+                      event.target.value
+                    )
+                  }
+                  disabled={loading}
+                />
+              </div>
+            )}
+
             <label
               htmlFor="email"
               className="text-sm font-bold text-slate-300"
@@ -337,7 +378,9 @@ export default function LoginPage() {
               className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-4 font-bold text-slate-950 outline-none transition focus:border-green-400 focus:ring-4 focus:ring-green-500/10"
               value={password}
               onChange={(event) =>
-                setPassword(event.target.value)
+                setPassword(
+                  event.target.value
+                )
               }
               disabled={loading}
             />

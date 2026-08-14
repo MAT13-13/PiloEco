@@ -116,79 +116,79 @@ export type AffiliateCampaign = {
  */
 
 export const affiliateCampaigns: AffiliateCampaign[] = [
- {
-  id: 13964,
-  provider: "91m2",
-  name: "Fenêtres",
-  slug: "fenetres",
-  model: "CPL",
-  payout: 6,
-  status: "approved",
-  universe: "travaux",
-  category: "Menuiserie / Fenêtres",
-
-trackingUrl:
-  "https://stella-2.com/clc/VerFSRTDmY_aRnRD8nQQUg",
-support: "text-link",
-integrated: true,
-published: true,
-  endDate: null,
-
-  title: "Comparer des solutions pour changer vos fenêtres",
-
-  description:
-    "Découvrez des solutions adaptées à votre projet de remplacement de fenêtres.",
-
-  buttonLabel: "Voir les solutions",
-
-  tags: [
-    "fenetre",
-    "fenetres",
-    "menuiserie",
-    "isolation",
-    "travaux",
-    "renovation",
-    "maison",
-    "appartement",
-  ],
-},
   {
+    id: 13964,
+    provider: "91m2",
+    name: "Fenêtres",
+    slug: "fenetres",
+    model: "CPL",
+    payout: 6,
+    status: "approved",
+    universe: "travaux",
+    category: "Menuiserie / Fenêtres",
 
-  id: 13963,
-  provider: "91m2",
-  name: "Assurance Auto",
-  slug: "assurance-auto",
-  model: "CPL",
-  payout: 4.5,
-  status: "approved",
-  universe: "assurance",
-  category: "Assurance Auto",
+    trackingUrl:
+      "https://stella-2.com/clc/VerFSRTDmY_aRnRD8nQQUg",
 
-  trackingUrl: 
-     "https://stella-2.com/clc/Qc1FiOaE8z1XRkYJlu1xfQ",
+    support: "text-link",
+    integrated: true,
+    published: true,
+    endDate: null,
 
-  support: "text-link",
-  integrated: true,
-  published: true,
-  endDate: "2027-04-24",
+    title: "Comparer des solutions pour changer vos fenêtres",
 
-  title: "Comparer les assurances auto",
+    description:
+      "Découvrez des solutions adaptées à votre projet de remplacement de fenêtres.",
 
-  description:
-    "Comparez différentes solutions d'assurance auto et trouvez une offre adaptée à votre véhicule et à vos besoins.",
+    buttonLabel: "Voir les solutions",
 
-  buttonLabel: "Comparer les assurances auto",
+    tags: [
+      "fenetre",
+      "fenetres",
+      "menuiserie",
+      "isolation",
+      "travaux",
+      "renovation",
+      "maison",
+      "appartement",
+    ],
+  },
 
-  tags: [
-    "assurance auto",
-    "auto",
-    "voiture",
-    "véhicule",
-    "assurance",
-    "conducteur",
-  ],
-},
-    
+  {
+    id: 13963,
+    provider: "91m2",
+    name: "Assurance Auto",
+    slug: "assurance-auto",
+    model: "CPL",
+    payout: 4.5,
+    status: "approved",
+    universe: "assurance",
+    category: "Assurance Auto",
+
+    trackingUrl:
+      "https://stella-2.com/clc/Qc1FiOaE8z1XRkYJlu1xfQ",
+
+    support: "text-link",
+    integrated: true,
+    published: true,
+    endDate: "2027-04-24",
+
+    title: "Comparer les assurances auto",
+
+    description:
+      "Comparez différentes solutions d'assurance auto et trouvez une offre adaptée à votre véhicule et à vos besoins.",
+
+    buttonLabel: "Comparer les assurances auto",
+
+    tags: [
+      "assurance auto",
+      "auto",
+      "voiture",
+      "véhicule",
+      "assurance",
+      "conducteur",
+    ],
+  },
 
   {
     id: 13962,
@@ -200,15 +200,22 @@ published: true,
     status: "approved",
     universe: "assurance",
     category: "Assurance Habitation",
-    trackingUrl: "https://stella-2.com/clc/Cr5bNP7BYDBdrsnQ91IXzg",
+
+    trackingUrl:
+      "https://stella-2.com/clc/Cr5bNP7BYDBdrsnQ91IXzg",
+
     support: "text-link",
     integrated: true,
     published: true,
     endDate: "2027-01-31",
+
     title: "Comparer des assurances habitation",
+
     description:
       "Découvrez différentes solutions pour assurer votre logement.",
+
     buttonLabel: "Comparer les assurances",
+
     tags: [
       "assurance",
       "habitation",
@@ -228,16 +235,22 @@ published: true,
     status: "approved",
     universe: "pro",
     category: "Services aux entreprises",
+
     trackingUrl:
-  "https://stella-2.com/clc/HiDB9AmyJd8RYxs4lukr7g",
+      "https://stella-2.com/clc/HiDB9AmyJd8RYxs4lukr7g",
+
     support: "mailing",
     integrated: true,
     published: true,
     endDate: "2026-12-31",
+
     title: "Créer ou refaire un site internet professionnel",
+
     description:
       "Découvrez une solution destinée aux professionnels ayant un projet de création ou de refonte de site internet.",
+
     buttonLabel: "Découvrir la solution",
+
     tags: [
       "professionnel",
       "entreprise",
@@ -258,15 +271,22 @@ published: true,
     status: "approved",
     universe: "assurance",
     category: "Assurance Obsèques",
-    trackingUrl:  "https://stella-2.com/clc/jHeRDufvapYFnIhs_dNKKg",
+
+    trackingUrl:
+      "https://stella-2.com/clc/jHeRDufvapYFnIhs_dNKKg",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: "2027-01-31",
+
     title: "Comparer des assurances obsèques",
+
     description:
       "Comparez différentes solutions d'assurance obsèques selon vos besoins.",
+
     buttonLabel: "Comparer les solutions",
+
     tags: [
       "assurance",
       "obseques",
@@ -285,16 +305,22 @@ published: true,
     status: "approved",
     universe: "senior",
     category: "Adaptation du logement",
+
     trackingUrl:
-  "https://stella-2.com/clc/w7Fbs5pnNV_8ljw6d-3FgQ",
+      "https://stella-2.com/clc/w7Fbs5pnNV_8ljw6d-3FgQ",
+
     support: "text-link",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Adapter sa salle de bain avec une douche sécurisée",
+
     description:
       "Étudiez les solutions permettant d'adapter votre salle de bain et d'améliorer son accessibilité.",
+
     buttonLabel: "Étudier mon projet",
+
     tags: [
       "douche",
       "douche securisee",
@@ -315,15 +341,22 @@ published: true,
     status: "approved",
     universe: "credit",
     category: "Rachat de crédits",
-    trackingUrl: "https://stella-2.com/clc/FScH71NrI1jZy6XOEmiY1w",
+
+    trackingUrl:
+      "https://stella-2.com/clc/FScH71NrI1jZy6XOEmiY1w",
+
     support: "text-link",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Étudier un regroupement de crédits",
+
     description:
       "Accédez à une simulation de regroupement de crédits adaptée aux propriétaires.",
+
     buttonLabel: "Faire une simulation",
+
     tags: [
       "credit",
       "credits",
@@ -332,6 +365,7 @@ published: true,
       "mensualite",
       "proprietaire",
     ],
+
     compliance: {
       regulated: true,
       avoidClaims: [
@@ -354,15 +388,22 @@ published: true,
     status: "approved",
     universe: "senior",
     category: "Adaptation du logement",
-    trackingUrl: "https://stella-2.com/clc/dFnt_VGn3QXrak9DrlyAUw",
+
+    trackingUrl:
+      "https://stella-2.com/clc/dFnt_VGn3QXrak9DrlyAUw",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Étudier l'installation d'un monte-escalier",
+
     description:
       "Comparez des solutions adaptées à votre logement pour faciliter les déplacements entre les étages.",
+
     buttonLabel: "Demander une étude",
+
     tags: [
       "monte escalier",
       "senior",
@@ -382,15 +423,22 @@ published: true,
     status: "approved",
     universe: "investissement",
     category: "Cryptomonnaie",
-    trackingUrl: "https://stella-2.com/clc/wsju7TaxI48vpInKiWGL7Q",
+
+    trackingUrl:
+      "https://stella-2.com/clc/wsju7TaxI48vpInKiWGL7Q",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: "2026-12-31",
+
     title: "Découvrir une solution liée aux cryptomonnaies",
+
     description:
       "Accédez à une plateforme externe proposant des services liés aux actifs numériques.",
+
     buttonLabel: "Découvrir",
+
     tags: [
       "crypto",
       "cryptomonnaie",
@@ -398,6 +446,7 @@ published: true,
       "investissement",
       "actifs numeriques",
     ],
+
     compliance: {
       regulated: true,
       financialRisk: true,
@@ -413,42 +462,42 @@ published: true,
   },
 
   {
-  id: 13942,
-  provider: "91m2",
-  name: "Alarme & Sécurité",
-  slug: "alarme-securite",
-  model: "CPL",
-  payout: 0,
-  status: "approved",
-  universe: "habitat",
-  category: "Alarme & sécurité",
+    id: 13942,
+    provider: "91m2",
+    name: "Alarme & Sécurité",
+    slug: "alarme-securite",
+    model: "CPL",
+    payout: 5.9,
+    status: "approved",
+    universe: "habitat",
+    category: "Alarme & sécurité",
 
-  trackingUrl:
-    "https://stella-2.com/clc/Be1F08wcdYxa6RrDFba74w",
+    trackingUrl:
+      "https://stella-2.com/clc/Be1F08wcdYxa6RrDFba74w",
 
-  support: "mailing",
-  integrated: true,
-  published: true,
-  endDate: null,
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: null,
 
-  title: "Comparer des solutions d'alarme et de télésurveillance",
+    title: "Comparer des solutions d'alarme et de télésurveillance",
 
-  description:
-    "Découvrez des solutions pour protéger votre logement avec une alarme et un service de télésurveillance.",
+    description:
+      "Découvrez des solutions pour protéger votre logement avec une alarme et un service de télésurveillance.",
 
-  buttonLabel: "Comparer les solutions",
+    buttonLabel: "Comparer les solutions",
 
-  tags: [
-    "alarme",
-    "securite",
-    "telesurveillance",
-    "maison",
-    "appartement",
-    "logement",
-    "intrusion",
-    "alarme connectee",
-  ],
-},
+    tags: [
+      "alarme",
+      "securite",
+      "telesurveillance",
+      "maison",
+      "appartement",
+      "logement",
+      "intrusion",
+      "alarme connectee",
+    ],
+  },
 
   {
     id: 13941,
@@ -460,15 +509,22 @@ published: true,
     status: "approved",
     universe: "travaux",
     category: "Menuiserie",
-    trackingUrl: "https://stella-2.com/clc/DXvTI_xnlfOsMBSoAU3vjQ",
+
+    trackingUrl:
+      "https://stella-2.com/clc/DXvTI_xnlfOsMBSoAU3vjQ",
+
     support: "text-link",
     integrated: true,
     published: true,
     endDate: "2026-12-31",
+
     title: "Comparer des solutions de menuiserie",
+
     description:
       "Fenêtres, portes-fenêtres, volets, portails et clôtures : étudiez différentes solutions pour votre projet.",
+
     buttonLabel: "Voir les solutions",
+
     tags: [
       "fenetre",
       "porte fenetre",
@@ -491,16 +547,22 @@ published: true,
     status: "approved",
     universe: "energie",
     category: "Rénovation énergétique",
+
     trackingUrl:
-  "https://stella-2.com/clc/iTH1hfc_rj4-fhDvKhIp-Q",
+      "https://stella-2.com/clc/iTH1hfc_rj4-fhDvKhIp-Q",
+
     support: "display",
     integrated: true,
     published: true,
     endDate: "2027-12-31",
+
     title: "Étudier un projet de pompe à chaleur",
+
     description:
       "Découvrez les solutions disponibles pour un projet de pompe à chaleur dans votre logement.",
+
     buttonLabel: "Étudier mon projet",
+
     tags: [
       "pompe a chaleur",
       "pac",
@@ -521,15 +583,22 @@ published: true,
     status: "approved",
     universe: "sante",
     category: "Mutuelle Senior",
-    trackingUrl: "https://stella-2.com/clc/JBgewpHbtrrUqGtrJKaqgQ",
+
+    trackingUrl:
+      "https://stella-2.com/clc/JBgewpHbtrrUqGtrJKaqgQ",
+
     support: "mailing",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Comparer des mutuelles senior",
+
     description:
       "Comparez différentes solutions de complémentaire santé adaptées aux seniors.",
+
     buttonLabel: "Comparer les mutuelles",
+
     tags: [
       "mutuelle",
       "sante",
@@ -549,15 +618,22 @@ published: true,
     status: "approved",
     universe: "energie",
     category: "Solaire / Photovoltaïque",
-    trackingUrl:  "https://stella-2.com/clc/_ic5yMUNM5Ew6nVvPGiv_A",
+
+    trackingUrl:
+      "https://stella-2.com/clc/_ic5yMUNM5Ew6nVvPGiv_A",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Étudier un projet photovoltaïque",
+
     description:
       "Vérifiez les solutions disponibles pour équiper votre logement de panneaux photovoltaïques.",
+
     buttonLabel: "Étudier mon projet",
+
     tags: [
       "solaire",
       "panneaux solaires",
@@ -578,15 +654,22 @@ published: true,
     status: "approved",
     universe: "credit",
     category: "Regroupement de crédits",
-    trackingUrl: "https://stella-2.com/clc/P9Up78UhJEMQFwVqZISxWA",
+
+    trackingUrl:
+      "https://stella-2.com/clc/P9Up78UhJEMQFwVqZISxWA",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Étudier un regroupement de crédits",
+
     description:
       "Réalisez une simulation pour étudier une solution de regroupement de vos crédits.",
+
     buttonLabel: "Faire une simulation",
+
     tags: [
       "credit",
       "credits",
@@ -594,6 +677,7 @@ published: true,
       "rachat credit",
       "mensualite",
     ],
+
     compliance: {
       regulated: true,
       avoidClaims: [
@@ -616,21 +700,110 @@ published: true,
     status: "approved",
     universe: "senior",
     category: "Adaptation du logement",
-    trackingUrl: "https://stella-2.com/clc/0pR5uRNdjz1K-hwZ5aCcFg",
+
+    trackingUrl:
+      "https://stella-2.com/clc/0pR5uRNdjz1K-hwZ5aCcFg",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Comparer des solutions de monte-escalier",
+
     description:
       "Étudiez différentes solutions pour adapter votre logement et faciliter les déplacements.",
+
     buttonLabel: "Comparer les solutions",
+
     tags: [
       "monte escalier",
       "senior",
       "mobilite",
       "accessibilite",
       "adaptation logement",
+    ],
+  },
+
+  /**
+   * ============================================================
+   * NOUVELLES CAMPAGNES VALIDÉES
+   * ============================================================
+   */
+
+  {
+    id: 13932,
+    provider: "91m2",
+    name: "Formation en ligne Digital",
+    slug: "formation-en-ligne-digital",
+    model: "CPL",
+    payout: 1.3,
+    status: "approved",
+    universe: "pro",
+    category: "Formation",
+
+    trackingUrl:
+      "https://stella-2.com/clc/eSgs1ABUkoKmEpYIlc2nJA",
+
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: "2027-03-19",
+
+    title: "Découvrir une formation en ligne adaptée à votre projet",
+
+    description:
+      "Accédez à une solution partenaire proposant des formations en ligne orientées vers le digital et le développement.",
+
+    buttonLabel: "Découvrir les formations",
+
+    tags: [
+      "formation",
+      "formation en ligne",
+      "digital",
+      "developpement",
+      "reconversion",
+      "competences",
+      "emploi",
+    ],
+  },
+
+  {
+    id: 13931,
+    provider: "91m2",
+    name: "Diagnostic Immobilier",
+    slug: "diagnostic-immobilier",
+    model: "CPL",
+    payout: 1.3,
+    status: "approved",
+    universe: "habitat",
+    category: "Diagnostic immobilier",
+
+    trackingUrl:
+      "https://stella-2.com/clc/bXs-7sf_BneD0YGlVvLnKw",
+
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: null,
+
+    title: "Comparer des solutions de diagnostic immobilier",
+
+    description:
+      "Découvrez une solution partenaire pour réaliser un diagnostic immobilier, un DPE ou préparer un projet de vente, location ou rénovation.",
+
+    buttonLabel: "Comparer les diagnostics",
+
+    tags: [
+      "diagnostic immobilier",
+      "diagnostic",
+      "dpe",
+      "immobilier",
+      "logement",
+      "vente",
+      "location",
+      "renovation energetique",
+      "audit energetique",
     ],
   },
 
@@ -644,16 +817,22 @@ published: true,
     status: "approved",
     universe: "services",
     category: "Débarras",
+
     trackingUrl:
       "https://stella-2.com/clc/6B7zhroUKKBTObQNTnR5SA",
+
     support: "mailing+display",
     integrated: true,
     published: true,
     endDate: null,
+
     title: "Comparer des devis de débarras",
+
     description:
       "Comparez des solutions pour vider une maison, un appartement, un garage, un grenier ou des locaux.",
+
     buttonLabel: "Comparer les devis",
+
     tags: [
       "debarras",
       "maison",
@@ -666,6 +845,57 @@ published: true,
   },
 
   {
+    id: 13915,
+    provider: "91m2",
+    name: "Plan Épargne Retraite",
+    slug: "plan-epargne-retraite",
+    model: "CPL",
+    payout: 6.9,
+    status: "approved",
+    universe: "investissement",
+    category: "Épargne retraite",
+
+    trackingUrl:
+      "https://stella-2.com/clc/8RmKZVPwJ3u-GqnDsumYRA",
+
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: null,
+
+    title: "Comparer des solutions d'épargne retraite",
+
+    description:
+      "Accédez à une solution partenaire permettant de comparer des Plans d'Épargne Retraite selon votre situation et vos objectifs.",
+
+    buttonLabel: "Comparer les solutions retraite",
+
+    tags: [
+      "epargne",
+      "retraite",
+      "per",
+      "plan epargne retraite",
+      "investissement",
+      "fiscalite",
+      "epargne long terme",
+    ],
+
+    compliance: {
+      regulated: true,
+      financialRisk: true,
+      avoidClaims: [
+        "rendement garanti",
+        "gain garanti",
+        "économie d'impôt garantie",
+        "meilleur PER",
+        "sans risque",
+      ],
+      note:
+        "Les performances et avantages fiscaux dépendent de la situation individuelle, du contrat choisi et des règles applicables.",
+    },
+  },
+
+  {
     id: 13912,
     provider: "91m2",
     name: "Courtier crédit immobilier",
@@ -675,15 +905,22 @@ published: true,
     status: "approved",
     universe: "credit",
     category: "Crédit immobilier",
-    trackingUrl:  "https://stella-2.com/clc/uqpEj7ZMcWH56EM9ZArUyA",
+
+    trackingUrl:
+      "https://stella-2.com/clc/uqpEj7ZMcWH56EM9ZArUyA",
+
     support: "text-link+display",
     integrated: true,
     published: true,
     endDate: "2026-12-31",
+
     title: "Comparer des courtiers en crédit immobilier",
+
     description:
       "Découvrez des solutions de courtage pour votre projet de crédit immobilier.",
+
     buttonLabel: "Comparer les courtiers",
+
     tags: [
       "credit immobilier",
       "pret immobilier",
@@ -691,6 +928,7 @@ published: true,
       "immobilier",
       "financement",
     ],
+
     compliance: {
       regulated: true,
       avoidClaims: [

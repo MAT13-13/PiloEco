@@ -3,45 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "../lib/supabase";
 import type { User } from "@supabase/supabase-js";
+
+import { supabase } from "../lib/supabase";
 import Sidebar from "../components/Sidebar";
-import HistoryList from "../components/HistoryList";
-import PiloCard from "../components/PiloCard";
-import PiloAssistant from "../components/PiloAssistant";
-import PartnerOfferCard from "../components/PartnerOfferCard";
-import { partners } from "../data/partners";
-import PiloAdviceGrid from "../components/PiloAdviceGrid";
-import PiloPremiumCard from "../components/PiloPremiumCard";
-import FadeIn from "../components/FadeIn";
-import DashboardStats from "../components/dashboard/DashboardStats";
-import DashboardProgress from "../components/dashboard/DashboardProgress";
-import PiloJournal from "../components/PiloJournal";
-import HeroPilo from "../components/HeroPilo";
-import { createPiloEngine } from "../services/ai/pilo-engine.service";
-import PiloPriorityCard from "../components/PiloPriorityCard";
-import PiloModules from "../components/PiloModules";
-import { generateMissions } from "../services/missions.service";
 import MobileMenu from "../components/layout/MobileMenu";
 import PiloNavigation from "../components/PiloNavigation";
-import DashboardNotifications from "../components/dashboard/DashboardNotifications";
-import DashboardQuickActions from "../components/dashboard/DashboardQuickActions";
-type Recommandation = {
-  categorie: string;
-  priorite: string;
-  economie: number;
-  action: string;
-};
+import FadeIn from "../components/FadeIn";
 
-type ResultatEconomies = {
-  economiePossible: number;
-  economieAnnuelle: number;
-  totalDepenses: number;
-  scorePilo: number;
-  recommandations: Recommandation[];
-  diagnosticIA: string;
-  priorites: string[];
-};
+import { createPiloEngine } from "../services/ai/pilo-engine.service";
+import { generateMissions } from "../services/missions.service";
 
 type Analyse = {
   id: string;
@@ -61,6 +32,7 @@ type PiloValues = {
   assurance: string;
   electricite: string;
 };
+
 type PiloDbProfile = {
   xp: number;
   level: number;
@@ -84,10 +56,10 @@ export default function DashboardPage() {
     electricite: "",
   });
 
-  const [resultat, setResultat] = useState<ResultatEconomies | null>(null);
   const [analyses, setAnalyses] = useState<Analyse[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
   const [profile, setProfile] = useState<PiloDbProfile | null>(null);
+
   const [chargement, setChargement] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -102,10 +74,14 @@ export default function DashboardPage() {
       if (!mounted) return;
 
       if (error) {
-        console.error("Erreur de vérification de session :", error);
+        console.error(
+          "Erreur de vérification de session :",
+          error
+        );
       }
 
       const currentUser = data.user ?? null;
+
       setUser(currentUser);
       setAuthChecking(false);
 
@@ -122,20 +98,22 @@ export default function DashboardPage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null;
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const currentUser = session?.user ?? null;
 
-      setUser(currentUser);
-      setAuthChecking(false);
+        setUser(currentUser);
+        setAuthChecking(false);
 
-      if (currentUser) {
-        void Promise.all([
-          chargerAnalyses(currentUser.id),
-          chargerMissions(currentUser.id),
-          chargerProfil(currentUser.id),
-        ]);
+        if (currentUser) {
+          void Promise.all([
+            chargerAnalyses(currentUser.id),
+            chargerMissions(currentUser.id),
+            chargerProfil(currentUser.id),
+          ]);
+        }
       }
-    });
+    );
 
     return () => {
       mounted = false;
@@ -152,30 +130,53 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user || analyseLancee.current) return;
 
-    const savedValues = localStorage.getItem("pilo-values");
+    const savedValues =
+      localStorage.getItem("pilo-values");
 
     if (!savedValues) return;
 
-    const parsedValues = JSON.parse(savedValues) as PiloValues;
-    setValues(parsedValues);
+    try {
+      const parsedValues = JSON.parse(
+        savedValues
+      ) as PiloValues;
 
-    analyseLancee.current = true;
-    calculerAnalyseAutomatique(parsedValues, user.id);
+      setValues(parsedValues);
+
+      analyseLancee.current = true;
+
+      void calculerAnalyseAutomatique(
+        parsedValues,
+        user.id
+      );
+    } catch (error) {
+      console.error(
+        "Impossible de récupérer les valeurs Pilo :",
+        error
+      );
+
+      localStorage.removeItem("pilo-values");
+    }
   }, [user]);
 
-  async function chargerAnalyses(utilisateurId: string) {
+  async function chargerAnalyses(
+    utilisateurId: string
+  ) {
     const { data, error } = await supabase
       .from("analyses")
       .select("*")
       .eq("utilisateur_id", utilisateurId)
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (!error && data) {
       setAnalyses(data as Analyse[]);
     }
   }
 
-  async function chargerMissions(utilisateurId: string) {
+  async function chargerMissions(
+    utilisateurId: string
+  ) {
     const { data, error } = await supabase
       .from("missions")
       .select("*")
@@ -185,7 +186,10 @@ export default function DashboardPage() {
       setMissions(data);
     }
   }
-  async function chargerProfil(utilisateurId: string) {
+
+  async function chargerProfil(
+    utilisateurId: string
+  ) {
     const { data, error } = await supabase
       .from("profils")
       .select("*")
@@ -198,15 +202,17 @@ export default function DashboardPage() {
   }
 
   async function deconnexion() {
-    const { error } = await supabase.auth.signOut();
+    const { error } =
+      await supabase.auth.signOut();
 
     if (error) {
-      setMessage("Impossible de te déconnecter pour le moment.");
+      setMessage(
+        "Impossible de te déconnecter pour le moment."
+      );
       return;
     }
 
     setUser(null);
-    setResultat(null);
     setAnalyses([]);
     setMissions([]);
     setProfile(null);
@@ -217,71 +223,119 @@ export default function DashboardPage() {
 
   async function calculerAnalyseAutomatique(
     dataValues: PiloValues,
-    utilisateurId: string,
+    utilisateurId: string
   ) {
     setChargement(true);
-    setMessage("Pilo prépare ton résultat...");
+    setMessage(
+      "Pilo met ton analyse à jour..."
+    );
 
     try {
-      const response = await fetch("/api/calcul-economies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          telephone: Number(dataValues.telephone),
-          internet: Number(dataValues.internet),
-          assurance: Number(dataValues.assurance),
-          electricite: Number(dataValues.electricite),
-        }),
-      });
+      const response = await fetch(
+        "/api/calcul-economies",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            telephone: Number(
+              dataValues.telephone
+            ),
+            internet: Number(
+              dataValues.internet
+            ),
+            assurance: Number(
+              dataValues.assurance
+            ),
+            electricite: Number(
+              dataValues.electricite
+            ),
+          }),
+        }
+      );
 
       if (!response.ok) {
-  throw new Error("Impossible de réaliser l'analyse.");
-}
+        throw new Error(
+          "Impossible de réaliser l'analyse."
+        );
+      }
 
       const data = await response.json();
 
-      setResultat(data);
-      const { error } = await supabase.from("analyses").insert({
-        utilisateur_id: utilisateurId,
-        telephone: Number(dataValues.telephone),
-        internet: Number(dataValues.internet),
-        assurance: Number(dataValues.assurance),
-        electricite: Number(dataValues.electricite),
-        total_depenses: data.totalDepenses,
-        economie_possible: data.economiePossible,
-        economie_annuelle: data.economieAnnuelle,
-      });
-
-      if (error) {
-        setMessage("Résultat affiché, mais l'analyse n'a pas été enregistrée.");
-      } else {
-        const nouvellesMissions = generateMissions({
-          telephone: Number(dataValues.telephone),
-          internet: Number(dataValues.internet),
-          assurance: Number(dataValues.assurance),
-          electricite: Number(dataValues.electricite),
+      const { error } = await supabase
+        .from("analyses")
+        .insert({
+          utilisateur_id: utilisateurId,
+          telephone: Number(
+            dataValues.telephone
+          ),
+          internet: Number(
+            dataValues.internet
+          ),
+          assurance: Number(
+            dataValues.assurance
+          ),
+          electricite: Number(
+            dataValues.electricite
+          ),
+          total_depenses:
+            data.totalDepenses,
+          economie_possible:
+            data.economiePossible,
+          economie_annuelle:
+            data.economieAnnuelle,
         });
 
+      if (error) {
+        setMessage(
+          "Analyse terminée, mais elle n'a pas pu être enregistrée."
+        );
+      } else {
+        const nouvellesMissions =
+          generateMissions({
+            telephone: Number(
+              dataValues.telephone
+            ),
+            internet: Number(
+              dataValues.internet
+            ),
+            assurance: Number(
+              dataValues.assurance
+            ),
+            electricite: Number(
+              dataValues.electricite
+            ),
+          });
+
         for (const mission of nouvellesMissions) {
-          const missionExistante = missions.find(
-            (m) => m.mission_id === mission.mission_id,
-          );
+          const missionExistante =
+            missions.find(
+              (m) =>
+                m.mission_id ===
+                mission.mission_id
+            );
 
           if (!missionExistante) {
-            await supabase.from("missions").insert({
-              user_id: utilisateurId,
-              mission_id: mission.mission_id,
-              title: mission.title,
-              saving: mission.saving,
-              status: mission.status,
-            });
+            await supabase
+              .from("missions")
+              .insert({
+                user_id: utilisateurId,
+                mission_id:
+                  mission.mission_id,
+                title: mission.title,
+                saving: mission.saving,
+                status: mission.status,
+              });
 
             continue;
           }
 
-          if (missionExistante.status === "Terminée") {
+          if (
+            missionExistante.status ===
+            "Terminée"
+          ) {
             continue;
           }
 
@@ -291,74 +345,108 @@ export default function DashboardPage() {
               title: mission.title,
               saving: mission.saving,
             })
-            .eq("id", missionExistante.id);
+            .eq(
+              "id",
+              missionExistante.id
+            );
         }
 
-        setMessage("Analyse enregistrée et missions créées.");
-        localStorage.removeItem("pilo-values");
-        chargerAnalyses(utilisateurId);
-        chargerMissions(utilisateurId);
+        localStorage.removeItem(
+          "pilo-values"
+        );
+
+        await Promise.all([
+          chargerAnalyses(utilisateurId),
+          chargerMissions(utilisateurId),
+        ]);
+
+        setMessage(
+          "Analyse mise à jour avec succès."
+        );
       }
-    } catch {
-      setMessage("Erreur de connexion avec le backend.");
+    } catch (error) {
+      console.error(error);
+
+      setMessage(
+        "Impossible de mettre l'analyse à jour."
+      );
     }
 
     setChargement(false);
   }
 
-  function getCurrentPrice(categorie: string) {
-    if (categorie === "Téléphone") return Number(values.telephone);
-    if (categorie === "Internet") return Number(values.internet);
-    if (categorie === "Assurance") return Number(values.assurance);
-    return Number(values.electricite);
-  }
+  const totalEconomiesAnnuelles =
+    analyses.reduce(
+      (total, analyse) =>
+        total +
+        Number(
+          analyse.economie_annuelle || 0
+        ),
+      0
+    );
 
-  const totalEconomiesMensuelles = analyses.reduce(
-    (total, analyse) => total + Number(analyse.economie_possible || 0),
-    0,
-  );
+  const missionsTerminees =
+    missions.filter(
+      (mission) =>
+        mission.status === "Terminée"
+    );
 
-  const totalEconomiesAnnuelles = analyses.reduce(
-    (total, analyse) => total + Number(analyse.economie_annuelle || 0),
-    0,
-  );
-  const missionsTerminees = missions.filter(
-    (mission) => mission.status === "Terminée",
-  );
-
-  const economiesRealisees = missionsTerminees.reduce(
-    (total, mission) => total + Number(mission.saving || 0),
-    0,
-  );
+  const economiesRealisees =
+    missionsTerminees.reduce(
+      (total, mission) =>
+        total +
+        Number(mission.saving || 0),
+      0
+    );
 
   const potentielRestant = missions
-    .filter((mission) => mission.status !== "Terminée")
-    .reduce((total, mission) => total + Number(mission.saving || 0), 0);
+    .filter(
+      (mission) =>
+        mission.status !== "Terminée"
+    )
+    .reduce(
+      (total, mission) =>
+        total +
+        Number(mission.saving || 0),
+      0
+    );
 
-  const scoreProgression = Math.min(100, 60 + missionsTerminees.length * 10);
+  const scoreProgression = Math.min(
+    100,
+    60 + missionsTerminees.length * 10
+  );
+
   const piloBrain = createPiloEngine([
     {
       id: "mobile",
       name: "Téléphone",
-      monthlyPrice: Number(values.telephone || 0),
+      monthlyPrice: Number(
+        values.telephone || 0
+      ),
       recommendedPrice: 15,
     },
     {
       id: "internet",
       name: "Internet",
-      monthlyPrice: Number(values.internet || 0),
+      monthlyPrice: Number(
+        values.internet || 0
+      ),
       recommendedPrice: 25,
     },
     {
       id: "electricite",
       name: "Électricité",
-      monthlyPrice: Number(values.electricite || 0),
+      monthlyPrice: Number(
+        values.electricite || 0
+      ),
       recommendedPrice: 72,
     },
     {
       id: "habitation",
       name: "Habitation",
-      monthlyPrice: Number(values.assurance || 0),
+      monthlyPrice: Number(
+        values.assurance || 0
+      ),
       recommendedPrice: 18,
     },
     {
@@ -369,144 +457,116 @@ export default function DashboardPage() {
     },
   ]);
 
-  const piloProfile = {
-    level: profile?.level || 1,
-    title:
-      (profile?.level || 1) === 1
-        ? "Débutant"
-        : (profile?.level || 1) === 2
-          ? "Économe"
-          : (profile?.level || 1) === 3
-            ? "Stratège"
-            : (profile?.level || 1) === 4
-              ? "Expert"
-              : "Maître Pilo",
-    score: scoreProgression,
-    progress: profile?.xp || 0,
-    yearlySaving: Number(profile?.total_savings || totalEconomiesAnnuelles),
-    monthlySaving: Math.round(
-      Number(profile?.total_savings || totalEconomiesAnnuelles) / 12,
-    ),
-    missionsCompleted: Number(
-      profile?.completed_missions || missionsTerminees.length,
-    ),
-    missionsRemaining: missions.length - missionsTerminees.length,
-    premium: false,
-    xp: Number(profile?.xp || 0),
-  };
+  const niveau = profile?.level || 1;
 
-  const missionPrioritaire = [...missions]
-    .filter((m) => m.status !== "Terminée")
-    .sort((a, b) => Number(b.saving || 0) - Number(a.saving || 0))[0];
-    const piloSituation = (() => {
-  if (
-    missionPrioritaire &&
-    Number(missionPrioritaire.saving || 0) > 0
-  ) {
-    return {
-      mood: "opportunity",
-      emoji: "🎯",
-      title: "J’ai une mission pour toi !",
-      message: `La mission « ${missionPrioritaire.title} » pourrait te faire économiser ${Number(
+  const titreNiveau =
+    niveau === 1
+      ? "Débutant"
+      : niveau === 2
+        ? "Économe"
+        : niveau === 3
+          ? "Stratège"
+          : niveau === 4
+            ? "Expert"
+            : "Maître Pilo";
+
+  const economieAnnuelleAffichee =
+    Number(profile?.total_savings || 0) >
+    0
+      ? Number(profile?.total_savings)
+      : totalEconomiesAnnuelles;
+
+  const premiumActif =
+    profile?.premium === true;
+
+  const missionsRestantes = Math.max(
+    0,
+    missions.length -
+      missionsTerminees.length
+  );
+
+  const missionPrioritaire = [
+    ...missions,
+  ]
+    .filter(
+      (mission) =>
+        mission.status !== "Terminée"
+    )
+    .sort(
+      (a, b) =>
+        Number(b.saving || 0) -
+        Number(a.saving || 0)
+    )[0];
+
+  const piloSituation = (() => {
+    if (
+      missionPrioritaire &&
+      Number(
         missionPrioritaire.saving || 0
-      ).toLocaleString("fr-FR")} € par an.`,
-      glowClass: "bg-green-500/35",
-    };
-  }
+      ) > 0
+    ) {
+      return {
+        emoji: "🎯",
+        title: "Une mission t'attend",
+        message: `${missionPrioritaire.title} peut représenter jusqu'à ${Number(
+          missionPrioritaire.saving || 0
+        ).toLocaleString(
+          "fr-FR"
+        )} € par an.`,
+        glowClass:
+          "bg-green-500/35",
+      };
+    }
 
-  if (
-    piloProfile.yearlySaving > 0 &&
-    piloProfile.missionsRemaining === 0
-  ) {
-    return {
-      mood: "success",
-      emoji: "🎉",
-      title: "Tout est bien optimisé !",
-      message: `Tu as déjà récupéré ${piloProfile.yearlySaving.toLocaleString(
-        "fr-FR"
-      )} € par an et terminé toutes tes missions actuelles.`,
-      glowClass: "bg-emerald-400/35",
-    };
-  }
+    if (
+      economieAnnuelleAffichee > 0 &&
+      missionsRestantes === 0
+    ) {
+      return {
+        emoji: "🎉",
+        title: "Tout est optimisé",
+        message:
+          "Tes missions actuelles sont terminées. Pilo continue de suivre ta progression.",
+        glowClass:
+          "bg-emerald-400/35",
+      };
+    }
 
-  if (analyses.length === 0) {
+    if (analyses.length === 0) {
+      return {
+        emoji: "🔎",
+        title: "Commence ton analyse",
+        message:
+          "Quelques réponses suffisent pour lancer Pilo.",
+        glowClass:
+          "bg-blue-500/25",
+      };
+    }
+
     return {
-      mood: "waiting",
-      emoji: "🔎",
-      title: "On commence l’analyse ?",
+      emoji: "🐦",
+      title: "Pilo veille",
       message:
-        "Réponds à quelques questions et je chercherai les économies possibles dans ton budget.",
-      glowClass: "bg-blue-500/25",
+        piloBrain.pilo.message ||
+        "Ton tableau de bord est à jour.",
+      glowClass:
+        "bg-green-500/25",
     };
-  }
+  })();
 
-  return {
-    mood: "calm",
-    emoji: "🐦",
-    title: "Je veille sur ton budget.",
-    message:
-      piloBrain.pilo.message ||
-      "Je continue à suivre ta progression et à chercher de nouvelles économies.",
-    glowClass: "bg-green-500/25",
-  };
-})();
-  async function onCompleteMission(mission: any) {
-    if (!user || mission.status === "Terminée") return;
+  const displayName =
+  user?.user_metadata?.first_name ||
+  user?.user_metadata?.full_name?.split(" ")[0] ||
+  user?.user_metadata?.name?.split(" ")[0] ||
+  "";
 
-    const nouveauXp = (profile?.xp || 0) + 50;
-    const nouvellesEconomies =
-      (profile?.total_savings || 0) + Number(mission.saving);
-
-    const nouveauNiveau =
-      nouveauXp >= 1200
-        ? 5
-        : nouveauXp >= 700
-          ? 4
-          : nouveauXp >= 300
-            ? 3
-            : nouveauXp >= 100
-              ? 2
-              : 1;
-
-    const missionsTerminees = (profile?.completed_missions || 0) + 1;
-
-    const { error: missionError } = await supabase
-      .from("missions")
-      .update({
-        status: "Terminée",
-      })
-      .eq("id", mission.id);
-
-    if (missionError) {
-      alert("Erreur lors de la validation de la mission.");
-      return;
-    }
-
-    const { error: profileError } = await supabase
-      .from("profils")
-      .update({
-        xp: nouveauXp,
-        level: nouveauNiveau,
-        total_savings: nouvellesEconomies,
-        completed_missions: missionsTerminees,
-      })
-      .eq("id", user.id);
-
-    if (profileError) {
-      alert("Erreur lors de la mise à jour du profil.");
-      return;
-    }
-
-    await chargerMissions(user.id);
-    await chargerProfil(user.id);
-
-    setMessage("🎉 Mission validée !");
-  }
   if (authChecking || !user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
         <div className="text-center">
-          <p className="text-5xl">🐦</p>
+          <p className="text-5xl">
+            🐦
+          </p>
 
           <h1 className="mt-4 text-2xl font-black">
             {authChecking
@@ -514,7 +574,10 @@ export default function DashboardPage() {
               : "Redirection vers la connexion..."}
           </h1>
 
-          <p className="mt-3 text-slate-400">Un instant, s’il te plaît.</p>
+          <p className="mt-3 text-slate-400">
+            Un instant, s&apos;il te
+            plaît.
+          </p>
         </div>
       </main>
     );
@@ -525,12 +588,13 @@ export default function DashboardPage() {
       <Sidebar />
       <MobileMenu />
 
-      <main className="min-h-screen bg-slate-950 p-6 text-white lg:ml-64">
+      <main className="min-h-screen bg-slate-950 p-4 text-white sm:p-6 lg:ml-64">
         <section className="mx-auto w-full max-w-6xl">
-          <div className="mb-8 flex items-center justify-end">
+          {/* TOPBAR */}
+          <div className="flex items-center justify-end">
             <button
               onClick={deconnexion}
-              className="rounded-xl bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700"
+              className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white"
             >
               Déconnexion
             </button>
@@ -538,290 +602,476 @@ export default function DashboardPage() {
 
           <PiloNavigation />
 
-          {profile?.role === "admin" && (
-  <div className="mt-6 flex justify-end">
-  <Link
-  href="/admin"
-  className="rounded-xl bg-green-500 px-5 py-3 font-black text-slate-950 hover:bg-green-400"
->
-  🛠 Administration
-</Link>
-  </div>
-)}
-
-        <FadeIn delay={0}>
-  <section className="mt-8 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/40 p-7 shadow-2xl sm:p-9">
-    <div className="grid gap-8 lg:grid-cols-[1fr_280px] lg:items-center">
-      <div>
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
-          🐦 Ton copilote d’économies
-        </p>
-
-        <h1 className="mt-4 text-4xl font-black sm:text-5xl">
-          Bonjour Fiona 👋
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
-          Pilo a détecté{" "}
-          <span className="font-black text-green-400">
-            {piloProfile.yearlySaving.toLocaleString(
-              "fr-FR"
-            )}{" "}
-            €/an
-          </span>{" "}
-          d’économies potentielles.
-        </p>
-
-        <div className="mt-5 max-w-2xl rounded-2xl border border-green-400/20 bg-green-400/[0.06] px-5 py-4">
-          <p className="font-black text-white">
-            {piloSituation.emoji}{" "}
-            {piloSituation.title}
-          </p>
-
-          <p className="mt-2 leading-relaxed text-slate-300">
-            {piloSituation.message}
-          </p>
-        </div>
-
-        <div className="mt-7 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Score Pilo
-            </p>
-
-            <p className="mt-2 text-2xl font-black text-white">
-              {piloProfile.score}/100
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Missions restantes
-            </p>
-
-            <p className="mt-2 text-2xl font-black text-white">
-              {piloProfile.missionsRemaining}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Niveau
-            </p>
-
-            <p className="mt-2 text-2xl font-black text-white">
-              {piloProfile.level} ·{" "}
-              {piloProfile.title}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative flex h-52 w-52 items-center justify-center">
-          <div
-            className={`absolute inset-5 animate-pulse rounded-full ${piloSituation.glowClass} blur-3xl`}
-          />
-
-          <img
-            src="/pilo.png"
-            alt="Pilo, la mascotte de PiloEco"
-            className="relative z-10 h-full w-full animate-pilo object-contain drop-shadow-[0_20px_60px_rgba(34,197,94,0.45)] transition duration-300 hover:scale-105 hover:-rotate-2"
-          />
-        </div>
-
-        {missionPrioritaire && (
-          <Link
-            href={`/missions/${missionPrioritaire.mission_id}`}
-            className="w-full rounded-2xl border border-green-400/20 bg-green-400/[0.07] p-4 transition hover:border-green-400/50 hover:bg-green-400/[0.12]"
-          >
-            <p className="text-xs font-black uppercase tracking-wider text-green-400">
-              🎯 Mission du moment
-            </p>
-
-            <p className="mt-2 font-black text-white">
-              {missionPrioritaire.title}
-            </p>
-
-            <p className="mt-1 text-sm font-bold text-green-300">
-              Jusqu’à{" "}
-              {Number(
-                missionPrioritaire.saving || 0
-              ).toLocaleString("fr-FR")}{" "}
-              €/an
-            </p>
-          </Link>
-        )}
-<div className="mt-3 flex w-full flex-col gap-3">
-  <Link
-    href="/analyse"
-    className="rounded-2xl bg-green-500 px-6 py-4 text-center font-black text-slate-950 transition hover:scale-[1.02] hover:bg-green-400"
-  >
-    {analyses.length > 0
-      ? "🔄 Relancer une analyse"
-      : "🚀 Lancer une analyse"}
-  </Link>
-
-  <Link
-    href="/monitoring"
-    className="rounded-2xl border border-white/10 bg-slate-950/60 px-6 py-4 text-center font-black text-white transition hover:border-green-500/40 hover:text-green-300"
-  >
-    📊 Ouvrir le Monitoring
-  </Link>
-
-  <Link
-    href="/devenir-partenaire"
-    className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-4 text-center font-black text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500 hover:text-slate-950"
-  >
-    🤝 Devenir partenaire
-  </Link>
-</div>
-      
-      </div>
-    </div>
-  </section>
-</FadeIn>
-
-          <FadeIn delay={0.15}>
-            <DashboardQuickActions />
-          </FadeIn>
-
-          <FadeIn delay={0.2}>
-            <DashboardNotifications />
-          </FadeIn>
-
-          {missionPrioritaire && (
-            <FadeIn delay={0.2}>
-              <PiloPriorityCard
-                title={missionPrioritaire.title}
-                emoji="🐦"
-                saving={missionPrioritaire.saving}
-                time="5 minutes"
-                difficulty="Facile"
-                priority={5}
-                reason={piloBrain.pilo.message}
-                href={`/missions/${missionPrioritaire.mission_id}`}
-              />
-            </FadeIn>
-          )}
-
-          <FadeIn delay={0.3}>
-            <DashboardProgress
-              economieAnnuelle={piloProfile.yearlySaving}
-              score={scoreProgression}
-              economiesRealisees={economiesRealisees}
-              potentielRestant={potentielRestant}
-              missionsTerminees={missionsTerminees.length}
-              totalMissions={missions.length}
-            />
-          </FadeIn>
-          {resultat && (
-            <FadeIn delay={0.15}>
-              <PiloAdviceGrid
-                recommandations={resultat.recommandations || []}
-              />
-            </FadeIn>
-          )}
-
-          <FadeIn delay={0.45}>
-            <PiloModules />
-          </FadeIn>
-
-          <FadeIn delay={0.75}>
-            <PiloPremiumCard />
-          </FadeIn>
-
-          <DashboardStats
-            analyses={analyses.length}
-            economieMensuelle={totalEconomiesMensuelles}
-            economieAnnuelle={totalEconomiesAnnuelles}
-          />
-
-          {chargement && (
-            <section className="mt-8 rounded-3xl border border-green-500/20 bg-white/5 p-8 text-center">
-              <div className="text-6xl">
-                🐦
-                <HeroPilo economie={totalEconomiesAnnuelles} />
-              </div>
-              <h2 className="mt-4 text-3xl font-black">
-                Pilo prépare ton résultat...
-              </h2>
-              <p className="mt-3 text-slate-400">
-                Je récupère ton analyse et je calcule tes économies.
-              </p>
-            </section>
-          )}
-
-          {!chargement && !resultat && (
-            <section className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
-              <h2 className="text-3xl font-black">Aucune analyse en cours</h2>
-              <p className="mt-3 text-slate-400">
-                Lance une nouvelle analyse pour que Pilo cherche tes économies.
-              </p>
-
+          {profile?.role ===
+            "admin" && (
+            <div className="mt-4 flex justify-end">
               <Link
-                href="/analyse"
-                className="mt-6 inline-block rounded-2xl bg-green-500 px-8 py-4 font-black text-slate-950 transition hover:bg-green-400"
+                href="/admin"
+                className="rounded-xl bg-green-500 px-4 py-2 text-sm font-black text-slate-950 transition hover:bg-green-400"
               >
-                Lancer une analyse
+                🛠 Administration
               </Link>
-            </section>
+            </div>
           )}
 
-          {resultat && (
-            <div className="mt-8 grid gap-8 lg:grid-cols-2">
-              <div>
-                <PiloCard economie={resultat.economiePossible} />
+          {/* HERO COMPACT */}
+          <FadeIn delay={0}>
+            <section className="mt-6 overflow-hidden rounded-[2rem] border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/30 p-6 shadow-xl sm:p-7">
+              <div className="grid items-center gap-6 lg:grid-cols-[1fr_200px]">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.28em] text-green-400">
+                    🐦 Ton copilote
+                    d&apos;économies
+                  </p>
 
-                <PiloAssistant
-                  score={resultat.scorePilo}
-                  savings={resultat.economieAnnuelle}
-                  recommandations={resultat.recommandations || []}
-                  conseilsIA={[resultat.diagnosticIA || ""]}
-                />
-                <PiloJournal />
+          <h1 className="mt-3 text-3xl font-black sm:text-4xl">
+  {displayName ? `Bonjour ${displayName} 👋` : "Bonjour 👋"}
+</h1>
 
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-2xl font-bold text-white">
-                    💰 Passe à l'action
-                  </h2>
+                  <div className="mt-5 flex flex-wrap items-end gap-x-3 gap-y-1">
+                    <span className="text-4xl font-black text-green-400 sm:text-5xl">
+                      {economieAnnuelleAffichee.toLocaleString(
+                        "fr-FR"
+                      )}{" "}
+                      €
+                    </span>
 
-                  {(resultat.recommandations || []).map((recommandation) => {
-                    const partner = partners[recommandation.categorie];
+                    <span className="pb-1 text-sm font-bold text-slate-400">
+                      / an suivis par Pilo
+                    </span>
+                  </div>
 
-                    if (!partner) return null;
+                  <div className="mt-5 flex max-w-2xl items-start gap-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                    <span className="text-xl">
+                      {
+                        piloSituation.emoji
+                      }
+                    </span>
 
-                    return (
-                      <PartnerOfferCard
-                        key={recommandation.categorie}
-                        title={recommandation.categorie}
-                        provider={partner.provider}
-                        currentPrice={getCurrentPrice(recommandation.categorie)}
-                        partnerPrice={partner.partnerPrice}
-                        saving={recommandation.economie}
-                        url={partner.url}
-                      />
-                    );
-                  })}
+                    <div>
+                      <p className="font-black text-white">
+                        {
+                          piloSituation.title
+                        }
+                      </p>
+
+                      <p className="mt-1 text-sm leading-6 text-slate-400">
+                        {
+                          piloSituation.message
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-bold text-slate-300">
+                      Niveau {niveau} ·{" "}
+                      {titreNiveau}
+                    </span>
+
+                    <span className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-bold text-slate-300">
+                      {
+                        missionsTerminees.length
+                      }{" "}
+                      missions terminées
+                    </span>
+
+                    <span className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-bold text-slate-300">
+                      Score{" "}
+                      {scoreProgression}/100
+                    </span>
+                  </div>
+                </div>
+
+                <div className="hidden justify-center lg:flex">
+                  <div className="relative h-44 w-44">
+                    <div
+                      className={`absolute inset-5 rounded-full ${piloSituation.glowClass} blur-3xl`}
+                    />
+
+                    <img
+                      src="/pilo.png"
+                      alt="Pilo"
+                      className="relative z-10 h-full w-full object-contain drop-shadow-[0_20px_50px_rgba(34,197,94,0.4)]"
+                    />
+                  </div>
                 </div>
               </div>
-
-              <HistoryList analyses={analyses} />
-            </div>
-          )}
-          <FadeIn delay={0.3}>
-            <div className="mt-10 flex justify-center">
-              <Link
-                href="/analyse"
-                className="rounded-2xl bg-green-500 px-6 py-4 font-black text-slate-950 transition hover:scale-105 hover:bg-green-400"
-              >
-                🔄 Relancer mon analyse
-              </Link>
-            </div>
+            </section>
           </FadeIn>
-          {message && (
-            <p className="mt-8 text-center text-sm text-slate-400">{message}</p>
+
+          {/* PREMIUM EN AVANT */}
+          <FadeIn delay={0.1}>
+            {premiumActif ? (
+              <section className="mt-5 rounded-3xl border border-purple-400/30 bg-gradient-to-r from-purple-500/10 to-slate-900 p-6">
+                <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">
+                        💎
+                      </span>
+
+                      <p className="font-black text-purple-200">
+                        Pilo Premium actif
+                      </p>
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate-400">
+                      Monitoring,
+                      alertes et PiloLife
+                      sont actifs.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href="/monitoring"
+                      className="rounded-xl bg-purple-500 px-4 py-3 text-sm font-black text-white transition hover:bg-purple-400"
+                    >
+                      📊 Monitoring
+                    </Link>
+
+                    <Link
+                      href="/pilolife"
+                      className="rounded-xl border border-purple-500/30 px-4 py-3 text-sm font-black text-purple-200 transition hover:bg-purple-500/10"
+                    >
+                      🌿 PiloLife
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="mt-5 overflow-hidden rounded-3xl border border-purple-400/30 bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 p-6 shadow-lg">
+                <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-300">
+                      💎 Pilo Premium
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-black">
+                      Pilo veille même
+                      quand tu n&apos;es
+                      pas là
+                    </h2>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">
+                        📊 Monitoring
+                      </span>
+
+                      <span className="rounded-full bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">
+                        🔔 Alertes
+                      </span>
+
+                      <span className="rounded-full bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">
+                        📅 Échéances
+                      </span>
+
+                      <span className="rounded-full bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">
+                        🌿 PiloLife
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/premium"
+                    className="shrink-0 rounded-2xl bg-purple-500 px-6 py-4 text-center font-black text-white transition hover:scale-[1.02] hover:bg-purple-400"
+                  >
+                    Découvrir Premium →
+                  </Link>
+                </div>
+              </section>
+            )}
+          </FadeIn>
+
+                    {/* LA MISSION DE PILO */}
+          <FadeIn delay={0.13}>
+            <section className="mt-5 overflow-hidden rounded-3xl border border-green-500/20 bg-gradient-to-r from-green-500/10 via-slate-900 to-slate-900 p-6">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-xs font-black uppercase tracking-[0.25em] text-green-400">
+                    🐦 La mission de Pilo
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-black text-white">
+                    Reprendre du pouvoir d&apos;achat, simplement.
+                  </h2>
+
+                  <p className="mt-3 text-sm leading-6 text-slate-300">
+                    Pilo t&apos;aide à identifier des économies et te propose
+                    des solutions adaptées. Tu gardes toujours la main :
+                    selon la solution, tu peux demander un devis à un partenaire
+                    ou poursuivre directement ta démarche sans démarchage.
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    L&apos;objectif : réduire tes dépenses pour améliorer ton
+                    quotidien, puis t&apos;accompagner tout au long de
+                    l&apos;année avec le suivi de tes contrats, leurs échéances
+                    et de nouvelles opportunités d&apos;économies.
+                  </p>
+                </div>
+
+                <div className="shrink-0 lg:w-72">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-2xl border border-green-500/20 bg-green-500/10 px-3 py-3 text-center">
+                      <div className="text-xl">🔎</div>
+
+                      <p className="mt-1 text-xs font-black text-green-300">
+                        Analyse
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-green-500/20 bg-green-500/10 px-3 py-3 text-center">
+                      <div className="text-xl">🎯</div>
+
+                      <p className="mt-1 text-xs font-black text-green-300">
+                        Missions
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-purple-500/20 bg-purple-500/10 px-3 py-3 text-center">
+                      <div className="text-xl">📊</div>
+
+                      <p className="mt-1 text-xs font-black text-purple-300">
+                        Suivi
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-purple-500/20 bg-purple-500/10 px-3 py-3 text-center">
+                      <div className="text-xl">🌿</div>
+
+                      <p className="mt-1 text-xs font-black text-purple-300">
+                        Projets
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-center text-[11px] font-bold text-slate-500">
+                    Analyse → Économies → Suivi → Projets
+                  </p>
+                </div>
+              </div>
+            </section>
+          </FadeIn>
+
+          {/* ACTIONS RAPIDES */}
+
+          {/* ACTIONS RAPIDES */}
+          <FadeIn delay={0.15}>
+            <section className="mt-5">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Link
+                  href="/analyse"
+                  className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-500/40"
+                >
+                  <div className="text-2xl">
+                    🔎
+                  </div>
+
+                  <p className="mt-3 font-black">
+                    Analyse
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Mettre mon budget à
+                    jour
+                  </p>
+                </Link>
+
+                <Link
+                  href="/missions"
+                  className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-500/40"
+                >
+                  <div className="text-2xl">
+                    🎯
+                  </div>
+
+                  <p className="mt-3 font-black">
+                    Mes missions
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Voir les opportunités
+                  </p>
+                </Link>
+
+                <Link
+                  href="/monitoring"
+                  className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-purple-500/40"
+                >
+                  <div className="text-2xl">
+                    📊
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2">
+                    <p className="font-black">
+                      Monitoring
+                    </p>
+
+                    {!premiumActif && (
+                      <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-purple-300">
+                        Premium
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Suivre mes contrats
+                  </p>
+                </Link>
+              </div>
+            </section>
+          </FadeIn>
+
+          {/* ANALYSE EN COURS */}
+          {chargement && (
+            <section className="mt-5 rounded-2xl border border-green-500/20 bg-green-500/5 p-4">
+              <div className="flex items-center gap-3">
+                <span className="animate-pulse text-xl">
+                  🐦
+                </span>
+
+                <div>
+                  <p className="text-sm font-black text-green-300">
+                    Pilo met ton
+                    analyse à jour
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Tes missions vont
+                    être actualisées
+                    automatiquement.
+                  </p>
+                </div>
+              </div>
+            </section>
           )}
+
+          {/* PRIORITÉ */}
+          {missionPrioritaire && (
+            <FadeIn delay={0.2}>
+              <section className="mt-5 rounded-3xl border border-green-500/20 bg-slate-900 p-6">
+                <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-green-400">
+                      🎯 Ta priorité
+                    </p>
+
+                    <h2 className="mt-2 text-xl font-black">
+                      {
+                        missionPrioritaire.title
+                      }
+                    </h2>
+
+                    {Number(
+                      missionPrioritaire.saving ||
+                        0
+                    ) > 0 && (
+                      <p className="mt-2 text-sm font-bold text-green-300">
+                        Jusqu&apos;à{" "}
+                        {Number(
+                          missionPrioritaire.saving ||
+                            0
+                        ).toLocaleString(
+                          "fr-FR"
+                        )}{" "}
+                        € / an
+                      </p>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/missions/${missionPrioritaire.mission_id}`}
+                    className="rounded-xl bg-green-500 px-5 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-green-400"
+                  >
+                    Voir la mission →
+                  </Link>
+                </div>
+              </section>
+            </FadeIn>
+          )}
+
+          {/* PROGRESSION COMPACTE */}
+          <FadeIn delay={0.25}>
+            <section className="mt-5 rounded-3xl border border-slate-800 bg-slate-900 p-6">
+              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.25em] text-slate-500">
+                    Ta progression
+                  </p>
+
+                  <h2 className="mt-2 text-xl font-black">
+                    Tu avances avec Pilo
+                  </h2>
+                </div>
+
+                <p className="text-sm font-bold text-green-400">
+                  {scoreProgression}%
+                </p>
+              </div>
+
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-green-500 transition-all duration-500"
+                  style={{
+                    width: `${scoreProgression}%`,
+                  }}
+                />
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+                  <p className="text-xs font-bold text-slate-500">
+                    Économies validées
+                  </p>
+
+                  <p className="mt-1 text-xl font-black text-green-400">
+                    {economiesRealisees.toLocaleString(
+                      "fr-FR"
+                    )}{" "}
+                    €
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+                  <p className="text-xs font-bold text-slate-500">
+                    Potentiel restant
+                  </p>
+
+                  <p className="mt-1 text-xl font-black">
+                    {potentielRestant.toLocaleString(
+                      "fr-FR"
+                    )}{" "}
+                    €
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+                  <p className="text-xs font-bold text-slate-500">
+                    Missions terminées
+                  </p>
+
+                  <p className="mt-1 text-xl font-black">
+                    {
+                      missionsTerminees.length
+                    }
+                    /
+                    {missions.length}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </FadeIn>
+
+          {/* MESSAGE SYSTÈME */}
+          {message && !chargement && (
+            <p className="mt-5 text-center text-xs text-slate-500">
+              {message}
+            </p>
+          )}
+
+          <div className="h-10" />
         </section>
       </main>
     </>
