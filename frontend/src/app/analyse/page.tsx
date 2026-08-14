@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
 import PiloMascot from "../components/PiloMascot";
@@ -2322,7 +2322,6 @@ const pendingCategoryEntries = pendingCategoryOrder.map(
 
 export default function AnalysePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [selectedCategory, setSelectedCategory] =
     useState<AnalyseCategory | null>(null);
@@ -2337,28 +2336,29 @@ export default function AnalysePage() {
   const [errorMessage, setErrorMessage] =
     useState("");
 
-    useEffect(() => {
-  const categoryFromUrl = searchParams.get("category");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryFromUrl = params.get("category");
 
-  if (!categoryFromUrl) {
-    return;
-  }
+    if (!categoryFromUrl) {
+      return;
+    }
 
-  if (
-    Object.prototype.hasOwnProperty.call(
-      categories,
-      categoryFromUrl
-    )
-  ) {
-    setSelectedCategory(
-      categoryFromUrl as AnalyseCategory
-    );
+    if (
+      Object.prototype.hasOwnProperty.call(
+        categories,
+        categoryFromUrl
+      )
+    ) {
+      setSelectedCategory(
+        categoryFromUrl as AnalyseCategory
+      );
 
-    setStep(0);
-    setValues({});
-    setErrorMessage("");
-  }
-}, [searchParams]);
+      setStep(0);
+      setValues({});
+      setErrorMessage("");
+    }
+  }, []);
 
   const category = selectedCategory
     ? categories[selectedCategory]
