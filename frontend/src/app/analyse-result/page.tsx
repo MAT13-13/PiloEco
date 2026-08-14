@@ -46,6 +46,21 @@ type AnalyseCategory =
   | "logiciels"
   | "formation"
   | "voyage"
+  | "beauteArtisanat"
+  | "siteInternetPro"
+  | "assuranceEmprunteur"
+  | "ambassadeur"
+  | "assuranceObseques"
+  | "creditImmobilier"
+  | "diagnosticImmobilier"
+  | "mutuelleSenior"
+  | "epargneRetraite"
+  | "motoEquipement"
+  | "crypto"
+  | "cybersecurite"
+  | "servicesEntreprises"
+  | "debarras"
+  | "gaz"
   | MonitoringCategory;
 
 type Result = {
@@ -106,8 +121,125 @@ function isAnalyseCategory(
     value === "travaux" ||
     value === "logiciels" ||
     value === "formation" ||
-    value === "voyage"
+    value === "voyage" ||
+    value === "beauteArtisanat" ||
+    value === "siteInternetPro" ||
+    value === "assuranceEmprunteur" ||
+    value === "ambassadeur" ||
+    value === "assuranceObseques" ||
+    value === "creditImmobilier" ||
+    value === "diagnosticImmobilier" ||
+    value === "mutuelleSenior" ||
+    value === "epargneRetraite" ||
+    value === "motoEquipement" ||
+    value === "crypto" ||
+    value === "cybersecurite" ||
+    value === "servicesEntreprises" ||
+    value === "debarras" ||
+    value === "gaz"
   );
+}
+
+const missionRoutes: Partial<
+  Record<AnalyseCategory, string>
+> = {
+  telephoneSenior: "/missions/telephone-senior",
+  moto: "/missions/moto",
+  mutuelle: "/missions/mutuelle",
+  securite: "/missions/securite",
+  demenagement: "/missions/demenagement",
+  servicesAuto: "/missions/services-auto",
+  mobilitesDouces: "/missions/mobilites-douces",
+  travaux: "/missions/travaux",
+  logiciels: "/missions/logiciels",
+  formation: "/missions/formation",
+  voyage: "/missions/voyage",
+  beauteArtisanat: "/missions/beaute-artisanat",
+  siteInternetPro: "/missions/site-internet-pro",
+  assuranceEmprunteur: "/missions/assurance-emprunteur",
+  ambassadeur: "/missions/ambassadeur",
+  assuranceObseques: "/missions/assurance-obseques",
+  creditImmobilier: "/missions/credit-immobilier",
+  diagnosticImmobilier: "/missions/diagnostic-immobilier",
+  mutuelleSenior: "/missions/mutuelle-senior",
+  epargneRetraite: "/missions/epargne-retraite",
+  motoEquipement: "/missions/moto-equipement",
+  crypto: "/missions/crypto",
+  cybersecurite: "/missions/cybersecurite",
+  servicesEntreprises: "/missions/services-entreprises",
+  debarras: "/missions/debarras",
+  gaz: "/missions/gaz",
+};
+
+function getMissionRoute(
+  category: AnalyseCategory
+) {
+  return (
+    missionRoutes[category] ??
+    "/missions"
+  );
+}
+
+function formatFieldLabel(key: string) {
+  const labels: Record<string, string> = {
+    serviceType: "Besoin",
+    destination: "Destination",
+    estimatedBudget: "Budget estimé",
+    budget: "Budget",
+    creationType: "Création recherchée",
+    occasion: "Occasion",
+    personalization: "Personnalisation",
+    siteStatus: "Situation du site",
+    businessType: "Activité",
+    siteGoal: "Objectif du site",
+    loanStatus: "Situation du prêt",
+    remainingCapital: "Capital restant",
+    loanAmount: "Montant du prêt",
+    currentMonthlyInsurance: "Assurance mensuelle",
+    borrowersCount: "Emprunteurs",
+    employmentStatus: "Situation",
+    availability: "Disponibilité",
+    contactComfort: "Aisance relationnelle",
+    goal: "Objectif",
+    projectType: "Projet",
+    projectAmount: "Montant du projet",
+    downPayment: "Apport",
+    monthlyIncome: "Revenus mensuels",
+    desiredDuration: "Durée souhaitée",
+    transactionType: "Besoin",
+    housingType: "Type de bien",
+    surface: "Surface",
+    postalCode: "Code postal",
+    deadline: "Date souhaitée",
+    ageRange: "Tranche d'âge",
+    priorityNeed: "Besoin prioritaire",
+    savingGoal: "Objectif d'épargne",
+    investmentHorizon: "Horizon",
+    initialAmount: "Montant initial",
+    monthlySaving: "Épargne mensuelle",
+    riskPreference: "Profil de variation",
+    needType: "Équipement recherché",
+    bikeType: "Type de moto",
+    priority: "Critère principal",
+    experience: "Expérience",
+    mainNeed: "Besoin principal",
+    securityPriority: "Priorité",
+    protectionType: "Protection recherchée",
+    devicesCount: "Appareils",
+    usage: "Usage",
+    companyStatus: "Situation de l'entreprise",
+    companySize: "Taille de l'entreprise",
+    propertyType: "Type de lieu",
+    volume: "Volume",
+    access: "Accès",
+    contractStatus: "Situation du contrat",
+    provider: "Fournisseur",
+    monthlyPrice: "Prix mensuel",
+    gasUsage: "Usage du gaz",
+    occupants: "Occupants",
+  };
+
+  return labels[key] ?? key;
 }
 
 function saveAnalysisToHistory(
@@ -925,7 +1057,7 @@ export default function AnalyseResultPage() {
                   value ? (
                     <p key={key}>
                       <span className="font-semibold text-white">
-                        {key}
+                        {formatFieldLabel(key)}
                       </span>
                       {" : "}
                       {value}
@@ -968,10 +1100,19 @@ export default function AnalyseResultPage() {
             </div>
           )}
 
-          <div className="mt-10">
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            <Link
+              href={getMissionRoute(
+                result.category
+              )}
+              className="rounded-2xl bg-green-500 py-5 text-center font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Voir la solution partenaire →
+            </Link>
+
             <Link
               href="/dashboard"
-              className="block rounded-2xl bg-green-500 py-5 text-center font-black text-slate-950 transition hover:bg-green-400"
+              className="rounded-2xl border border-white/10 bg-white/5 py-5 text-center font-black transition hover:bg-white/10"
             >
               Retour au Dashboard
             </Link>
