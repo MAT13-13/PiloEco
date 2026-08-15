@@ -935,68 +935,91 @@ if (historyError) {
 }
 export async function checkMonitoringContracts(): Promise<void> {
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (userError) {
-    throw userError;
+  if (sessionError) {
+    throw new Error(
+      "Impossible de vérifier ta session."
+    );
   }
 
-  if (!user) {
+  let activeSession = session;
+
+  if (!activeSession?.access_token) {
+    const {
+      data: refreshData,
+      error: refreshError,
+    } = await supabase.auth.refreshSession();
+
+    if (refreshError) {
+      throw new Error(
+        "Impossible de rafraîchir ta session."
+      );
+    }
+
+    activeSession = refreshData.session;
+  }
+
+  if (!activeSession?.access_token) {
     return;
   }
 
-  const { data, error } = await supabase
-    .from("monitoring_contracts")
-    .select("*")
-    .eq("user_id", user.id);
+  const response = await fetch(
+    "/api/monitoring/check",
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          `Bearer ${activeSession.access_token}`,
+        "Content-Type":
+          "application/json",
+      },
+    }
+  );
 
-  if (error) {
-    throw error;
+  const rawResponse =
+    await response.text();
+
+  let data: {
+    success?: boolean;
+    checked?: number;
+    errors?: Array<{
+      contractId: string;
+      error: string;
+    }>;
+    error?: string;
+  } = {};
+
+  try {
+    data = rawResponse
+      ? JSON.parse(rawResponse)
+      : {};
+  } catch {
+    throw new Error(
+      "Réponse invalide du moteur Monitoring."
+    );
   }
 
-  const contracts =
-    (data ?? []) as MonitoringContract[];
-
-  for (const contract of contracts) {
-    const currentPrice = Number(
-      contract.monthly_price ?? 0
+  if (!response.ok || !data.success) {
+    throw new Error(
+      data.error ||
+        "Impossible d'analyser tes contrats."
     );
+  }
 
-    const previousPrice =
-      contract.previous_price === null
-        ? currentPrice
-        : Number(contract.previous_price);
-
-    const now = new Date().toISOString();
-
-    const update: Partial<MonitoringContract> = {
-      last_checked_at: now,
-    };
-
-    if (currentPrice > previousPrice) {
-      update.status = "Hausse détectée";
-      update.last_price_change_at = now;
-    } else if (
-      currentPrice < previousPrice
-    ) {
-      update.status = "Baisse détectée";
-      update.last_price_change_at = now;
-    }
-
-    const { error: updateError } =
-      await supabase
-        .from("monitoring_contracts")
-        .update(update)
-        .eq("id", contract.id)
-        .eq("user_id", user.id);
-
-    if (updateError) {
-      throw updateError;
-    }
+  if (
+    Array.isArray(data.errors) &&
+    data.errors.length > 0
+  ) {
+    console.warn(
+      "Certains contrats Monitoring n'ont pas pu être analysés :",
+      data.errors
+    );
   }
 }
+
 export type MonitoringHistory = {
   id: string;
   category: string;

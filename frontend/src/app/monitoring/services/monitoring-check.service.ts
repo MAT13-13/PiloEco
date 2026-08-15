@@ -6,18 +6,58 @@ import type {
 
 import {
   getRankedMonitoringOffers,
-  type MonitoringOfferCategory,
+  isMonitoringOfferCategory,
   type RankedMonitoringOffer,
 } from "./monitoring-offers.service";
 
 const MILLISECONDS_PER_DAY =
   1000 * 60 * 60 * 24;
 
+/*
+ * Catégories pour lesquelles Pilo possède une mission.
+ *
+ * Pour les catégories présentes dans monitoring-offers.service.ts,
+ * Pilo peut calculer une économie chiffrée à partir du catalogue.
+ *
+ * Pour les autres catégories, Pilo ne fabrique aucun prix :
+ * il recommande simplement d'aller comparer les solutions disponibles
+ * dans la mission correspondante.
+ */
+const missionCategories = new Set([
+  "telephone",
+  "mobile",
+  "internet",
+  "electricite",
+  "gaz",
+  "habitation",
+  "assurance-habitation",
+  "auto",
+  "assurance-auto",
+  "moto",
+  "assurance-moto",
+  "animaux",
+  "assurance-animaux",
+  "banque",
+  "streaming",
+  "mutuelle",
+  "mutuelle-sante",
+  "telephone-senior",
+  "mutuelle-senior",
+  "assurance-emprunteur",
+  "assurance-obseques",
+  "mobilites-douces",
+  "securite",
+  "alarme-securite",
+  "logiciels",
+  "cybersecurite",
+]);
+
 export type MonitoringCheckResult = {
   contract: MonitoringContract;
 
   bestOffer: RankedMonitoringOffer | null;
   hasBetterOffer: boolean;
+  hasComparisonOpportunity: boolean;
 
   hasPriceUp: boolean;
   hasPriceDown: boolean;
@@ -30,19 +70,20 @@ export type MonitoringCheckResult = {
   daysBeforeEnd: number | null;
 };
 
-function isSupportedCategory(
+function normalizeCategory(
+  value?: string | null
+) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function hasMissionForCategory(
   category: string
-): category is MonitoringOfferCategory {
-  return [
-    "telephone",
-    "internet",
-    "electricite",
-    "habitation",
-    "auto",
-    "animaux",
-    "banque",
-    "streaming",
-  ].includes(category);
+) {
+  return missionCategories.has(
+    normalizeCategory(category)
+  );
 }
 
 function getDaysBeforeEnd(
@@ -150,17 +191,27 @@ export async function checkMonitoringContract(
     daysBeforeEnd >= 0 &&
     daysBeforeEnd <= 30;
 
+  const normalizedCategory =
+    normalizeCategory(contract.category);
+
   let bestOffer:
     | RankedMonitoringOffer
     | null = null;
 
+  /*
+   * Les économies chiffrées ne sont calculées que
+   * pour les catégories qui disposent réellement
+   * d'un catalogue de référence.
+   */
   if (
     currentPrice > 0 &&
-    isSupportedCategory(contract.category)
+    isMonitoringOfferCategory(
+      normalizedCategory
+    )
   ) {
     const rankedOffers =
       getRankedMonitoringOffers(
-        contract.category,
+        normalizedCategory,
         currentPrice
       );
 
@@ -172,20 +223,36 @@ export async function checkMonitoringContract(
     Number(bestOffer?.yearlySaving ?? 0) > 0;
 
   /*
+   * Même lorsqu'aucun tarif comparable n'est disponible,
+   * on peut proposer la mission Pilo correspondante.
+   * Aucun montant d'économie n'est inventé.
+   */
+  const hasComparisonOpportunity =
+    !hasBetterOffer &&
+    hasMissionForCategory(
+      normalizedCategory
+    );
+
+  /*
    * On choisit le statut le plus important
    * à afficher sur le contrat.
    *
    * Priorité :
    * 1. hausse de prix ;
    * 2. échéance proche ;
-   * 3. meilleure offre ;
-   * 4. baisse de prix ;
-   * 5. contrat optimisé.
+   * 3. meilleure offre chiffrée ;
+   * 4. comparaison recommandée ;
+   * 5. baisse de prix ;
+   * 6. contrat optimisé.
    */
   let status = "Contrat optimisé";
 
   if (hasPriceDown) {
     status = "Baisse détectée";
+  }
+
+  if (hasComparisonOpportunity) {
+    status = "Comparaison recommandée";
   }
 
   if (hasBetterOffer) {
@@ -200,19 +267,26 @@ export async function checkMonitoringContract(
     status = "Hausse détectée";
   }
 
-  const updatePayload = {
-    better_offer:
-      hasBetterOffer && bestOffer
-        ? `${bestOffer.provider} — ${bestOffer.offer}`
-        : null,
+  let betterOffer: string | null = null;
+  let yearlySaving = 0;
 
-    yearly_saving:
-      hasBetterOffer && bestOffer
-        ? Math.max(
-            0,
-            Number(bestOffer.yearlySaving)
-          )
-        : 0,
+  if (hasBetterOffer && bestOffer) {
+    betterOffer =
+      `${bestOffer.provider} — ${bestOffer.offer}`;
+
+    yearlySaving = Math.max(
+      0,
+      Number(bestOffer.yearlySaving)
+    );
+  } else if (hasComparisonOpportunity) {
+    betterOffer =
+      "Comparer les solutions Pilo disponibles";
+  }
+
+  const updatePayload = {
+    better_offer: betterOffer,
+
+    yearly_saving: yearlySaving,
 
     status,
 
@@ -228,7 +302,8 @@ export async function checkMonitoringContract(
         : contract.last_price_change_at,
 
     last_offer_detected_at:
-      hasBetterOffer
+      hasBetterOffer ||
+      hasComparisonOpportunity
         ? checkedAt
         : contract.last_offer_detected_at,
   };
@@ -249,6 +324,7 @@ export async function checkMonitoringContract(
 
     bestOffer,
     hasBetterOffer,
+    hasComparisonOpportunity,
 
     hasPriceUp,
     hasPriceDown,

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Modal,
   RefreshControl,
   ScrollView,
@@ -140,6 +141,42 @@ function getCategoryInfo(category: string) {
       label: category?.trim() || "Contrat",
     }
   );
+}
+
+function getMissionSlug(category: string) {
+  const normalized =
+    category?.toLowerCase().trim() || "";
+
+  const missionSlugs: Record<string, string> = {
+    telephone: "mobile",
+    mobile: "mobile",
+    internet: "internet",
+    electricite: "electricite",
+    gaz: "gaz",
+    habitation: "habitation",
+    "assurance-habitation": "habitation",
+    auto: "auto",
+    "assurance-auto": "auto",
+    moto: "moto",
+    "assurance-moto": "moto",
+    animaux: "animaux",
+    "assurance-animaux": "animaux",
+    banque: "banque",
+    streaming: "streaming",
+    mutuelle: "mutuelle",
+    "mutuelle-sante": "mutuelle",
+    "telephone-senior": "telephone-senior",
+    "mutuelle-senior": "mutuelle-senior",
+    "assurance-emprunteur": "assurance-emprunteur",
+    "assurance-obseques": "assurance-obseques",
+    "mobilites-douces": "mobilites-douces",
+    securite: "securite",
+    "alarme-securite": "securite",
+    logiciels: "logiciels",
+    cybersecurite: "cybersecurite",
+  };
+
+  return missionSlugs[normalized] ?? null;
 }
 
 function getStatusConfig(status?: string | null) {
@@ -350,6 +387,43 @@ export default function MonitoringScreen() {
   async function refreshMonitoring() {
     setRefreshing(true);
     await loadMonitoring();
+  }
+
+  async function openMissionForCategory(
+    category: string
+  ) {
+    const missionSlug =
+      getMissionSlug(category);
+
+    const url = missionSlug
+      ? `https://piloeco.com/missions/${missionSlug}`
+      : "https://piloeco.com/missions";
+
+    try {
+      const supported =
+        await Linking.canOpenURL(url);
+
+      if (!supported) {
+        Alert.alert(
+          "Mission indisponible",
+          "Impossible d’ouvrir cette mission pour le moment."
+        );
+
+        return;
+      }
+
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error(
+        "Erreur ouverture mission Monitoring :",
+        error
+      );
+
+      Alert.alert(
+        "Mission indisponible",
+        "Impossible d’ouvrir cette mission pour le moment."
+      );
+    }
   }
 
   function openEdit(
@@ -981,6 +1055,20 @@ export default function MonitoringScreen() {
                         <Text style={styles.opportunityText}>
                           {contract.better_offer}
                         </Text>
+
+                        <TouchableOpacity
+                          style={styles.opportunityButton}
+                          onPress={() =>
+                            void openMissionForCategory(
+                              contract.category
+                            )
+                          }
+                          activeOpacity={0.85}
+                        >
+                          <Text style={styles.opportunityButtonText}>
+                            Voir la mission →
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     ) : null}
 
@@ -1537,6 +1625,21 @@ const styles = StyleSheet.create({
     color: "#fde68a",
     fontSize: 11,
     lineHeight: 17,
+  },
+
+  opportunityButton: {
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    alignItems: "center",
+    borderRadius: 12,
+    backgroundColor: "#f59e0b",
+  },
+
+  opportunityButtonText: {
+    color: "#020617",
+    fontSize: 10,
+    fontWeight: "900",
   },
 
   statusLine: {

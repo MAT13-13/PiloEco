@@ -24,6 +24,59 @@ type MonitoringCatalogItem = {
   enabled: boolean;
 };
 
+
+type OpportunityConfig = {
+  betterOffer: string | null;
+  status: string;
+};
+
+const opportunityLabels: Record<string, string> = {
+  telephone: "Comparer les forfaits mobiles disponibles",
+  mobile: "Comparer les forfaits mobiles disponibles",
+  internet: "Comparer les offres Internet disponibles",
+  electricite: "Comparer les offres d’électricité disponibles",
+  gaz: "Comparer les offres de gaz disponibles",
+  habitation: "Comparer les offres d’assurance habitation",
+  auto: "Comparer les offres d’assurance auto",
+  moto: "Comparer les offres d’assurance moto",
+  animaux: "Comparer les offres d’assurance animaux",
+  banque: "Comparer les solutions bancaires disponibles",
+  streaming: "Vérifier si tes abonnements peuvent être optimisés",
+  mutuelle: "Comparer les offres de mutuelle santé",
+  assurance: "Comparer les offres d’assurance disponibles",
+  "telephone-senior": "Comparer les solutions téléphone senior",
+  "mutuelle-senior": "Comparer les offres de mutuelle senior",
+  "assurance-emprunteur": "Comparer les offres d’assurance emprunteur",
+  "assurance-obseques": "Comparer les offres d’assurance obsèques",
+  "mobilites-douces": "Comparer les solutions mobilité douce disponibles",
+  securite: "Comparer les solutions de sécurité disponibles",
+  logiciels: "Comparer les solutions logicielles disponibles",
+  cybersecurite: "Comparer les solutions de cybersécurité disponibles",
+};
+
+function getInitialOpportunity(
+  contractCategory: string,
+  price: number
+): OpportunityConfig {
+  const normalized =
+    contractCategory?.toLowerCase().trim() || "";
+
+  const opportunity =
+    opportunityLabels[normalized] ?? null;
+
+  if (!opportunity || price <= 0) {
+    return {
+      betterOffer: null,
+      status: "Contrat surveillé",
+    };
+  }
+
+  return {
+    betterOffer: opportunity,
+    status: "Opportunité à vérifier",
+  };
+}
+
 export default function MonitoringAddScreen() {
   const [categories, setCategories] = useState<
     MonitoringCatalogItem[]
@@ -245,6 +298,12 @@ export default function MonitoringAddScreen() {
         return;
       }
 
+      const opportunity =
+        getInitialOpportunity(
+          category,
+          price
+        );
+
       const { error } = await supabase
         .from("monitoring_contracts")
         .insert({
@@ -257,10 +316,10 @@ export default function MonitoringAddScreen() {
             null,
           end_date:
             trimmedEndDate || null,
-          better_offer: null,
+          better_offer:
+            opportunity.betterOffer,
           yearly_saving: 0,
-          status:
-            "Contrat surveillé",
+          status: opportunity.status,
           updated_at:
             new Date().toISOString(),
         });
@@ -328,7 +387,8 @@ export default function MonitoringAddScreen() {
       <Text style={styles.subtitle}>
         Renseigne les informations principales.
         Pilo pourra ensuite suivre le prix,
-        l'offre et l'échéance de ton contrat.
+        l'offre et l'échéance de ton contrat,
+        puis te proposer la mission correspondante.
       </Text>
 
       {catalogLoading && (
@@ -535,9 +595,10 @@ export default function MonitoringAddScreen() {
 
         <Text style={styles.infoText}>
           Ces informations permettent à Pilo de
-          conserver une référence de ton contrat
-          actuel et de suivre son prix et son
-          échéance dans le temps.
+          conserver une référence de ton contrat,
+          de suivre son prix et son échéance, puis
+          de te proposer une comparaison via la
+          mission correspondante quand elle existe.
         </Text>
       </View>
 

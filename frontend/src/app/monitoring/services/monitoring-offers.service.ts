@@ -8,6 +8,25 @@ export type MonitoringOfferCategory =
   | "banque"
   | "streaming";
 
+export const monitoringOfferCategories: MonitoringOfferCategory[] = [
+  "telephone",
+  "internet",
+  "electricite",
+  "habitation",
+  "auto",
+  "animaux",
+  "banque",
+  "streaming",
+];
+
+export function isMonitoringOfferCategory(
+  category: string
+): category is MonitoringOfferCategory {
+  return monitoringOfferCategories.includes(
+    category as MonitoringOfferCategory
+  );
+}
+
 export type MonitoringOffer = {
   id: string;
   category: MonitoringOfferCategory;
