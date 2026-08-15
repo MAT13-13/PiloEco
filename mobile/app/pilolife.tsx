@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Modal,
   RefreshControl,
   ScrollView,
@@ -49,6 +50,254 @@ type PiloLifeSettings = {
 type ProjectFormMode =
   | "create"
   | "edit";
+
+type MonitoringRecommendationRow = {
+  id: string;
+  category: string;
+  provider: string | null;
+  better_offer: string | null;
+  yearly_saving: number | null;
+  status: string | null;
+};
+
+type PiloLifeMonitoringRecommendation = {
+  id: string;
+  category: string;
+  label: string;
+  icon: string;
+  provider: string | null;
+  yearlySaving: number;
+  monthsSaved: number;
+  href: string;
+};
+
+const PILOECO_WEB_URL =
+  "https://piloeco.com";
+
+const monitoringCategoryConfig: Record<
+  string,
+  {
+    label: string;
+    icon: string;
+    href: string;
+  }
+> = {
+  telephone: {
+    label: "Téléphone",
+    icon: "📱",
+    href: "/missions/mobile",
+  },
+  mobile: {
+    label: "Téléphone",
+    icon: "📱",
+    href: "/missions/mobile",
+  },
+  "telephone-senior": {
+    label: "Téléphone senior",
+    icon: "👵",
+    href: "/missions/telephone-senior",
+  },
+  internet: {
+    label: "Internet",
+    icon: "🌐",
+    href: "/missions/internet",
+  },
+  electricite: {
+    label: "Électricité",
+    icon: "⚡",
+    href: "/missions/electricite",
+  },
+  gaz: {
+    label: "Gaz",
+    icon: "🔥",
+    href: "/missions/gaz",
+  },
+  habitation: {
+    label: "Habitation",
+    icon: "🏠",
+    href: "/missions/habitation",
+  },
+  "assurance-habitation": {
+    label: "Habitation",
+    icon: "🏠",
+    href: "/missions/habitation",
+  },
+  auto: {
+    label: "Assurance auto",
+    icon: "🚗",
+    href: "/missions/assurance-auto",
+  },
+  "assurance-auto": {
+    label: "Assurance auto",
+    icon: "🚗",
+    href: "/missions/assurance-auto",
+  },
+  moto: {
+    label: "Assurance moto",
+    icon: "🏍️",
+    href: "/missions/assurance-moto",
+  },
+  "assurance-moto": {
+    label: "Assurance moto",
+    icon: "🏍️",
+    href: "/missions/assurance-moto",
+  },
+  animaux: {
+    label: "Assurance animaux",
+    icon: "🐶",
+    href: "/missions/animaux",
+  },
+  "assurance-animaux": {
+    label: "Assurance animaux",
+    icon: "🐶",
+    href: "/missions/animaux",
+  },
+  mutuelle: {
+    label: "Mutuelle santé",
+    icon: "❤️",
+    href: "/missions/mutuelle",
+  },
+  "mutuelle-sante": {
+    label: "Mutuelle santé",
+    icon: "❤️",
+    href: "/missions/mutuelle",
+  },
+  "mutuelle-senior": {
+    label: "Mutuelle senior",
+    icon: "👵",
+    href: "/missions/mutuelle-senior",
+  },
+  "assurance-emprunteur": {
+    label: "Assurance emprunteur",
+    icon: "🏦",
+    href: "/missions/assurance-emprunteur",
+  },
+  "assurance-obseques": {
+    label: "Assurance obsèques",
+    icon: "🕊️",
+    href: "/missions/assurance-obseques",
+  },
+  banque: {
+    label: "Banque",
+    icon: "🏦",
+    href: "/missions/banque",
+  },
+  streaming: {
+    label: "Streaming",
+    icon: "📺",
+    href: "/missions/streaming",
+  },
+  "mobilites-douces": {
+    label: "Mobilités douces",
+    icon: "🚲",
+    href: "/missions/mobilites-douces",
+  },
+  securite: {
+    label: "Sécurité",
+    icon: "🔐",
+    href: "/missions/securite",
+  },
+  "alarme-securite": {
+    label: "Sécurité",
+    icon: "🔐",
+    href: "/missions/securite",
+  },
+  logiciels: {
+    label: "Logiciels",
+    icon: "💻",
+    href: "/missions/logiciels",
+  },
+  cybersecurite: {
+    label: "Cybersécurité",
+    icon: "🛡️",
+    href: "/missions/cybersecurite",
+  },
+};
+
+function normalizeMonitoringCategory(
+  value?: string | null
+) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getMonitoringCategoryConfig(
+  category: string
+) {
+  const normalized =
+    normalizeMonitoringCategory(category);
+
+  return (
+    monitoringCategoryConfig[normalized] ?? {
+      label: category || "Économie",
+      icon: "💰",
+      href: "/missions",
+    }
+  );
+}
+
+function isValidatedMonitoringStatus(
+  status?: string | null
+) {
+  const normalized =
+    normalizeMonitoringCategory(status);
+
+  return (
+    normalized.includes("economie validee") ||
+    normalized.includes("validated") ||
+    normalized.includes("completed")
+  );
+}
+
+function calculateMonthsSaved({
+  remainingAmount,
+  currentMonthlySaved,
+  yearlySaving,
+}: {
+  remainingAmount: number;
+  currentMonthlySaved: number;
+  yearlySaving: number;
+}) {
+  const monthlySaving =
+    yearlySaving / 12;
+
+  if (
+    remainingAmount <= 0 ||
+    monthlySaving <= 0
+  ) {
+    return 0;
+  }
+
+  if (currentMonthlySaved <= 0) {
+    return Math.max(
+      1,
+      Math.round(
+        remainingAmount /
+          monthlySaving
+      )
+    );
+  }
+
+  const withoutAction =
+    remainingAmount /
+    currentMonthlySaved;
+
+  const withAction =
+    remainingAmount /
+    (currentMonthlySaved +
+      monthlySaving);
+
+  return Math.max(
+    1,
+    Math.round(
+      withoutAction -
+        withAction
+    )
+  );
+}
 
 const investmentModes: Record<
   InvestmentMode,
@@ -384,6 +633,13 @@ export default function PiloLifeScreen() {
       null
     );
 
+  const [
+    monitoringRows,
+    setMonitoringRows,
+  ] = useState<
+    MonitoringRecommendationRow[]
+  >([]);
+
   const [loading, setLoading] =
     useState(true);
 
@@ -444,6 +700,58 @@ export default function PiloLifeScreen() {
     setSettingsModalOpen,
   ] = useState(false);
 
+  const [
+    allocateModalOpen,
+    setAllocateModalOpen,
+  ] = useState(false);
+
+  const [
+    selectedProjectId,
+    setSelectedProjectId,
+  ] = useState("");
+
+  const [
+    allocationAmount,
+    setAllocationAmount,
+  ] = useState("");
+
+  const [
+    allocationLoading,
+    setAllocationLoading,
+  ] = useState(false);
+
+  const [
+    transferModalOpen,
+    setTransferModalOpen,
+  ] = useState(false);
+
+  const [
+    transferDirection,
+    setTransferDirection,
+  ] = useState<{
+    sourceId: string;
+    destinationId: string;
+  }>({
+    sourceId: "",
+    destinationId: "",
+  });
+
+  const transferSourceProjectId =
+    transferDirection.sourceId;
+
+  const transferDestinationProjectId =
+    transferDirection.destinationId;
+
+  const [
+    transferAmount,
+    setTransferAmount,
+  ] = useState("");
+
+  const [
+    transferLoading,
+    setTransferLoading,
+  ] = useState(false);
+
   const loadPiloLife =
     useCallback(async () => {
       try {
@@ -464,6 +772,7 @@ export default function PiloLifeScreen() {
           setProjects([]);
           setWallet(null);
           setSettings(null);
+          setMonitoringRows([]);
 
           setErrorMessage(
             "Connecte-toi pour accéder à PiloLife."
@@ -479,6 +788,7 @@ export default function PiloLifeScreen() {
           walletResult,
           settingsResult,
           profileResult,
+          monitoringResult,
         ] = await Promise.all([
           supabase
             .from(
@@ -529,6 +839,18 @@ export default function PiloLifeScreen() {
             .select("premium")
             .eq("id", user.id)
             .maybeSingle(),
+
+          supabase
+            .from(
+              "monitoring_contracts"
+            )
+            .select(
+              "id, category, provider, better_offer, yearly_saving, status"
+            )
+            .eq(
+              "user_id",
+              user.id
+            ),
         ]);
 
         if (
@@ -551,6 +873,10 @@ export default function PiloLifeScreen() {
           throw profileResult.error;
         }
 
+        if (monitoringResult.error) {
+          throw monitoringResult.error;
+        }
+
         setPremium(
           profileResult.data?.premium === true
         );
@@ -570,6 +896,11 @@ export default function PiloLifeScreen() {
           settingsResult.data as
             | PiloLifeSettings
             | null
+        );
+
+        setMonitoringRows(
+          (monitoringResult.data ??
+            []) as MonitoringRecommendationRow[]
         );
       } catch (error) {
         console.error(
@@ -1098,6 +1429,859 @@ export default function PiloLifeScreen() {
     }
   }
 
+  function openAllocateModal() {
+    const balance =
+      Number(wallet?.balance ?? 0);
+
+    if (balance <= 0) {
+      Alert.alert(
+        "Cagnotte vide",
+        "Tu n’as aucune économie disponible à investir pour le moment."
+      );
+
+      return;
+    }
+
+    if (projects.length === 0) {
+      Alert.alert(
+        "Aucun projet",
+        "Crée d’abord un projet PiloLife avant d’investir ta cagnotte."
+      );
+
+      return;
+    }
+
+    const defaultProject =
+      projects.find(
+        (project) =>
+          project.is_primary
+      ) ??
+      projects[0];
+
+    setSelectedProjectId(
+      defaultProject?.id ?? ""
+    );
+
+    setAllocationAmount(
+      String(balance)
+    );
+
+    setAllocateModalOpen(true);
+  }
+
+  function closeAllocateModal() {
+    if (allocationLoading) {
+      return;
+    }
+
+    setAllocateModalOpen(false);
+    setSelectedProjectId("");
+    setAllocationAmount("");
+  }
+
+  async function allocateWalletToSelectedProject() {
+    if (
+      !userId ||
+      allocationLoading
+    ) {
+      return;
+    }
+
+    const amount =
+      Number(
+        allocationAmount
+          .replace(",", ".")
+          .trim()
+      );
+
+    const balance =
+      Number(wallet?.balance ?? 0);
+
+    const selectedProject =
+      projects.find(
+        (project) =>
+          project.id ===
+          selectedProjectId
+      );
+
+    if (!selectedProject) {
+      Alert.alert(
+        "Projet manquant",
+        "Choisis le projet dans lequel tu veux investir cette économie."
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+      Alert.alert(
+        "Montant invalide",
+        "Entre un montant supérieur à 0 €."
+      );
+
+      return;
+    }
+
+    if (amount > balance) {
+      Alert.alert(
+        "Solde insuffisant",
+        `Ta cagnotte contient actuellement ${money(
+          balance
+        )}.`
+      );
+
+      return;
+    }
+
+    try {
+      setAllocationLoading(true);
+
+      /*
+       * Même logique que le service PiloLife du site :
+       * 1. on augmente le projet,
+       * 2. on débite la cagnotte,
+       * 3. on crée une transaction,
+       * 4. on annule les changements si une étape échoue.
+       */
+      const {
+        data: freshProject,
+        error: projectReadError,
+      } = await supabase
+        .from("pilolife_projects")
+        .select("*")
+        .eq(
+          "id",
+          selectedProject.id
+        )
+        .eq(
+          "user_id",
+          userId
+        )
+        .maybeSingle();
+
+      if (projectReadError) {
+        throw projectReadError;
+      }
+
+      if (!freshProject) {
+        throw new Error(
+          "Le projet sélectionné n’existe plus."
+        );
+      }
+
+      const {
+        data: freshWallet,
+        error: walletReadError,
+      } = await supabase
+        .from("pilolife_wallets")
+        .select("*")
+        .eq(
+          "user_id",
+          userId
+        )
+        .maybeSingle();
+
+      if (walletReadError) {
+        throw walletReadError;
+      }
+
+      if (!freshWallet) {
+        throw new Error(
+          "Ta cagnotte est introuvable."
+        );
+      }
+
+      const currentBalance =
+        Number(
+          freshWallet.balance ?? 0
+        );
+
+      if (amount > currentBalance) {
+        throw new Error(
+          "Le solde de la cagnotte est insuffisant."
+        );
+      }
+
+      const currentSavedAmount =
+        Number(
+          freshProject.saved_amount ??
+            0
+        );
+
+      const currentMonthlySaved =
+        Number(
+          freshProject.monthly_saved ??
+            0
+        );
+
+      const currentTotalAllocated =
+        Number(
+          freshWallet.total_allocated ??
+            0
+        );
+
+      const newSavedAmount =
+        currentSavedAmount +
+        amount;
+
+      const newMonthlySaved =
+        currentMonthlySaved +
+        amount / 12;
+
+      const now =
+        new Date().toISOString();
+
+      const {
+        error: projectUpdateError,
+      } = await supabase
+        .from("pilolife_projects")
+        .update({
+          saved_amount:
+            newSavedAmount,
+          monthly_saved:
+            newMonthlySaved,
+          updated_at: now,
+        })
+        .eq(
+          "id",
+          selectedProject.id
+        )
+        .eq(
+          "user_id",
+          userId
+        );
+
+      if (projectUpdateError) {
+        throw projectUpdateError;
+      }
+
+      const {
+        error: walletUpdateError,
+      } = await supabase
+        .from("pilolife_wallets")
+        .update({
+          balance:
+            currentBalance -
+            amount,
+          total_allocated:
+            currentTotalAllocated +
+            amount,
+          updated_at: now,
+        })
+        .eq(
+          "user_id",
+          userId
+        );
+
+      if (walletUpdateError) {
+        await supabase
+          .from(
+            "pilolife_projects"
+          )
+          .update({
+            saved_amount:
+              currentSavedAmount,
+            monthly_saved:
+              currentMonthlySaved,
+            updated_at:
+              new Date().toISOString(),
+          })
+          .eq(
+            "id",
+            selectedProject.id
+          )
+          .eq(
+            "user_id",
+            userId
+          );
+
+        throw walletUpdateError;
+      }
+
+      const {
+        error: transactionError,
+      } = await supabase
+        .from(
+          "pilolife_wallet_transactions"
+        )
+        .insert({
+          user_id: userId,
+          project_id:
+            selectedProject.id,
+          type: "allocation",
+          amount,
+          source: "project",
+          source_id:
+            selectedProject.id,
+          description:
+            `Économie investie dans ${selectedProject.title}`,
+        });
+
+      if (transactionError) {
+        await Promise.all([
+          supabase
+            .from(
+              "pilolife_wallets"
+            )
+            .update({
+              balance:
+                currentBalance,
+              total_allocated:
+                currentTotalAllocated,
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "user_id",
+              userId
+            ),
+
+          supabase
+            .from(
+              "pilolife_projects"
+            )
+            .update({
+              saved_amount:
+                currentSavedAmount,
+              monthly_saved:
+                currentMonthlySaved,
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              selectedProject.id
+            )
+            .eq(
+              "user_id",
+              userId
+            ),
+        ]);
+
+        throw transactionError;
+      }
+
+      setAllocateModalOpen(false);
+      setSelectedProjectId("");
+      setAllocationAmount("");
+
+      await loadPiloLife();
+
+      Alert.alert(
+        "Projet mis à jour 🎉",
+        `${money(
+          amount
+        )} ont été investis dans « ${selectedProject.title} ».`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur allocation cagnotte PiloLife :",
+        error
+      );
+
+      Alert.alert(
+        "Investissement impossible",
+        error instanceof Error
+          ? error.message
+          : "Impossible d’investir cette économie dans le projet."
+      );
+    } finally {
+      setAllocationLoading(false);
+    }
+  }
+
+  function openTransferModal() {
+    if (projects.length < 2) {
+      Alert.alert(
+        "Deux projets nécessaires",
+        "Crée au moins deux projets pour pouvoir déplacer une économie."
+      );
+
+      return;
+    }
+
+    const projectWithSavings =
+      projects.find(
+        (project) =>
+          Number(
+            project.saved_amount ??
+              0
+          ) > 0
+      );
+
+    if (!projectWithSavings) {
+      Alert.alert(
+        "Aucune somme à déplacer",
+        "Aucun de tes projets ne contient encore d’économie à déplacer."
+      );
+
+      return;
+    }
+
+    const destination =
+      projects.find(
+        (project) =>
+          project.id !==
+          projectWithSavings.id
+      );
+
+    setTransferDirection({
+      sourceId:
+        projectWithSavings.id,
+      destinationId:
+        destination?.id ?? "",
+    });
+
+    setTransferAmount(
+      String(
+        Number(
+          projectWithSavings.saved_amount ??
+            0
+        )
+      )
+    );
+
+    setTransferModalOpen(true);
+  }
+
+  function closeTransferModal() {
+    if (transferLoading) {
+      return;
+    }
+
+    setTransferModalOpen(false);
+    setTransferDirection({
+      sourceId: "",
+      destinationId: "",
+    });
+    setTransferAmount("");
+  }
+
+  function swapTransferProjects() {
+    const oldSourceId =
+      transferDirection.sourceId;
+
+    const oldDestinationId =
+      transferDirection.destinationId;
+
+    if (
+      !oldSourceId ||
+      !oldDestinationId
+    ) {
+      return;
+    }
+
+    const nextSource =
+      projects.find(
+        (project) =>
+          project.id ===
+          oldDestinationId
+      );
+
+    if (
+      !nextSource ||
+      Number(
+        nextSource.saved_amount ??
+          0
+      ) <= 0
+    ) {
+      Alert.alert(
+        "Impossible d’inverser",
+        "Le projet qui deviendrait la source ne contient aucune économie à déplacer."
+      );
+
+      return;
+    }
+
+    /*
+     * IMPORTANT :
+     * source + destination sont mis à jour EN UNE SEULE FOIS.
+     * Cela évite l’état intermédiaire Voiture → Voiture
+     * observé quand les deux useState étaient modifiés séparément.
+     */
+    setTransferDirection({
+      sourceId:
+        oldDestinationId,
+      destinationId:
+        oldSourceId,
+    });
+
+    setTransferAmount(
+      String(
+        Number(
+          nextSource.saved_amount ??
+            0
+        )
+      )
+    );
+  }
+
+  async function transferProjectSaving() {
+    if (
+      !userId ||
+      transferLoading
+    ) {
+      return;
+    }
+
+    const amount =
+      Number(
+        transferAmount
+          .replace(",", ".")
+          .trim()
+      );
+
+    const sourceProject =
+      projects.find(
+        (project) =>
+          project.id ===
+          transferSourceProjectId
+      );
+
+    const destinationProject =
+      projects.find(
+        (project) =>
+          project.id ===
+          transferDestinationProjectId
+      );
+
+    if (!sourceProject) {
+      Alert.alert(
+        "Projet source manquant",
+        "Choisis le projet depuis lequel tu veux déplacer l’économie."
+      );
+
+      return;
+    }
+
+    if (!destinationProject) {
+      Alert.alert(
+        "Projet destination manquant",
+        "Choisis le projet vers lequel tu veux déplacer l’économie."
+      );
+
+      return;
+    }
+
+    if (
+      sourceProject.id ===
+      destinationProject.id
+    ) {
+      Alert.alert(
+        "Même projet",
+        "Le projet de départ et le projet d’arrivée doivent être différents."
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
+      Alert.alert(
+        "Montant invalide",
+        "Entre un montant supérieur à 0 €."
+      );
+
+      return;
+    }
+
+    try {
+      setTransferLoading(true);
+
+      const [
+        sourceResult,
+        destinationResult,
+      ] = await Promise.all([
+        supabase
+          .from("pilolife_projects")
+          .select("*")
+          .eq(
+            "id",
+            sourceProject.id
+          )
+          .eq(
+            "user_id",
+            userId
+          )
+          .maybeSingle(),
+
+        supabase
+          .from("pilolife_projects")
+          .select("*")
+          .eq(
+            "id",
+            destinationProject.id
+          )
+          .eq(
+            "user_id",
+            userId
+          )
+          .maybeSingle(),
+      ]);
+
+      if (sourceResult.error) {
+        throw sourceResult.error;
+      }
+
+      if (destinationResult.error) {
+        throw destinationResult.error;
+      }
+
+      if (
+        !sourceResult.data ||
+        !destinationResult.data
+      ) {
+        throw new Error(
+          "Un des projets sélectionnés n’existe plus."
+        );
+      }
+
+      const freshSource =
+        sourceResult.data;
+
+      const freshDestination =
+        destinationResult.data;
+
+      const sourceSaved =
+        Number(
+          freshSource.saved_amount ??
+            0
+        );
+
+      const destinationSaved =
+        Number(
+          freshDestination.saved_amount ??
+            0
+        );
+
+      const sourceMonthly =
+        Number(
+          freshSource.monthly_saved ??
+            0
+        );
+
+      const destinationMonthly =
+        Number(
+          freshDestination.monthly_saved ??
+            0
+        );
+
+      if (amount > sourceSaved) {
+        throw new Error(
+          `Le projet « ${sourceProject.title} » contient seulement ${money(
+            sourceSaved
+          )}.`
+        );
+      }
+
+      const newSourceSaved =
+        Math.max(
+          0,
+          sourceSaved - amount
+        );
+
+      const newDestinationSaved =
+        destinationSaved +
+        amount;
+
+      /*
+       * Les allocations PiloLife ajoutent actuellement
+       * amount / 12 à monthly_saved. Lors d'un transfert,
+       * on déplace donc la même part mensuelle.
+       */
+      const monthlyPart =
+        amount / 12;
+
+      const newSourceMonthly =
+        Math.max(
+          0,
+          sourceMonthly -
+            monthlyPart
+        );
+
+      const newDestinationMonthly =
+        destinationMonthly +
+        monthlyPart;
+
+      const now =
+        new Date().toISOString();
+
+      const {
+        error: sourceUpdateError,
+      } = await supabase
+        .from("pilolife_projects")
+        .update({
+          saved_amount:
+            newSourceSaved,
+          monthly_saved:
+            newSourceMonthly,
+          updated_at: now,
+        })
+        .eq(
+          "id",
+          sourceProject.id
+        )
+        .eq(
+          "user_id",
+          userId
+        );
+
+      if (sourceUpdateError) {
+        throw sourceUpdateError;
+      }
+
+      const {
+        error: destinationUpdateError,
+      } = await supabase
+        .from("pilolife_projects")
+        .update({
+          saved_amount:
+            newDestinationSaved,
+          monthly_saved:
+            newDestinationMonthly,
+          updated_at: now,
+        })
+        .eq(
+          "id",
+          destinationProject.id
+        )
+        .eq(
+          "user_id",
+          userId
+        );
+
+      if (destinationUpdateError) {
+        await supabase
+          .from("pilolife_projects")
+          .update({
+            saved_amount:
+              sourceSaved,
+            monthly_saved:
+              sourceMonthly,
+            updated_at:
+              new Date().toISOString(),
+          })
+          .eq(
+            "id",
+            sourceProject.id
+          )
+          .eq(
+            "user_id",
+            userId
+          );
+
+        throw destinationUpdateError;
+      }
+
+      /*
+       * On ajoute une trace compatible avec la table
+       * existante sans inventer un nouveau type SQL.
+       */
+      const {
+        error: transactionError,
+      } = await supabase
+        .from(
+          "pilolife_wallet_transactions"
+        )
+        .insert({
+          user_id: userId,
+          project_id:
+            destinationProject.id,
+          type: "allocation",
+          amount,
+          source:
+            "project_transfer",
+          source_id:
+            sourceProject.id,
+          description:
+            `Transfert de ${sourceProject.title} vers ${destinationProject.title}`,
+        });
+
+      if (transactionError) {
+        await Promise.all([
+          supabase
+            .from(
+              "pilolife_projects"
+            )
+            .update({
+              saved_amount:
+                sourceSaved,
+              monthly_saved:
+                sourceMonthly,
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              sourceProject.id
+            )
+            .eq(
+              "user_id",
+              userId
+            ),
+
+          supabase
+            .from(
+              "pilolife_projects"
+            )
+            .update({
+              saved_amount:
+                destinationSaved,
+              monthly_saved:
+                destinationMonthly,
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "id",
+              destinationProject.id
+            )
+            .eq(
+              "user_id",
+              userId
+            ),
+        ]);
+
+        throw transactionError;
+      }
+
+      setTransferModalOpen(false);
+      setTransferDirection({
+        sourceId: "",
+        destinationId: "",
+      });
+      setTransferAmount("");
+
+      await loadPiloLife();
+
+      Alert.alert(
+        "Économie déplacée ✅",
+        `${money(
+          amount
+        )} ont été déplacés de « ${sourceProject.title} » vers « ${destinationProject.title} ».`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur transfert économie PiloLife :",
+        error
+      );
+
+      Alert.alert(
+        "Transfert impossible",
+        error instanceof Error
+          ? error.message
+          : "Impossible de déplacer cette économie."
+      );
+    } finally {
+      setTransferLoading(false);
+    }
+  }
+
   const primaryProject =
     projects.find(
       (project) =>
@@ -1136,6 +2320,134 @@ export default function PiloLifeScreen() {
         ),
       0
     );
+
+  const projectRemainingAmount =
+    primaryProject
+      ? Math.max(
+          0,
+          Number(
+            primaryProject.target_amount ??
+              0
+          ) -
+            Number(
+              primaryProject.saved_amount ??
+                0
+            )
+        )
+      : 0;
+
+  const projectMonthlySaved =
+    primaryProject
+      ? Math.max(
+          0,
+          Number(
+            primaryProject.monthly_saved ??
+              0
+          )
+        )
+      : 0;
+
+  const monitoringRecommendations:
+    PiloLifeMonitoringRecommendation[] =
+    monitoringRows
+      .filter((row) => {
+        const yearlySaving =
+          Number(
+            row.yearly_saving ??
+              0
+          );
+
+        return (
+          Number.isFinite(
+            yearlySaving
+          ) &&
+          yearlySaving > 0 &&
+          !isValidatedMonitoringStatus(
+            row.status
+          )
+        );
+      })
+      .map((row) => {
+        const config =
+          getMonitoringCategoryConfig(
+            row.category
+          );
+
+        const yearlySaving =
+          Math.max(
+            0,
+            Math.round(
+              Number(
+                row.yearly_saving ??
+                  0
+              )
+            )
+          );
+
+        return {
+          id: row.id,
+          category:
+            row.category,
+          label: config.label,
+          icon: config.icon,
+          provider:
+            row.provider,
+          yearlySaving,
+          monthsSaved:
+            calculateMonthsSaved({
+              remainingAmount:
+                projectRemainingAmount,
+              currentMonthlySaved:
+                projectMonthlySaved,
+              yearlySaving,
+            }),
+          href: config.href,
+        };
+      })
+      .sort(
+        (a, b) =>
+          b.yearlySaving -
+          a.yearlySaving
+      )
+      .slice(0, 4);
+
+  const totalMonitoringPotential =
+    monitoringRecommendations.reduce(
+      (total, recommendation) =>
+        total +
+        recommendation.yearlySaving,
+      0
+    );
+
+  const totalPotentialMonthsSaved =
+    monitoringRecommendations.reduce(
+      (total, recommendation) =>
+        total +
+        recommendation.monthsSaved,
+      0
+    );
+
+  async function openMonitoringRecommendation(
+    recommendation:
+      PiloLifeMonitoringRecommendation
+  ) {
+    const url =
+      `${PILOECO_WEB_URL}${recommendation.href}`;
+
+    const supported =
+      await Linking.canOpenURL(url);
+
+    if (!supported) {
+      Alert.alert(
+        "Lien indisponible",
+        "Impossible d’ouvrir cette mission pour le moment."
+      );
+
+      return;
+    }
+
+    await Linking.openURL(url);
+  }
 
   if (loading) {
     return (
@@ -1368,6 +2680,64 @@ export default function PiloLifeScreen() {
                   </Text>
                 </View>
               </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.allocateWalletButton,
+                  Number(
+                    wallet?.balance ?? 0
+                  ) <= 0 &&
+                    styles.allocateWalletButtonDisabled,
+                ]}
+                onPress={
+                  openAllocateModal
+                }
+                disabled={
+                  Number(
+                    wallet?.balance ?? 0
+                  ) <= 0
+                }
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={
+                    styles.allocateWalletButtonText
+                  }
+                >
+                  🌱 Investir dans un projet
+                </Text>
+              </TouchableOpacity>
+
+              <Text
+                style={
+                  styles.allocateWalletHint
+                }
+              >
+                Choisis librement le projet et le montant à utiliser.
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.transferWalletButton,
+                  projects.length < 2 &&
+                    styles.allocateWalletButtonDisabled,
+                ]}
+                onPress={
+                  openTransferModal
+                }
+                disabled={
+                  projects.length < 2
+                }
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={
+                    styles.transferWalletButtonText
+                  }
+                >
+                  🔁 Déplacer une économie
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View
@@ -1533,6 +2903,229 @@ export default function PiloLifeScreen() {
                 </TouchableOpacity>
               </View>
             )}
+
+            {primaryProject &&
+            monitoringRecommendations.length >
+              0 ? (
+              <View
+                style={
+                  styles.boostCard
+                }
+              >
+                <View
+                  style={
+                    styles.boostHeader
+                  }
+                >
+                  <View
+                    style={{ flex: 1 }}
+                  >
+                    <Text
+                      style={
+                        styles.boostKicker
+                      }
+                    >
+                      🚀 ACCÉLÉRER CE PROJET
+                    </Text>
+
+                    <Text
+                      style={
+                        styles.boostTitle
+                      }
+                    >
+                      Fais avancer «{" "}
+                      {
+                        primaryProject.title
+                      }{" "}
+                      »
+                    </Text>
+
+                    <Text
+                      style={
+                        styles.boostText
+                      }
+                    >
+                      Pilo sélectionne les économies encore disponibles qui peuvent faire avancer ton objectif.
+                    </Text>
+                  </View>
+
+                  <View
+                    style={
+                      styles.potentialBadge
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.potentialLabel
+                      }
+                    >
+                      Potentiel
+                    </Text>
+
+                    <Text
+                      style={
+                        styles.potentialValue
+                      }
+                    >
+                      {
+                        totalMonitoringPotential
+                      }{" "}
+                      €/an
+                    </Text>
+
+                    {totalPotentialMonthsSaved >
+                    0 ? (
+                      <Text
+                        style={
+                          styles.potentialMonths
+                        }
+                      >
+                        ≈{" "}
+                        {
+                          totalPotentialMonthsSaved
+                        }{" "}
+                        mois gagnés
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+
+                <View
+                  style={
+                    styles.recommendationsList
+                  }
+                >
+                  {monitoringRecommendations.map(
+                    (
+                      recommendation
+                    ) => (
+                      <View
+                        key={
+                          recommendation.id
+                        }
+                        style={
+                          styles.recommendationCard
+                        }
+                      >
+                        <View
+                          style={
+                            styles.recommendationTop
+                          }
+                        >
+                          <View
+                            style={
+                              styles.recommendationIcon
+                            }
+                          >
+                            <Text
+                              style={
+                                styles.recommendationIconText
+                              }
+                            >
+                              {
+                                recommendation.icon
+                              }
+                            </Text>
+                          </View>
+
+                          <View
+                            style={
+                              styles.recommendationContent
+                            }
+                          >
+                            <Text
+                              style={
+                                styles.recommendationTitle
+                              }
+                              numberOfLines={
+                                2
+                              }
+                            >
+                              Optimiser{" "}
+                              {
+                                recommendation.label
+                              }
+                              {recommendation.provider
+                                ? ` chez ${recommendation.provider}`
+                                : ""}
+                            </Text>
+
+                            <Text
+                              style={
+                                styles.recommendationSaving
+                              }
+                            >
+                              Jusqu’à{" "}
+                              {
+                                recommendation.yearlySaving
+                              }{" "}
+                              €/an
+                            </Text>
+                          </View>
+
+                          <TouchableOpacity
+                            style={
+                              styles.recommendationButton
+                            }
+                            onPress={() =>
+                              void openMonitoringRecommendation(
+                                recommendation
+                              )
+                            }
+                            activeOpacity={
+                              0.85
+                            }
+                          >
+                            <Text
+                              style={
+                                styles.recommendationButtonText
+                              }
+                            >
+                              Voir
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <Text
+                          style={
+                            styles.recommendationReason
+                          }
+                        >
+                          Cette économie potentielle peut accélérer ton projet
+                          {recommendation.monthsSaved >
+                          0
+                            ? ` d’environ ${recommendation.monthsSaved} mois`
+                            : ""}
+                          . Elle ne sera ajoutée au projet qu’après validation du changement d’offre dans le Monitoring.
+                        </Text>
+                      </View>
+                    )
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={
+                    styles.monitoringButton
+                  }
+                  onPress={() =>
+                    void Linking.openURL(
+                      `${PILOECO_WEB_URL}/monitoring`
+                    )
+                  }
+                  activeOpacity={
+                    0.85
+                  }
+                >
+                  <Text
+                    style={
+                      styles.monitoringButtonText
+                    }
+                  >
+                    📊 Ouvrir le Monitoring
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
 
             <View
               style={
@@ -1963,6 +3556,806 @@ export default function PiloLifeScreen() {
 
       <Modal
         visible={
+          transferModalOpen
+        }
+        transparent
+        animationType="fade"
+        onRequestClose={
+          closeTransferModal
+        }
+      >
+        <View
+          style={
+            styles.modalBackdrop
+          }
+        >
+          <View
+            style={
+              styles.allocateModalCard
+            }
+          >
+            <View
+              style={
+                styles.modalHeader
+              }
+            >
+              <View
+                style={{ flex: 1 }}
+              >
+                <Text
+                  style={
+                    styles.modalKickerGreen
+                  }
+                >
+                  PILOLIFE
+                </Text>
+
+                <Text
+                  style={
+                    styles.modalTitle
+                  }
+                >
+                  Déplacer une économie
+                </Text>
+
+                <Text
+                  style={
+                    styles.allocateBalanceText
+                  }
+                >
+                  Corrige facilement une économie placée dans le mauvais projet.
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={
+                  styles.closeButton
+                }
+                onPress={
+                  closeTransferModal
+                }
+                disabled={
+                  transferLoading
+                }
+              >
+                <Text
+                  style={
+                    styles.closeButtonText
+                  }
+                >
+                  ✕
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={
+                styles.transferDirectionCard
+              }
+            >
+              <Text
+                style={
+                  styles.transferDirectionLabel
+                }
+              >
+                SENS DU TRANSFERT
+              </Text>
+
+              <Text
+                style={
+                  styles.transferDirectionText
+                }
+              >
+                {projects.find(
+                  (project) =>
+                    project.id ===
+                    transferSourceProjectId
+                )?.title ??
+                  "Projet source"}{" "}
+                →{" "}
+                {projects.find(
+                  (project) =>
+                    project.id ===
+                    transferDestinationProjectId
+                )?.title ??
+                  "Projet destination"}
+              </Text>
+
+              <TouchableOpacity
+                style={
+                  styles.swapTransferButton
+                }
+                onPress={
+                  swapTransferProjects
+                }
+                disabled={
+                  transferLoading
+                }
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={
+                    styles.swapTransferButtonText
+                  }
+                >
+                  🔄 Inverser le sens
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text
+              style={
+                styles.allocateFieldLabel
+              }
+            >
+              1. Depuis quel projet ?
+            </Text>
+
+            <ScrollView
+              style={
+                styles.transferProjectList
+              }
+              contentContainerStyle={
+                styles.allocateProjectsContent
+              }
+              showsVerticalScrollIndicator={
+                false
+              }
+            >
+              {projects
+                .filter(
+                  (project) =>
+                    Number(
+                      project.saved_amount ??
+                        0
+                    ) > 0
+                )
+                .map(
+                  (project) => {
+                    const selected =
+                      transferSourceProjectId ===
+                      project.id;
+
+                    return (
+                      <TouchableOpacity
+                        key={
+                          project.id
+                        }
+                        style={[
+                          styles.allocateProjectChoice,
+                          selected &&
+                            styles.allocateProjectChoiceSelected,
+                        ]}
+                        onPress={() => {
+                          const nextDestination =
+                            !transferDestinationProjectId ||
+                            transferDestinationProjectId ===
+                              project.id
+                              ? projects.find(
+                                  (item) =>
+                                    item.id !==
+                                    project.id
+                                )?.id ?? ""
+                              : transferDestinationProjectId;
+
+                          setTransferDirection({
+                            sourceId:
+                              project.id,
+                            destinationId:
+                              nextDestination,
+                          });
+
+                          setTransferAmount(
+                            String(
+                              Number(
+                                project.saved_amount ??
+                                  0
+                              )
+                            )
+                          );
+                        }}
+                        disabled={
+                          transferLoading
+                        }
+                      >
+                        <Text
+                          style={
+                            styles.allocateProjectIcon
+                          }
+                        >
+                          {getProjectIcon(
+                            project.category
+                          )}
+                        </Text>
+
+                        <View
+                          style={{
+                            flex: 1,
+                          }}
+                        >
+                          <Text
+                            style={
+                              styles.allocateProjectTitle
+                            }
+                          >
+                            {
+                              project.title
+                            }
+                          </Text>
+
+                          <Text
+                            style={
+                              styles.allocateProjectProgress
+                            }
+                          >
+                            Disponible à déplacer :{" "}
+                            {money(
+                              project.saved_amount
+                            )}
+                          </Text>
+                        </View>
+
+                        <Text
+                          style={
+                            styles.allocateProjectCheck
+                          }
+                        >
+                          {selected
+                            ? "✓"
+                            : "○"}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }
+                )}
+            </ScrollView>
+
+            <Text
+              style={
+                styles.allocateFieldLabel
+              }
+            >
+              2. Vers quel projet ?
+            </Text>
+
+            <ScrollView
+              style={
+                styles.transferProjectList
+              }
+              contentContainerStyle={
+                styles.allocateProjectsContent
+              }
+              showsVerticalScrollIndicator={
+                false
+              }
+            >
+              {projects
+                .filter(
+                  (project) =>
+                    project.id !==
+                    transferSourceProjectId
+                )
+                .map(
+                  (project) => {
+                    const selected =
+                      transferDestinationProjectId ===
+                      project.id;
+
+                    return (
+                      <TouchableOpacity
+                        key={
+                          project.id
+                        }
+                        style={[
+                          styles.allocateProjectChoice,
+                          selected &&
+                            styles.allocateProjectChoiceSelected,
+                        ]}
+                        onPress={() =>
+                          setTransferDirection(
+                            (current) => ({
+                              sourceId:
+                                current.sourceId,
+                              destinationId:
+                                project.id,
+                            })
+                          )
+                        }
+                        disabled={
+                          transferLoading
+                        }
+                      >
+                        <Text
+                          style={
+                            styles.allocateProjectIcon
+                          }
+                        >
+                          {getProjectIcon(
+                            project.category
+                          )}
+                        </Text>
+
+                        <View
+                          style={{
+                            flex: 1,
+                          }}
+                        >
+                          <Text
+                            style={
+                              styles.allocateProjectTitle
+                            }
+                          >
+                            {
+                              project.title
+                            }
+                          </Text>
+
+                          <Text
+                            style={
+                              styles.allocateProjectProgress
+                            }
+                          >
+                            {money(
+                              project.saved_amount
+                            )}{" "}
+                            /{" "}
+                            {money(
+                              project.target_amount
+                            )}
+                          </Text>
+                        </View>
+
+                        <Text
+                          style={
+                            styles.allocateProjectCheck
+                          }
+                        >
+                          {selected
+                            ? "✓"
+                            : "○"}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }
+                )}
+            </ScrollView>
+
+            <Text
+              style={
+                styles.allocateFieldLabel
+              }
+            >
+              3. Montant à déplacer
+            </Text>
+
+            <View
+              style={
+                styles.allocateAmountRow
+              }
+            >
+              <TextInput
+                style={
+                  styles.allocateAmountInput
+                }
+                value={
+                  transferAmount
+                }
+                onChangeText={
+                  setTransferAmount
+                }
+                keyboardType="decimal-pad"
+                placeholder="0"
+                placeholderTextColor="#64748b"
+                editable={
+                  !transferLoading
+                }
+              />
+
+              <Text
+                style={
+                  styles.allocateEuro
+                }
+              >
+                €
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.allocateConfirmButton,
+                transferLoading &&
+                  styles.disabledButton,
+              ]}
+              onPress={() =>
+                void transferProjectSaving()
+              }
+              disabled={
+                transferLoading
+              }
+              activeOpacity={
+                0.85
+              }
+            >
+              {transferLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#020617"
+                />
+              ) : (
+                <Text
+                  style={
+                    styles.allocateConfirmText
+                  }
+                >
+                  🔁 Déplacer cette économie
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={
+                styles.cancelButton
+              }
+              onPress={
+                closeTransferModal
+              }
+              disabled={
+                transferLoading
+              }
+            >
+              <Text
+                style={
+                  styles.cancelButtonText
+                }
+              >
+                Annuler
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={
+          allocateModalOpen
+        }
+        transparent
+        animationType="fade"
+        onRequestClose={
+          closeAllocateModal
+        }
+      >
+        <View
+          style={
+            styles.modalBackdrop
+          }
+        >
+          <View
+            style={
+              styles.allocateModalCard
+            }
+          >
+            <View
+              style={
+                styles.modalHeader
+              }
+            >
+              <View
+                style={{ flex: 1 }}
+              >
+                <Text
+                  style={
+                    styles.modalKickerGreen
+                  }
+                >
+                  CAGNOTTE PILO
+                </Text>
+
+                <Text
+                  style={
+                    styles.modalTitle
+                  }
+                >
+                  Investir dans un projet
+                </Text>
+
+                <Text
+                  style={
+                    styles.allocateBalanceText
+                  }
+                >
+                  Disponible :{" "}
+                  {money(
+                    wallet?.balance
+                  )}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={
+                  styles.closeButton
+                }
+                onPress={
+                  closeAllocateModal
+                }
+                disabled={
+                  allocationLoading
+                }
+              >
+                <Text
+                  style={
+                    styles.closeButtonText
+                  }
+                >
+                  ✕
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text
+              style={
+                styles.allocateFieldLabel
+              }
+            >
+              1. Choisis ton projet
+            </Text>
+
+            <ScrollView
+              style={
+                styles.allocateProjects
+              }
+              contentContainerStyle={
+                styles.allocateProjectsContent
+              }
+              showsVerticalScrollIndicator={
+                false
+              }
+            >
+              {projects.map(
+                (project) => {
+                  const selected =
+                    selectedProjectId ===
+                    project.id;
+
+                  return (
+                    <TouchableOpacity
+                      key={
+                        project.id
+                      }
+                      style={[
+                        styles.allocateProjectChoice,
+                        selected &&
+                          styles.allocateProjectChoiceSelected,
+                      ]}
+                      onPress={() =>
+                        setSelectedProjectId(
+                          project.id
+                        )
+                      }
+                      disabled={
+                        allocationLoading
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.allocateProjectIcon
+                        }
+                      >
+                        {getProjectIcon(
+                          project.category
+                        )}
+                      </Text>
+
+                      <View
+                        style={{
+                          flex: 1,
+                        }}
+                      >
+                        <Text
+                          style={
+                            styles.allocateProjectTitle
+                          }
+                        >
+                          {
+                            project.title
+                          }
+                        </Text>
+
+                        <Text
+                          style={
+                            styles.allocateProjectProgress
+                          }
+                        >
+                          {money(
+                            project.saved_amount
+                          )}{" "}
+                          /{" "}
+                          {money(
+                            project.target_amount
+                          )}
+                        </Text>
+                      </View>
+
+                      <Text
+                        style={
+                          styles.allocateProjectCheck
+                        }
+                      >
+                        {selected
+                          ? "✓"
+                          : "○"}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }
+              )}
+            </ScrollView>
+
+            <Text
+              style={
+                styles.allocateFieldLabel
+              }
+            >
+              2. Montant à investir
+            </Text>
+
+            <View
+              style={
+                styles.allocateAmountRow
+              }
+            >
+              <TextInput
+                style={
+                  styles.allocateAmountInput
+                }
+                value={
+                  allocationAmount
+                }
+                onChangeText={
+                  setAllocationAmount
+                }
+                keyboardType="decimal-pad"
+                placeholder="0"
+                placeholderTextColor="#64748b"
+                editable={
+                  !allocationLoading
+                }
+              />
+
+              <Text
+                style={
+                  styles.allocateEuro
+                }
+              >
+                €
+              </Text>
+            </View>
+
+            <View
+              style={
+                styles.allocateQuickRow
+              }
+            >
+              {[25, 50, 100].map(
+                (amount) => (
+                  <TouchableOpacity
+                    key={amount}
+                    style={
+                      styles.allocateQuickButton
+                    }
+                    onPress={() =>
+                      setAllocationAmount(
+                        String(
+                          Math.min(
+                            amount,
+                            Number(
+                              wallet?.balance ??
+                                0
+                            )
+                          )
+                        )
+                      )
+                    }
+                    disabled={
+                      allocationLoading
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.allocateQuickText
+                      }
+                    >
+                      {amount} €
+                    </Text>
+                  </TouchableOpacity>
+                )
+              )}
+
+              <TouchableOpacity
+                style={
+                  styles.allocateQuickButton
+                }
+                onPress={() =>
+                  setAllocationAmount(
+                    String(
+                      Number(
+                        wallet?.balance ??
+                          0
+                      )
+                    )
+                  )
+                }
+                disabled={
+                  allocationLoading
+                }
+              >
+                <Text
+                  style={
+                    styles.allocateQuickText
+                  }
+                >
+                  Tout
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.allocateConfirmButton,
+                allocationLoading &&
+                  styles.disabledButton,
+              ]}
+              onPress={() =>
+                void allocateWalletToSelectedProject()
+              }
+              disabled={
+                allocationLoading
+              }
+              activeOpacity={
+                0.85
+              }
+            >
+              {allocationLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#020617"
+                />
+              ) : (
+                <Text
+                  style={
+                    styles.allocateConfirmText
+                  }
+                >
+                  🌱 Faire avancer ce projet
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={
+                styles.cancelButton
+              }
+              onPress={
+                closeAllocateModal
+              }
+              disabled={
+                allocationLoading
+              }
+            >
+              <Text
+                style={
+                  styles.cancelButtonText
+                }
+              >
+                Annuler
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={
           settingsModalOpen
         }
         transparent
@@ -2207,6 +4600,235 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: "#ffffff",
     fontWeight: "900",
+  },
+
+  allocateWalletButton: {
+    marginTop: 16,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    backgroundColor: "#22c55e",
+  },
+
+  allocateWalletButtonDisabled: {
+    opacity: 0.45,
+  },
+
+  allocateWalletButtonText: {
+    color: "#020617",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  allocateWalletHint: {
+    marginTop: 8,
+    color: "#64748b",
+    fontSize: 9,
+    lineHeight: 14,
+    textAlign: "center",
+  },
+
+  allocateModalCard: {
+    width: "100%",
+    maxHeight: "88%",
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#0f172a",
+  },
+
+  modalKickerGreen: {
+    color: "#4ade80",
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+  },
+
+  allocateBalanceText: {
+    marginTop: 7,
+    color: "#86efac",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  allocateFieldLabel: {
+    marginTop: 18,
+    marginBottom: 9,
+    color: "#cbd5e1",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  allocateProjects: {
+    maxHeight: 245,
+  },
+
+  allocateProjectsContent: {
+    gap: 8,
+  },
+
+  allocateProjectChoice: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#020617",
+  },
+
+  allocateProjectChoiceSelected: {
+    borderColor: "#22c55e",
+    backgroundColor: "#052e16",
+  },
+
+  allocateProjectIcon: {
+    marginRight: 10,
+    fontSize: 22,
+  },
+
+  allocateProjectTitle: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  allocateProjectProgress: {
+    marginTop: 3,
+    color: "#94a3b8",
+    fontSize: 9,
+  },
+
+  allocateProjectCheck: {
+    marginLeft: 10,
+    color: "#4ade80",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  allocateAmountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#334155",
+    backgroundColor: "#020617",
+  },
+
+  allocateAmountInput: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  allocateEuro: {
+    paddingRight: 15,
+    color: "#4ade80",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+
+  allocateQuickRow: {
+    flexDirection: "row",
+    gap: 7,
+    marginTop: 9,
+  },
+
+  allocateQuickButton: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 9,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: "#334155",
+    backgroundColor: "#172033",
+  },
+
+  allocateQuickText: {
+    color: "#cbd5e1",
+    fontSize: 9,
+    fontWeight: "900",
+  },
+
+  allocateConfirmButton: {
+    marginTop: 18,
+    minHeight: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    backgroundColor: "#22c55e",
+  },
+
+  allocateConfirmText: {
+    color: "#020617",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  transferDirectionCard: {
+    marginTop: 14,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#334155",
+    backgroundColor: "#020617",
+  },
+
+  transferDirectionLabel: {
+    color: "#64748b",
+    fontSize: 8,
+    fontWeight: "900",
+    letterSpacing: 1.2,
+  },
+
+  transferDirectionText: {
+    marginTop: 6,
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+
+  swapTransferButton: {
+    marginTop: 10,
+    minHeight: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#7c3aed",
+    backgroundColor: "#2e1065",
+  },
+
+  swapTransferButtonText: {
+    color: "#e9d5ff",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  transferWalletButton: {
+    marginTop: 10,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#334155",
+    backgroundColor: "#172033",
+  },
+
+  transferWalletButtonText: {
+    color: "#e2e8f0",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+
+  transferProjectList: {
+    maxHeight: 160,
   },
 
   walletCard: {
@@ -2607,6 +5229,163 @@ const styles = StyleSheet.create({
 
   createButtonText: {
     color: "#020617",
+    fontWeight: "900",
+  },
+
+  boostCard: {
+    marginTop: 18,
+    padding: 18,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#14532d",
+    backgroundColor: "#071426",
+  },
+
+  boostHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+
+  boostKicker: {
+    color: "#4ade80",
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+  },
+
+  boostTitle: {
+    marginTop: 7,
+    color: "#ffffff",
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: "900",
+  },
+
+  boostText: {
+    marginTop: 7,
+    color: "#94a3b8",
+    fontSize: 11,
+    lineHeight: 17,
+  },
+
+  potentialBadge: {
+    minWidth: 105,
+    paddingHorizontal: 11,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#052e16",
+  },
+
+  potentialLabel: {
+    color: "#86efac",
+    fontSize: 8,
+    fontWeight: "800",
+  },
+
+  potentialValue: {
+    marginTop: 3,
+    color: "#22c55e",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  potentialMonths: {
+    marginTop: 3,
+    color: "#bbf7d0",
+    fontSize: 8,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+
+  recommendationsList: {
+    marginTop: 16,
+    gap: 10,
+  },
+
+  recommendationCard: {
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0f172a",
+  },
+
+  recommendationTop: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  recommendationIcon: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    backgroundColor: "#172033",
+  },
+
+  recommendationIconText: {
+    fontSize: 22,
+  },
+
+  recommendationContent: {
+    flex: 1,
+    marginLeft: 11,
+  },
+
+  recommendationTitle: {
+    color: "#ffffff",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "900",
+  },
+
+  recommendationSaving: {
+    marginTop: 3,
+    color: "#4ade80",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  recommendationButton: {
+    marginLeft: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: "#22c55e",
+  },
+
+  recommendationButtonText: {
+    color: "#020617",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  recommendationReason: {
+    marginTop: 10,
+    color: "#94a3b8",
+    fontSize: 9,
+    lineHeight: 14,
+  },
+
+  monitoringButton: {
+    marginTop: 14,
+    minHeight: 46,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#1d4ed8",
+    backgroundColor: "#172554",
+  },
+
+  monitoringButtonText: {
+    color: "#dbeafe",
+    fontSize: 11,
     fontWeight: "900",
   },
 

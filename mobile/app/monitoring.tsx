@@ -300,6 +300,33 @@ export default function MonitoringScreen() {
   const [deletingId, setDeletingId] =
     useState<string | null>(null);
 
+  const [
+    validatingContract,
+    setValidatingContract,
+  ] = useState<MonitoringContract | null>(
+    null
+  );
+
+  const [
+    validationProvider,
+    setValidationProvider,
+  ] = useState("");
+
+  const [
+    validationOffer,
+    setValidationOffer,
+  ] = useState("");
+
+  const [
+    validationPrice,
+    setValidationPrice,
+  ] = useState("");
+
+  const [
+    validatingSaving,
+    setValidatingSaving,
+  ] = useState(false);
+
   async function loadMonitoring() {
     try {
       setErrorMessage("");
@@ -678,6 +705,425 @@ export default function MonitoringScreen() {
       );
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function openValidateSaving(
+    contract: MonitoringContract
+  ) {
+    if (
+      contract.status
+        ?.toLowerCase()
+        .includes(
+          "économie validée"
+        )
+    ) {
+      Alert.alert(
+        "Déjà validé",
+        "Cette économie a déjà été validée."
+      );
+
+      return;
+    }
+
+    setValidatingContract(
+      contract
+    );
+
+    /*
+     * On ne préremplit volontairement PAS le nouveau
+     * fournisseur avec better_offer : cette donnée peut
+     * venir d'un ancien catalogue et ne doit jamais faire
+     * passer un faux partenaire pour un partenaire Pilo.
+     */
+    setValidationProvider("");
+    setValidationOffer("");
+    setValidationPrice("");
+  }
+
+  function closeValidateSaving() {
+    if (validatingSaving) {
+      return;
+    }
+
+    setValidatingContract(null);
+    setValidationProvider("");
+    setValidationOffer("");
+    setValidationPrice("");
+  }
+
+  async function validateSaving() {
+    if (
+      !validatingContract ||
+      validatingSaving
+    ) {
+      return;
+    }
+
+    const provider =
+      validationProvider.trim();
+
+    const offer =
+      validationOffer.trim();
+
+    const newMonthlyPrice =
+      Number(
+        validationPrice
+          .replace(",", ".")
+          .trim()
+      );
+
+    const oldMonthlyPrice =
+      Number(
+        validatingContract.monthly_price ??
+          0
+      );
+
+    if (!provider) {
+      Alert.alert(
+        "Nouveau fournisseur",
+        "Indique le fournisseur chez lequel tu as réellement souscrit."
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isFinite(
+        newMonthlyPrice
+      ) ||
+      newMonthlyPrice < 0
+    ) {
+      Alert.alert(
+        "Prix invalide",
+        "Indique le nouveau prix mensuel réellement souscrit."
+      );
+
+      return;
+    }
+
+    const yearlySaving =
+      Math.max(
+        0,
+        Math.round(
+          (oldMonthlyPrice -
+            newMonthlyPrice) *
+            12
+        )
+      );
+
+    if (yearlySaving <= 0) {
+      Alert.alert(
+        "Aucune économie calculée",
+        "Le nouveau prix n’est pas inférieur à ton ancien prix. Vérifie le montant saisi."
+      );
+
+      return;
+    }
+
+    try {
+      setValidatingSaving(true);
+
+      const {
+        data: { user },
+        error: userError,
+      } =
+        await supabase.auth.getUser();
+
+      if (userError || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      /*
+       * Vérification anti-double-crédit :
+       * une validation Monitoring ne doit alimenter
+       * la cagnotte qu'une seule fois.
+       */
+      const {
+        data: existingCredit,
+        error: existingCreditError,
+      } = await supabase
+        .from(
+          "pilolife_wallet_transactions"
+        )
+        .select("id")
+        .eq(
+          "user_id",
+          user.id
+        )
+        .eq(
+          "type",
+          "credit"
+        )
+        .eq(
+          "source",
+          "monitoring"
+        )
+        .eq(
+          "source_id",
+          validatingContract.id
+        )
+        .maybeSingle();
+
+      if (existingCreditError) {
+        throw existingCreditError;
+      }
+
+      if (existingCredit) {
+        throw new Error(
+          "Cette économie a déjà été ajoutée à PiloLife."
+        );
+      }
+
+      const {
+        data: wallet,
+        error: walletReadError,
+      } = await supabase
+        .from("pilolife_wallets")
+        .select("*")
+        .eq(
+          "user_id",
+          user.id
+        )
+        .maybeSingle();
+
+      if (walletReadError) {
+        throw walletReadError;
+      }
+
+      let currentWallet = wallet;
+
+      if (!currentWallet) {
+        const {
+          data: createdWallet,
+          error: createWalletError,
+        } = await supabase
+          .from(
+            "pilolife_wallets"
+          )
+          .insert({
+            user_id: user.id,
+            balance: 0,
+            total_credited: 0,
+            total_allocated: 0,
+            updated_at:
+              new Date().toISOString(),
+          })
+          .select("*")
+          .single();
+
+        if (createWalletError) {
+          throw createWalletError;
+        }
+
+        currentWallet =
+          createdWallet;
+      }
+
+      const previousBalance =
+        Number(
+          currentWallet.balance ??
+            0
+        );
+
+      const previousTotalCredited =
+        Number(
+          currentWallet.total_credited ??
+            0
+        );
+
+      const now =
+        new Date().toISOString();
+
+      /*
+       * Nouvelle règle PiloLife :
+       * une économie validée passe d'abord par la
+       * cagnotte. L'utilisateur choisit ensuite
+       * librement le projet dans lequel l'investir.
+       */
+      const {
+        error: walletUpdateError,
+      } = await supabase
+        .from("pilolife_wallets")
+        .update({
+          balance:
+            previousBalance +
+            yearlySaving,
+          total_credited:
+            previousTotalCredited +
+            yearlySaving,
+          updated_at: now,
+        })
+        .eq(
+          "user_id",
+          user.id
+        );
+
+      if (walletUpdateError) {
+        throw walletUpdateError;
+      }
+
+      const {
+        error: transactionError,
+      } = await supabase
+        .from(
+          "pilolife_wallet_transactions"
+        )
+        .insert({
+          user_id: user.id,
+          project_id: null,
+          type: "credit",
+          amount: yearlySaving,
+          source: "monitoring",
+          source_id:
+            validatingContract.id,
+          description:
+            `Économie Monitoring validée : ${yearlySaving} €/an`,
+        });
+
+      if (transactionError) {
+        await supabase
+          .from(
+            "pilolife_wallets"
+          )
+          .update({
+            balance:
+              previousBalance,
+            total_credited:
+              previousTotalCredited,
+            updated_at:
+              new Date().toISOString(),
+          })
+          .eq(
+            "user_id",
+            user.id
+          );
+
+        throw transactionError;
+      }
+
+      const {
+        data: updatedContract,
+        error: contractUpdateError,
+      } = await supabase
+        .from(
+          "monitoring_contracts"
+        )
+        .update({
+          provider,
+          current_offer:
+            offer || null,
+          monthly_price:
+            newMonthlyPrice,
+          previous_price:
+            oldMonthlyPrice,
+          better_offer: null,
+          yearly_saving: 0,
+          status:
+            "Économie validée",
+          last_price_change_at:
+            now,
+          last_checked_at: now,
+          updated_at: now,
+        })
+        .eq(
+          "id",
+          validatingContract.id
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .select("*")
+        .single();
+
+      if (contractUpdateError) {
+        /*
+         * Si le contrat ne peut pas être mis à jour,
+         * on annule également le crédit pour ne pas
+         * laisser une validation partielle.
+         */
+        await Promise.all([
+          supabase
+            .from(
+              "pilolife_wallets"
+            )
+            .update({
+              balance:
+                previousBalance,
+              total_credited:
+                previousTotalCredited,
+              updated_at:
+                new Date().toISOString(),
+            })
+            .eq(
+              "user_id",
+              user.id
+            ),
+
+          supabase
+            .from(
+              "pilolife_wallet_transactions"
+            )
+            .delete()
+            .eq(
+              "user_id",
+              user.id
+            )
+            .eq(
+              "type",
+              "credit"
+            )
+            .eq(
+              "source",
+              "monitoring"
+            )
+            .eq(
+              "source_id",
+              validatingContract.id
+            ),
+        ]);
+
+        throw contractUpdateError;
+      }
+
+      setContracts(
+        (current) =>
+          current.map(
+            (contract) =>
+              contract.id ===
+              validatingContract.id
+                ? (updatedContract as MonitoringContract)
+                : contract
+          )
+      );
+
+      setValidatingContract(null);
+      setValidationProvider("");
+      setValidationOffer("");
+      setValidationPrice("");
+
+      Alert.alert(
+        "Économie validée 🎉",
+        `${yearlySaving.toLocaleString(
+          "fr-FR"
+        )} € ont été ajoutés à ta cagnotte PiloLife. Tu peux maintenant choisir le projet que tu veux faire avancer.`
+      );
+    } catch (error) {
+      console.error(
+        "Erreur validation économie Monitoring :",
+        error
+      );
+
+      Alert.alert(
+        "Validation impossible",
+        error instanceof Error
+          ? error.message
+          : "Impossible de valider cette économie."
+      );
+    } finally {
+      setValidatingSaving(false);
     }
   }
 
@@ -1069,6 +1515,29 @@ export default function MonitoringScreen() {
                             Voir la mission →
                           </Text>
                         </TouchableOpacity>
+
+                        {contract.status !==
+                        "Économie validée" ? (
+                          <TouchableOpacity
+                            style={
+                              styles.validatedOfferButton
+                            }
+                            onPress={() =>
+                              openValidateSaving(
+                                contract
+                              )
+                            }
+                            activeOpacity={0.85}
+                          >
+                            <Text
+                              style={
+                                styles.validatedOfferButtonText
+                              }
+                            >
+                              ✅ J’ai changé d’offre
+                            </Text>
+                          </TouchableOpacity>
+                        ) : null}
                       </View>
                     ) : null}
 
@@ -1132,6 +1601,295 @@ export default function MonitoringScreen() {
 
       <View style={styles.bottomSpace} />
       </ScrollView>
+
+      <Modal
+        visible={
+          validatingContract !==
+          null
+        }
+        transparent
+        animationType="slide"
+        onRequestClose={
+          closeValidateSaving
+        }
+      >
+        <View
+          style={
+            styles.modalBackdrop
+          }
+        >
+          <View
+            style={
+              styles.modalCard
+            }
+          >
+            <ScrollView
+              showsVerticalScrollIndicator={
+                false
+              }
+              keyboardShouldPersistTaps="handled"
+            >
+              <View
+                style={
+                  styles.modalHeader
+                }
+              >
+                <View
+                  style={{ flex: 1 }}
+                >
+                  <Text
+                    style={
+                      styles.validationKicker
+                    }
+                  >
+                    ÉCONOMIE RÉALISÉE
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.modalTitle
+                    }
+                  >
+                    J’ai changé d’offre ✅
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.validationIntro
+                    }
+                  >
+                    Renseigne ce que tu as réellement souscrit. Pilo calculera l’économie à partir de ton ancien prix.
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={
+                    styles.closeButton
+                  }
+                  onPress={
+                    closeValidateSaving
+                  }
+                  disabled={
+                    validatingSaving
+                  }
+                >
+                  <Text
+                    style={
+                      styles.closeButtonText
+                    }
+                  >
+                    ✕
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {validatingContract ? (
+                <View
+                  style={
+                    styles.validationOldContract
+                  }
+                >
+                  <Text
+                    style={
+                      styles.validationOldLabel
+                    }
+                  >
+                    Ancien contrat
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.validationOldValue
+                    }
+                  >
+                    {validatingContract.provider} —{" "}
+                    {formatMoney(
+                      validatingContract.monthly_price
+                    )}{" "}
+                    €/mois
+                  </Text>
+                </View>
+              ) : null}
+
+              <Text
+                style={
+                  styles.fieldLabel
+                }
+              >
+                Nouveau fournisseur
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                value={
+                  validationProvider
+                }
+                onChangeText={
+                  setValidationProvider
+                }
+                placeholder="Ex. APRIL, Leocare, OHM..."
+                placeholderTextColor="#64748b"
+                editable={
+                  !validatingSaving
+                }
+              />
+
+              <Text
+                style={
+                  styles.fieldLabel
+                }
+              >
+                Nouvelle offre
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                value={
+                  validationOffer
+                }
+                onChangeText={
+                  setValidationOffer
+                }
+                placeholder="Nom de l’offre (facultatif)"
+                placeholderTextColor="#64748b"
+                editable={
+                  !validatingSaving
+                }
+              />
+
+              <Text
+                style={
+                  styles.fieldLabel
+                }
+              >
+                Nouveau prix mensuel
+              </Text>
+
+              <TextInput
+                style={styles.input}
+                value={
+                  validationPrice
+                }
+                onChangeText={
+                  setValidationPrice
+                }
+                placeholder="Ex. 42.90"
+                placeholderTextColor="#64748b"
+                keyboardType="decimal-pad"
+                editable={
+                  !validatingSaving
+                }
+              />
+
+              {validatingContract &&
+              Number(
+                validationPrice
+                  .replace(",", ".")
+              ) >= 0 &&
+              validationPrice.trim() !==
+                "" ? (
+                <View
+                  style={
+                    styles.validationSavingPreview
+                  }
+                >
+                  <Text
+                    style={
+                      styles.validationSavingPreviewLabel
+                    }
+                  >
+                    Économie calculée
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.validationSavingPreviewValue
+                    }
+                  >
+                    {Math.max(
+                      0,
+                      Math.round(
+                        (Number(
+                          validatingContract.monthly_price ??
+                            0
+                        ) -
+                          Number(
+                            validationPrice.replace(
+                              ",",
+                              "."
+                            )
+                          )) *
+                          12
+                      )
+                    ).toLocaleString(
+                      "fr-FR"
+                    )}{" "}
+                    €/an
+                  </Text>
+                </View>
+              ) : null}
+
+              <Text
+                style={
+                  styles.validationNotice
+                }
+              >
+                Cette économie sera d’abord ajoutée à ta cagnotte PiloLife. Tu choisiras ensuite le projet dans lequel l’investir.
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.validationConfirmButton,
+                  validatingSaving &&
+                    styles.disabledButton,
+                ]}
+                onPress={() =>
+                  void validateSaving()
+                }
+                disabled={
+                  validatingSaving
+                }
+                activeOpacity={0.85}
+              >
+                {validatingSaving ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#020617"
+                  />
+                ) : (
+                  <Text
+                    style={
+                      styles.validationConfirmButtonText
+                    }
+                  >
+                    ✅ Valider mon changement d’offre
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={
+                  styles.cancelButton
+                }
+                onPress={
+                  closeValidateSaving
+                }
+                disabled={
+                  validatingSaving
+                }
+              >
+                <Text
+                  style={
+                    styles.cancelButtonText
+                  }
+                >
+                  Annuler
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={editOpen}
@@ -1639,6 +2397,103 @@ const styles = StyleSheet.create({
   opportunityButtonText: {
     color: "#020617",
     fontSize: 10,
+    fontWeight: "900",
+  },
+
+  validatedOfferButton: {
+    marginTop: 9,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#052e16",
+  },
+
+  validatedOfferButtonText: {
+    color: "#86efac",
+    fontSize: 10,
+    fontWeight: "900",
+  },
+
+  validationKicker: {
+    color: "#4ade80",
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+  },
+
+  validationIntro: {
+    marginTop: 8,
+    color: "#94a3b8",
+    fontSize: 10,
+    lineHeight: 16,
+  },
+
+  validationOldContract: {
+    padding: 13,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#020617",
+  },
+
+  validationOldLabel: {
+    color: "#64748b",
+    fontSize: 8,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+
+  validationOldValue: {
+    marginTop: 5,
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  validationSavingPreview: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#052e16",
+  },
+
+  validationSavingPreviewLabel: {
+    color: "#86efac",
+    fontSize: 9,
+    fontWeight: "800",
+  },
+
+  validationSavingPreviewValue: {
+    marginTop: 5,
+    color: "#4ade80",
+    fontSize: 22,
+    fontWeight: "900",
+  },
+
+  validationNotice: {
+    marginTop: 14,
+    color: "#94a3b8",
+    fontSize: 10,
+    lineHeight: 16,
+  },
+
+  validationConfirmButton: {
+    marginTop: 20,
+    minHeight: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    backgroundColor: "#22c55e",
+  },
+
+  validationConfirmButtonText: {
+    color: "#020617",
+    fontSize: 12,
     fontWeight: "900",
   },
 
