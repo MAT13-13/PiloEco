@@ -34,6 +34,7 @@ type AnalyseCategory =
   | "creditImmobilier"
   | "diagnosticImmobilier"
   | "mutuelleSenior"
+  | "mutuelleProfessionnelle"
   | "epargneRetraite"
   | "motoEquipement"
   | "crypto"
@@ -94,6 +95,7 @@ const missionRoutes: Record<
   creditImmobilier: "/missions/credit-immobilier",
   diagnosticImmobilier: "/missions/diagnostic-immobilier",
   mutuelleSenior: "/missions/mutuelle-senior",
+  mutuelleProfessionnelle: "/missions/mutuelle-professionnelle",
   epargneRetraite: "/missions/epargne-retraite",
   motoEquipement: "/missions/moto-equipement",
   crypto: "/missions/crypto",
@@ -136,6 +138,7 @@ const categoryDescriptions: Record<
   creditImmobilier: "Crédit immobilier",
   diagnosticImmobilier: "Diagnostic immobilier",
   mutuelleSenior: "Mutuelle Senior",
+  mutuelleProfessionnelle: "Mutuelle Professionnelle",
   epargneRetraite: "Épargne & retraite",
   motoEquipement: "Moto & équipement",
   crypto: "Cryptomonnaies",
@@ -166,6 +169,7 @@ function formatFieldLabel(key: string) {
     housingType: "Type de bien",
     goal: "Objectif",
     availability: "Disponibilité",
+    activityType: "Situation professionnelle",
   };
 
   return labels[key] ?? key;

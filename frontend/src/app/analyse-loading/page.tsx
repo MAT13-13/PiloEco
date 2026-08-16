@@ -38,6 +38,7 @@ type AnalyseCategory =
   | "creditImmobilier"
   | "diagnosticImmobilier"
   | "mutuelleSenior"
+  | "mutuelleProfessionnelle"
   | "epargneRetraite"
   | "motoEquipement"
   | "crypto"
@@ -87,6 +88,7 @@ const categoryDescriptions: Record<
   creditImmobilier: "Crédit immobilier",
   diagnosticImmobilier: "Diagnostic immobilier",
   mutuelleSenior: "Mutuelle Senior",
+  mutuelleProfessionnelle: "Mutuelle Professionnelle",
   epargneRetraite: "Épargne & retraite",
   motoEquipement: "Moto & équipement",
   crypto: "Cryptomonnaies",
@@ -158,6 +160,7 @@ const loadingSteps: Record<
   assuranceObseques: genericPartnerSteps,
   creditImmobilier: genericPartnerSteps,
   mutuelleSenior: genericPartnerSteps,
+  mutuelleProfessionnelle: genericPartnerSteps,
   epargneRetraite: genericPartnerSteps,
   motoEquipement: genericPartnerSteps,
   crypto: genericPartnerSteps,

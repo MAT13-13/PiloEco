@@ -36,6 +36,7 @@ type AnalyseCategory =
   | "creditImmobilier"
   | "diagnosticImmobilier"
   | "mutuelleSenior"
+  | "mutuelleProfessionnelle"
   | "epargneRetraite"
   | "motoEquipement"
   | "crypto"
@@ -527,7 +528,7 @@ const categories: Record<
 
   ambassadeur: {
     label: "Ambassadeur GSelect",
-    icon: "💼",
+    icon: "💶",
     message:
       "Je vais t'aider à vérifier si une activité d'ambassadeur peut correspondre à ton profil et à tes disponibilités.",
     questions: [
@@ -645,6 +646,41 @@ const categories: Record<
       },
     ],
   },
+
+  mutuelleProfessionnelle: {
+  label: "Mutuelle Professionnelle",
+  icon: "💼",
+  message:
+    "Je vais t’aider à identifier une solution de mutuelle professionnelle adaptée à ton activité.",
+  questions: [
+    {
+      key: "activityType",
+      type: "select",
+      emoji: "💼",
+      title: "Quelle est ta situation professionnelle ?",
+      description:
+        "Choisis la situation qui correspond le mieux à ton activité.",
+      options: [
+        "Indépendant / TNS",
+        "Auto-entrepreneur",
+        "Profession libérale",
+        "Artisan",
+        "Commerçant",
+        "Chef d’entreprise",
+        "Autre",
+      ],
+    },
+    {
+      key: "budget",
+      type: "number",
+      emoji: "💶",
+      title: "Quel budget souhaites-tu prévoir ?",
+      description:
+        "Indique ton budget mensuel approximatif pour ta mutuelle.",
+      placeholder: "Ex : 60",
+    },
+  ],
+},
 
   epargneRetraite: {
     label: "Épargne & retraite",
@@ -792,6 +828,7 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "telephone",
   "telephoneSenior",
   "siteInternetPro",
+  "mutuelleProfessionnelle",
   "animaux",
   "assuranceEmprunteur",
   "ambassadeur",
@@ -849,6 +886,7 @@ const missionSlugToAnalyseCategory: Record<
   "assurance-habitation": "habitation",
   "travaux": "travaux",
   "mutuelle-senior": "mutuelleSenior",
+  "mutuelle-professionnelle": "mutuelleProfessionnelle",
   "epargne-retraite": "epargneRetraite",
   "auto": "auto",
   "assurance-auto": "auto",
