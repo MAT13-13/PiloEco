@@ -19,7 +19,7 @@ export default function AmbassadeurMissionPage() {
         <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900">
           <div className="p-8 md:p-12">
             <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
-              💼 Opportunité Pilo
+              💶 Opportunité Pilo
             </p>
 
             <h1 className="mt-4 max-w-3xl text-4xl font-black md:text-5xl">
@@ -122,7 +122,7 @@ export default function AmbassadeurMissionPage() {
                 rel="noopener noreferrer sponsored"
                 className="inline-flex rounded-2xl bg-green-500 px-8 py-4 text-lg font-black text-slate-950 transition hover:bg-green-400"
               >
-                💼 Devenir Ambassadeur GSelect →
+                💶 Devenir Ambassadeur GSelect →
               </a>
 
               <p className="mx-auto mt-4 max-w-xl text-xs leading-5 text-slate-500">
