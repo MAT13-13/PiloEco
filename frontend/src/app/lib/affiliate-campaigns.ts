@@ -1,6 +1,10 @@
-export type AffiliateProvider = "91m2";
+export type AffiliateProvider =
+  | "91m2"
+  | "affilae";
 
-export type AffiliateModel = "CPL";
+export type AffiliateModel =
+  | "CPL"
+  | "CPS";
 
 export type AffiliateStatus =
   | "approved"
@@ -40,8 +44,8 @@ export type AffiliateCampaign = {
    * URL d'affiliation / URL trackée.
    *
    * IMPORTANT :
-   * on ne met jamais l'URL finale comparateur-en-ligne.fr ici.
-   * On utilise uniquement l'URL trackée stella-2 fournie par 91m2.
+   * on utilise toujours le lien tracké fourni par la plateforme
+   * ou directement par le partenaire.
    */
   trackingUrl: string;
 
@@ -936,6 +940,60 @@ export const affiliateCampaigns: AffiliateCampaign[] = [
         "crédit garanti",
         "acceptation garantie",
       ],
+    },
+  },
+
+  {
+    id: 20001,
+    provider: "affilae",
+    name: "JD2M comptable LMNP",
+    slug: "jd2m-comptable-lmnp",
+    model: "CPS",
+    payout: 10,
+    status: "approved",
+    universe: "investissement",
+    category: "Comptabilité LMNP",
+
+    trackingUrl:
+      "https://www.jedeclaremonmeuble.com/offres-comptabilite-lmnp/?utm_source=affilae&utm_campaign=partenariat&utm_content=218&ae=218",
+
+    support: "text-link",
+    integrated: true,
+    published: true,
+    endDate: null,
+
+    title: "JD2M – Accompagnement comptable LMNP",
+
+    description:
+      "Découvrez une solution spécialisée pour accompagner les propriétaires en location meublée dans leur comptabilité et leurs démarches fiscales.",
+
+    buttonLabel: "Découvrir la solution LMNP",
+
+    tags: [
+      "lmnp",
+      "location meublee",
+      "location meublée",
+      "immobilier",
+      "proprietaire bailleur",
+      "propriétaire bailleur",
+      "comptabilite",
+      "comptabilité",
+      "declaration fiscale",
+      "déclaration fiscale",
+      "regime reel",
+      "régime réel",
+      "investissement locatif",
+    ],
+
+    compliance: {
+      regulated: false,
+      avoidClaims: [
+        "économie fiscale garantie",
+        "réduction d'impôt garantie",
+        "meilleur régime garanti",
+      ],
+      note:
+        "La fiscalité et les obligations déclaratives dépendent de la situation de chaque propriétaire.",
     },
   },
 ];

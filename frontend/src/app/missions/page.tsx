@@ -18,14 +18,130 @@ type MissionCatalog = {
   is_premium: boolean;
 };
 
+type MissionUniverse = {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  slugs: string[];
+};
+
+const missionUniverses: MissionUniverse[] = [
+  {
+    id: "famille-quotidien",
+    label: "Famille & Quotidien",
+    icon: "👨‍👩‍👧",
+    description: "Aides, quotidien et solutions utiles pour la famille.",
+    slugs: ["famille", "beaute-artisanat"],
+  },
+  {
+    id: "sante-protection",
+    label: "Santé & Protection",
+    icon: "❤️",
+    description: "Santé, assurances et solutions de protection.",
+    slugs: [
+      "mutuelle",
+      "mutuelle-sante",
+      "mutuelle-senior",
+      "mutuelle-professionnelle",
+      "animaux",
+      "assurance-animaux",
+      "assurance-emprunteur",
+      "assurance-obseques",
+      "ambassadeur",
+      "ambassadeur-gselect",
+    ],
+  },
+  {
+    id: "energie-telecoms",
+    label: "Énergie & Télécoms",
+    icon: "⚡",
+    description: "Électricité, gaz, téléphone et connexion Internet.",
+    slugs: [
+      "electricite",
+      "gaz",
+      "mobile",
+      "telephone",
+      "telephone-senior",
+      "internet",
+    ],
+  },
+  {
+    id: "maison-immobilier",
+    label: "Maison & Immobilier",
+    icon: "🏠",
+    description: "Logement, immobilier, travaux, sécurité et déménagement.",
+    slugs: [
+      "credit-immobilier",
+      "diagnostic-immobilier",
+      "location-meublee",
+      "habitation",
+      "assurance-habitation",
+      "travaux",
+      "securite",
+      "alarme-securite",
+      "demenagement",
+      "debarras",
+    ],
+  },
+  {
+    id: "auto-moto-mobilite",
+    label: "Auto, Moto & Mobilité",
+    icon: "🚗",
+    description: "Assurances, entretien, équipement et nouvelles mobilités.",
+    slugs: [
+      "auto",
+      "assurance-auto",
+      "moto",
+      "assurance-moto",
+      "services-auto",
+      "service-auto",
+      "moto-equipement",
+      "mobilites-douces",
+    ],
+  },
+  {
+    id: "finance-patrimoine",
+    label: "Finance & Patrimoine",
+    icon: "💰",
+    description: "Épargne, patrimoine, banque et solutions financières.",
+    slugs: [
+      "epargne-retraite",
+      "crypto",
+      "cryptomonnaies",
+      "banque",
+    ],
+  },
+  {
+    id: "pro-numerique",
+    label: "Pro & Numérique",
+    icon: "💼",
+    description: "Solutions professionnelles et services numériques.",
+    slugs: [
+      "site-internet-pro",
+      "formation",
+      "cybersecurite",
+      "services-entreprises",
+      "logiciels",
+      "streaming",
+    ],
+  },
+  {
+    id: "voyages-loisirs",
+    label: "Voyages & Loisirs",
+    icon: "✈️",
+    description: "Voyages et solutions adaptées à tes projets de loisirs.",
+    slugs: ["voyage"],
+  },
+];
+
 export default function MissionsPage() {
   const [availableMissions, setAvailableMissions] = useState<
     MissionCatalog[]
   >([]);
 
-  const [pendingMissions, setPendingMissions] = useState<
-    MissionCatalog[]
-  >([]);
+  const [selectedUniverse, setSelectedUniverse] =
+    useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -85,12 +201,6 @@ export default function MissionsPage() {
           )
         );
 
-        setPendingMissions(
-          missions.filter(
-            (mission) =>
-              mission.status === "pending"
-          )
-        );
       } catch (error) {
         console.error(
           "Erreur inattendue mission_catalog :",
@@ -116,6 +226,18 @@ export default function MissionsPage() {
     };
   }, []);
 
+  const activeUniverse = selectedUniverse
+    ? missionUniverses.find(
+        (universe) => universe.id === selectedUniverse
+      ) ?? null
+    : null;
+
+  const activeUniverseMissions = activeUniverse
+    ? availableMissions.filter((mission) =>
+        activeUniverse.slugs.includes(mission.slug)
+      )
+    : [];
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl">
@@ -128,16 +250,14 @@ export default function MissionsPage() {
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-          Découvre les solutions déjà disponibles
-          et les nouvelles catégories que Pilo prépare.
+          Choisis un univers pour retrouver rapidement les missions et solutions disponibles.
         </p>
 
         <PiloNavigation />
 
-        {/* RÉSUMÉ */}
         {!loading && !errorMessage && (
-          <section className="mt-8 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4">
+          <section className="mt-8">
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4 sm:max-w-sm">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-green-400">
                 Disponibles
               </p>
@@ -150,42 +270,23 @@ export default function MissionsPage() {
                 missions accessibles maintenant
               </p>
             </div>
-
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-400">
-                En préparation
-              </p>
-
-              <p className="mt-2 text-3xl font-black text-white">
-                {pendingMissions.length}
-              </p>
-
-              <p className="mt-1 text-xs text-slate-500">
-                catégories en cours de partenariat
-              </p>
-            </div>
           </section>
         )}
 
-        {/* CHARGEMENT */}
         {loading && (
           <div className="mt-10 rounded-3xl border border-green-500/20 bg-green-500/5 p-8 text-center">
-            <div className="text-4xl">
-              🐦
-            </div>
+            <div className="text-4xl">🐦</div>
 
             <p className="mt-4 font-black text-green-300">
               Pilo prépare tes missions...
             </p>
 
             <p className="mt-2 text-sm text-slate-500">
-              Les solutions disponibles sont en cours
-              de chargement.
+              Les solutions disponibles sont en cours de chargement.
             </p>
           </div>
         )}
 
-        {/* ERREUR */}
         {!loading && errorMessage && (
           <div className="mt-10 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
             <p className="font-black text-red-300">
@@ -198,140 +299,137 @@ export default function MissionsPage() {
           </div>
         )}
 
-        {!loading && !errorMessage && (
-          <>
-            {/* MISSIONS DISPONIBLES */}
-            <section className="mt-10">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400 sm:text-sm">
-                  Disponibles maintenant
-                </p>
+        {!loading && !errorMessage && !activeUniverse && (
+          <section className="mt-10">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400 sm:text-sm">
+              Univers Pilo
+            </p>
 
-                <h2 className="mt-2 text-2xl font-black">
-                  Missions disponibles
-                </h2>
+            <h2 className="mt-2 text-2xl font-black">
+              Choisis ton domaine
+            </h2>
 
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                  Ces missions disposent déjà
-                  d&apos;une solution ou d&apos;un
-                  partenaire sélectionné par Pilo.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+              Seules les missions actuellement disponibles sont affichées.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {missionUniverses.map((universe) => {
+                const count = availableMissions.filter(
+                  (mission) =>
+                    universe.slugs.includes(mission.slug)
+                ).length;
+
+                return (
+                  <button
+                    key={universe.id}
+                    type="button"
+                    onClick={() =>
+                      setSelectedUniverse(universe.id)
+                    }
+                    className="group rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-5xl">
+                        {universe.icon}
+                      </span>
+
+                      <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-bold text-slate-400 group-hover:border-green-500/30 group-hover:text-green-300">
+                        {count} mission{count > 1 ? "s" : ""}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-5 text-xl font-black">
+                      {universe.label}
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {universe.description}
+                    </p>
+
+                    <p className="mt-5 text-sm font-bold text-green-400">
+                      Voir les missions →
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {!loading && !errorMessage && activeUniverse && (
+          <section className="mt-10">
+            <button
+              type="button"
+              onClick={() => setSelectedUniverse(null)}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400"
+            >
+              ← Retour aux univers
+            </button>
+
+            <div className="mt-8">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400">
+                {activeUniverse.icon} Univers Pilo
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black">
+                {activeUniverse.label}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                {activeUniverse.description}
+              </p>
+            </div>
+
+            {activeUniverseMissions.length === 0 ? (
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+                <p className="font-bold text-white">
+                  Aucune mission disponible actuellement dans cet univers.
                 </p>
               </div>
+            ) : (
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {activeUniverseMissions.map((mission) => {
+                  const missionRoute =
+                    mission.route ||
+                    `/missions/${mission.slug}`;
 
-              {availableMissions.length === 0 ? (
-                <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-                  <p className="font-bold text-white">
-                    Aucune mission disponible
-                  </p>
+                  return (
+                    <Link
+                      key={mission.id}
+                      href={missionRoute}
+                      className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800 sm:p-6"
+                    >
+                      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
 
-                  <p className="mt-2 text-sm text-slate-400">
-                    Pilo prépare actuellement de
-                    nouvelles solutions.
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {availableMissions.map(
-                    (mission) => {
-                      const missionRoute =
-                        mission.route ||
-                        `/missions/${mission.slug}`;
-
-                      return (
-                        <Link
-                          key={mission.id}
-                          href={missionRoute}
-                          className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800 sm:p-6"
-                        >
-                          <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
-
-                          {mission.is_premium && (
-                            <div className="absolute right-4 top-4 rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-purple-300">
-                              Premium
-                            </div>
-                          )}
-
-                          <div className="relative">
-                            <div className="text-3xl sm:text-4xl">
-                              {mission.icon}
-                            </div>
-
-                            <h2 className="mt-4 pr-16 text-lg font-black leading-6 sm:text-xl">
-                              {mission.title}
-                            </h2>
-
-                            <p className="mt-2 text-xs leading-5 text-slate-500 transition group-hover:text-green-300 sm:text-sm">
-                              {mission.slug ===
-                              "ambassadeur"
-                                ? "Découvrir l'opportunité →"
-                                : "Voir les recommandations →"}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    }
-                  )}
-                </div>
-              )}
-            </section>
-
-            {/* MISSIONS EN COURS DE PARTENARIAT */}
-            {pendingMissions.length > 0 && (
-              <section className="mt-14 border-t border-slate-800 pt-10 sm:mt-20 sm:pt-12">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-400 sm:text-sm">
-                    Prochainement
-                  </p>
-
-                  <h2 className="mt-2 text-2xl font-black">
-                    En cours de partenariat
-                  </h2>
-
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                    Pilo prépare actuellement de
-                    nouvelles solutions pour ces
-                    catégories. Elles seront
-                    disponibles dès qu&apos;un
-                    partenaire adapté aura été
-                    sélectionné.
-                  </p>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {pendingMissions.map(
-                    (mission) => (
-                      <div
-                        key={mission.id}
-                        className="relative overflow-hidden rounded-2xl border border-amber-500/15 bg-slate-900/60 p-5 sm:p-6"
-                      >
-                        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-500/5 blur-2xl" />
-
-                        <div className="relative">
-                          <div className="mb-4 flex items-start justify-between gap-3">
-                            <div className="text-3xl sm:text-4xl">
-                              {mission.icon}
-                            </div>
-
-                            <div className="max-w-[150px] rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-center text-[9px] font-black uppercase leading-4 text-amber-300">
-                              En cours de partenariat
-                            </div>
-                          </div>
-
-                          <h2 className="text-lg font-black leading-6 sm:text-xl">
-                            {mission.title}
-                          </h2>
-
-                          <p className="mt-2 text-xs leading-5 text-slate-500 sm:text-sm">
-                            Solution partenaire en préparation
-                          </p>
+                      {mission.is_premium && (
+                        <div className="absolute right-4 top-4 rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-purple-300">
+                          Premium
                         </div>
+                      )}
+
+                      <div className="relative">
+                        <div className="text-3xl sm:text-4xl">
+                          {mission.icon}
+                        </div>
+
+                        <h3 className="mt-4 pr-16 text-lg font-black leading-6 sm:text-xl">
+                          {mission.title}
+                        </h3>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500 transition group-hover:text-green-300 sm:text-sm">
+                          {mission.slug === "ambassadeur" ||
+                          mission.slug === "ambassadeur-gselect"
+                            ? "Découvrir l'opportunité →"
+                            : "Voir les recommandations →"}
+                        </p>
                       </div>
-                    )
-                  )}
-                </div>
-              </section>
+                    </Link>
+                  );
+                })}
+              </div>
             )}
-          </>
+          </section>
         )}
 
         <div className="h-10" />

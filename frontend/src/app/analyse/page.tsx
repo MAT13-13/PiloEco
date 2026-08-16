@@ -43,6 +43,7 @@ type AnalyseCategory =
   | "cybersecurite"
   | "servicesEntreprises"
   | "debarras"
+  | "locationMeublee"
   | "gaz";
 
 type QuestionType =
@@ -784,6 +785,29 @@ const categories: Record<
     ],
   },
 
+
+  locationMeublee: {
+  label: "Location meublée & LMNP",
+  icon: "🏘️",
+  message:
+    "Je vais t’orienter vers la mission adaptée à ton projet de location meublée.",
+  questions: [
+    {
+      key: "locationNeed",
+      type: "select",
+      emoji: "🏘️",
+      title: "Tu as un projet de location meublée ?",
+      description:
+        "Pilo va t’orienter vers la mission dédiée à la location meublée et au statut LMNP.",
+      options: [
+        "Oui, je loue déjà un logement meublé",
+        "Oui, j’ai un projet de location meublée",
+        "Je souhaite simplement me renseigner",
+      ],
+    },
+  ],
+},
+
   gaz: {
     label: "Gaz",
     icon: "🔥",
@@ -821,6 +845,145 @@ type AnalyseCatalogEntry = {
   config: CategoryConfig | null;
 };
 
+type AnalyseUniverse =
+  | "familleQuotidien"
+  | "santeProtection"
+  | "energieTelecoms"
+  | "maisonImmobilier"
+  | "autoMotoMobilite"
+  | "financePatrimoine"
+  | "proNumerique"
+  | "voyagesLoisirs";
+
+type UniverseConfig = {
+  label: string;
+  icon: string;
+  description: string;
+  categories: AnalyseCategory[];
+};
+
+const universeOrder: AnalyseUniverse[] = [
+  "familleQuotidien",
+  "santeProtection",
+  "energieTelecoms",
+  "maisonImmobilier",
+  "autoMotoMobilite",
+  "financePatrimoine",
+  "proNumerique",
+  "voyagesLoisirs",
+];
+
+const universes: Record<AnalyseUniverse, UniverseConfig> = {
+  familleQuotidien: {
+    label: "Famille & Quotidien",
+    icon: "👨‍👩‍👧",
+    description:
+      "Aides, quotidien et solutions utiles pour la famille.",
+    categories: [
+      "famille",
+      "beauteArtisanat",
+    ],
+  },
+
+  santeProtection: {
+    label: "Santé & Protection",
+    icon: "❤️",
+    description:
+      "Santé, assurances et solutions de protection pour toi et tes proches.",
+    categories: [
+      "mutuelle",
+      "mutuelleSenior",
+      "mutuelleProfessionnelle",
+      "animaux",
+      "assuranceEmprunteur",
+      "assuranceObseques",
+      "ambassadeur",
+    ],
+  },
+
+  energieTelecoms: {
+    label: "Énergie & Télécoms",
+    icon: "⚡",
+    description:
+      "Électricité, gaz, téléphone et connexion Internet.",
+    categories: [
+      "electricite",
+      "gaz",
+      "telephone",
+      "telephoneSenior",
+      "internet",
+    ],
+  },
+
+  maisonImmobilier: {
+    label: "Maison & Immobilier",
+    icon: "🏠",
+    description:
+      "Logement, immobilier, travaux, sécurité et déménagement.",
+    categories: [
+      "creditImmobilier",
+      "diagnosticImmobilier",
+      "locationMeublee",
+      "habitation",
+      "travaux",
+      "securite",
+      "demenagement",
+      "debarras",
+    ],
+  },
+
+  autoMotoMobilite: {
+    label: "Auto, Moto & Mobilité",
+    icon: "🚗",
+    description:
+      "Assurances, entretien, équipement et nouvelles mobilités.",
+    categories: [
+      "auto",
+      "moto",
+      "servicesAuto",
+      "motoEquipement",
+      "mobilitesDouces",
+    ],
+  },
+
+  financePatrimoine: {
+    label: "Finance & Patrimoine",
+    icon: "💰",
+    description:
+      "Épargne, patrimoine, banque et solutions financières.",
+    categories: [
+      "epargneRetraite",
+      "crypto",
+      "banque",
+    ],
+  },
+
+  proNumerique: {
+    label: "Pro & Numérique",
+    icon: "💼",
+    description:
+      "Solutions pour ton activité professionnelle et tes usages numériques.",
+    categories: [
+      "siteInternetPro",
+      "formation",
+      "cybersecurite",
+      "servicesEntreprises",
+      "logiciels",
+      "streaming",
+    ],
+  },
+
+  voyagesLoisirs: {
+    label: "Voyages & Loisirs",
+    icon: "✈️",
+    description:
+      "Prépare tes voyages et trouve les solutions adaptées à tes projets.",
+    categories: [
+      "voyage",
+    ],
+  },
+};
+
 const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "famille",
   "beauteArtisanat",
@@ -835,6 +998,7 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "assuranceObseques",
   "creditImmobilier",
   "diagnosticImmobilier",
+  "locationMeublee",
   "habitation",
   "travaux",
   "mutuelleSenior",
@@ -855,13 +1019,6 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "gaz",
 ];
 
-const fallbackPendingCategoryOrder: AnalyseCategory[] = [
-  "mutuelle",
-  "internet",
-  "banque",
-  "streaming",
-  "logiciels",
-];
 
 const missionSlugToAnalyseCategory: Record<
   string,
@@ -882,6 +1039,7 @@ const missionSlugToAnalyseCategory: Record<
   "assurance-obseques": "assuranceObseques",
   "credit-immobilier": "creditImmobilier",
   "diagnostic-immobilier": "diagnosticImmobilier",
+  "location-meublee": "locationMeublee",
   "habitation": "habitation",
   "assurance-habitation": "habitation",
   "travaux": "travaux",
@@ -1002,6 +1160,9 @@ export default function AnalysePage() {
 
   const [selectedCategory, setSelectedCategory] =
     useState<AnalyseCategory | null>(null);
+
+  const [selectedUniverse, setSelectedUniverse] =
+    useState<AnalyseUniverse | null>(null);
 
   const [step, setStep] = useState(0);
 
@@ -1157,30 +1318,29 @@ export default function AnalysePage() {
           })
         );
 
-  const pendingCategoryEntries: AnalyseCatalogEntry[] =
-    missionCatalog.length > 0
-      ? missionCatalog
-          .filter(
-            (mission) =>
-              mission.status === "pending"
+  const availableEntriesWithCategory =
+    availableCategoryEntries.filter(
+      (
+        entry
+      ): entry is AnalyseCatalogEntry & {
+        analyseCategory: AnalyseCategory;
+        config: CategoryConfig;
+      } =>
+        Boolean(entry.analyseCategory && entry.config)
+    );
+
+  const selectedUniverseConfig = selectedUniverse
+    ? universes[selectedUniverse]
+    : null;
+
+  const selectedUniverseEntries =
+    selectedUniverseConfig
+      ? availableEntriesWithCategory.filter((entry) =>
+          selectedUniverseConfig.categories.includes(
+            entry.analyseCategory
           )
-          .map(missionToAnalyseEntry)
-      : fallbackPendingCategoryOrder.map(
-          (categoryKey, index) => ({
-            mission: {
-              id: `fallback-pending-${categoryKey}`,
-              slug: categoryKey,
-              title: categories[categoryKey].label,
-              icon: categories[categoryKey].icon,
-              category: categoryKey,
-              status: "pending",
-              route: null,
-              sort_order: index,
-            },
-            analyseCategory: categoryKey,
-            config: categories[categoryKey],
-          })
-        );
+        )
+      : [];
 
   function openCatalogMission(
     entry: AnalyseCatalogEntry
@@ -1300,6 +1460,11 @@ export default function AnalysePage() {
         router.push("/missions/mobilites-douces");
         return;
       }
+
+      if (selectedCategory === "locationMeublee") {
+  router.push("/missions/location-meublee");
+  return;
+}
 
       router.push("/analyse-loading");
     } catch (error) {
@@ -1439,13 +1604,15 @@ export default function AnalysePage() {
             </p>
 
             <h1 className="mt-4 text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
-              Que veux-tu analyser ?
+              {selectedUniverseConfig
+                ? selectedUniverseConfig.label
+                : "Que veux-tu analyser ?"}
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-              Choisis une catégorie. Pilo te posera
-              uniquement les questions utiles pour ce
-              contrat.
+              {selectedUniverseConfig
+                ? "Choisis maintenant la mission qui correspond à ton besoin."
+                : "Choisis d’abord un univers. Pilo t’affichera uniquement les missions disponibles dans ce domaine."}
             </p>
 
             {catalogLoading && (
@@ -1461,98 +1628,120 @@ export default function AnalysePage() {
             )}
           </div>
 
-          {/* CATÉGORIES DISPONIBLES */}
-          <div className="mt-10">
-            <div className="mb-5 flex items-center gap-3">
-              <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+          {!selectedUniverseConfig ? (
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {universeOrder.map((universeKey) => {
+                const universe = universes[universeKey];
 
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-green-400">
-                Catégories disponibles
-              </p>
-            </div>
+                const missionCount =
+                  availableEntriesWithCategory.filter(
+                    (entry) =>
+                      universe.categories.includes(
+                        entry.analyseCategory
+                      )
+                  ).length;
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-              {availableCategoryEntries.map(
-                (entry) => {
-                  const item = entry.config;
-
-                  return (
-                    <button
-                      key={entry.mission.id}
-                      type="button"
-                      onClick={() =>
-                        openCatalogMission(entry)
-                      }
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
-                    >
+                return (
+                  <button
+                    key={universeKey}
+                    type="button"
+                    onClick={() =>
+                      setSelectedUniverse(universeKey)
+                    }
+                    className="group w-full rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                  >
+                    <div className="flex items-start justify-between gap-4">
                       <span className="text-5xl">
-                        {entry.mission.icon ||
-                          item?.icon ||
-                          "🎯"}
+                        {universe.icon}
                       </span>
 
-                      <h2 className="mt-5 text-xl font-black">
-                        {entry.mission.title ||
-                          item?.label}
-                      </h2>
-
-                      <p className="mt-2 text-sm leading-6 text-slate-400">
-                        {item?.message ??
-                          "Cette mission est disponible. Ouvre-la pour découvrir la solution proposée par Pilo."}
-                      </p>
-                    </button>
-                  );
-                }
-              )}
-            </div>
-          </div>
-
-          {/* EN COURS DE PARTENARIAT */}
-          <div className="mt-14 border-t border-white/10 pt-10">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400">
-                Prochainement
-              </p>
-
-              <h2 className="mt-2 text-2xl font-black text-white">
-                En cours de partenariat
-              </h2>
-
-              <p className="mt-2 text-sm text-slate-400">
-                Pilo prépare actuellement de nouvelles solutions pour ces catégories.
-              </p>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {pendingCategoryEntries.map(
-                (entry) => (
-                  <div
-                    key={entry.mission.id}
-                    className="relative rounded-2xl border border-amber-500/20 bg-white/[0.03] p-5 opacity-80"
-                  >
-                    <div className="absolute right-4 top-4 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-amber-300">
-                      En cours
+                      <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-bold text-slate-400 transition group-hover:border-green-500/30 group-hover:text-green-300">
+                        {missionCount} mission
+                        {missionCount > 1 ? "s" : ""}
+                      </span>
                     </div>
 
-                    <span className="text-3xl">
-                      {entry.mission.icon ||
-                        entry.config?.icon ||
-                        "⏳"}
-                    </span>
+                    <h2 className="mt-5 text-xl font-black text-white">
+                      {universe.label}
+                    </h2>
 
-                    <h3 className="mt-4 font-black text-white">
-                      {entry.mission.title ||
-                        entry.config?.label}
-                    </h3>
-
-                    <p className="mt-2 text-xs text-slate-500">
-                      Solution partenaire en préparation
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {universe.description}
                     </p>
-                  </div>
-                )
-              )}
+
+                    <p className="mt-5 text-sm font-bold text-green-400">
+                      Voir les missions →
+                    </p>
+                  </button>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="mt-8">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedUniverse(null);
+                    setSelectedCategory(null);
+                    setStep(0);
+                    setValues({});
+                    setErrorMessage("");
+                  }}
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400"
+                >
+                  ← Retour aux univers
+                </button>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+                {selectedUniverseEntries.map(
+                  (entry) => {
+                    const item = entry.config;
+
+                    return (
+                      <button
+                        key={entry.mission.id}
+                        type="button"
+                        onClick={() =>
+                          openCatalogMission(entry)
+                        }
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
+                      >
+                        <span className="text-5xl">
+                          {entry.mission.icon ||
+                            item?.icon ||
+                            "🎯"}
+                        </span>
+
+                        <h2 className="mt-5 text-xl font-black">
+                          {entry.mission.title ||
+                            item?.label}
+                        </h2>
+
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                          {item?.message ??
+                            "Cette mission est disponible. Ouvre-la pour découvrir la solution proposée par Pilo."}
+                        </p>
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+
+              {selectedUniverseEntries.length === 0 && (
+                <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-6 text-center">
+                  <p className="font-bold text-white">
+                    Aucune mission disponible pour le moment.
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Les missions en attente de partenariat restent masquées jusqu’à leur activation.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </section>
       ) : (
         <AnimatePresence mode="wait">
