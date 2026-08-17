@@ -6,34 +6,14 @@ export default function ElectriciteMissionPage() {
   return (
     <MissionLayout
       icon="⚡"
-      title="Comparer ton contrat d'électricité"
-      subtitle="Pilo analyse ton contrat d'électricité et t'indique les économies potentielles."
-      basePrice={95}
-      recommendedPrice={72}
+      title="Optimiser ton contrat d'électricité"
+      subtitle="Pilo t’oriente vers une solution pour vérifier si tu peux réduire ta facture."
+      basePrice={0}
+      recommendedPrice={0}
       recommendedName="Optimisation électricité"
+      advice="Consulte la solution proposée et compare le tarif et les conditions avec ton contrat actuel avant de changer."
       offerPath="/offres/electricite"
-      advice="Pilo pense que tu pourrais réduire ta facture avec une offre plus adaptée à ta consommation. Les partenaires énergie sont actuellement en cours d’intégration."
-      fields={[
-        {
-          name: "monthlyPrice",
-          label: "Facture mensuelle actuelle",
-          type: "number",
-          defaultValue: 95,
-        },
-        {
-          name: "consumption",
-          label: "Consommation annuelle (kWh)",
-          type: "number",
-          defaultValue: 4500,
-        },
-        {
-          name: "counter",
-          label: "Type de compteur",
-          type: "select",
-          defaultValue: "Linky",
-          options: ["Linky", "Ancien compteur"],
-        },
-      ]}
+      fields={[]}
     />
   );
 }

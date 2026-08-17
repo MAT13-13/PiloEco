@@ -27,13 +27,7 @@ type MissionUniverse = {
 };
 
 const missionUniverses: MissionUniverse[] = [
-  {
-    id: "famille-quotidien",
-    label: "Famille & Quotidien",
-    icon: "👨‍👩‍👧",
-    description: "Aides, quotidien et solutions utiles pour la famille.",
-    slugs: ["famille", "beaute-artisanat"],
-  },
+ 
   {
     id: "sante-protection",
     label: "Santé & Protection",
@@ -84,6 +78,13 @@ const missionUniverses: MissionUniverse[] = [
       "debarras",
     ],
   },
+   {
+  id: "beaute-artisanat",
+  label: "Beauté & Artisanat",
+  icon: "🌸",
+  description: "Beauté, créations artisanales et idées faites main.",
+  slugs: ["beaute-artisanat"],
+},
   {
     id: "auto-moto-mobilite",
     label: "Auto, Moto & Mobilité",

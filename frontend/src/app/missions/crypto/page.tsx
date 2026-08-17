@@ -7,11 +7,11 @@ export default function CryptoMissionPage() {
     <MissionLayout
       icon="₿"
       title="Explorer les cryptomonnaies"
-      subtitle="Pilo t'aide à identifier une solution liée aux crypto-actifs tout en gardant en tête les risques associés."
+      subtitle="Indique simplement ce que tu recherches."
       basePrice={0}
       recommendedPrice={0}
       recommendedName="Solution crypto"
-      advice="Les crypto-actifs sont des placements risqués. Pilo peut t'orienter vers une solution partenaire, mais tu dois vérifier les conditions, les frais et les risques avant toute décision."
+      advice="Pilo t’oriente vers une solution correspondant à ton besoin. Les crypto-actifs présentent un risque de perte en capital : vérifie les frais, les conditions et les risques avant toute décision."
       fields={[
         {
           name: "cryptoNeed",

@@ -13,20 +13,20 @@ export default function DiagnosticImmobilierOfferPage() {
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
-          PiloEco
+          📋 Recommandation Pilo
         </p>
 
         <h1 className="mt-3 text-4xl font-black">
-          📋 Diagnostic immobilier
+          Diagnostic immobilier
         </h1>
 
-        <p className="mt-4 text-lg text-slate-300">
-          Pilo a identifié une solution partenaire pour t&apos;aider à réaliser
-          ton diagnostic immobilier.
+        <p className="mt-4 leading-7 text-slate-300">
+          Pilo t’oriente vers une solution partenaire pour réaliser les
+          diagnostics nécessaires à ton logement ou à ton projet immobilier.
         </p>
 
         {!offerDisponible || !diagnosticOffer ? (
-          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6">
             <h2 className="text-xl font-bold">
               Offre bientôt disponible
             </h2>
@@ -37,54 +37,32 @@ export default function DiagnosticImmobilierOfferPage() {
             </p>
           </div>
         ) : (
-          <div className="mt-10 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
-            <div className="flex items-center gap-4">
-              <div className="text-5xl">
-                🏠
-              </div>
+          <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Solution partenaire
+            </p>
 
-              <div>
-                <p className="text-sm font-bold uppercase tracking-wider text-green-400">
-                  Solution partenaire
-                </p>
+            <h2 className="mt-3 text-2xl font-black">
+              {diagnosticOffer.title}
+            </h2>
 
-                <h2 className="mt-1 text-2xl font-black">
-                  {diagnosticOffer.title}
-                </h2>
-              </div>
-            </div>
-
-            <p className="mt-6 leading-7 text-slate-300">
+            <p className="mt-3 leading-6 text-slate-300">
               {diagnosticOffer.description}
             </p>
 
-            <div className="mt-6 rounded-2xl bg-slate-950/60 p-5">
-              <p className="font-bold text-white">
-                Cette solution peut notamment concerner :
-              </p>
-
-              <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                <li>✓ Diagnostic de performance énergétique (DPE)</li>
-                <li>✓ Vente d&apos;un logement</li>
-                <li>✓ Mise en location</li>
-                <li>✓ Projet de rénovation énergétique</li>
-              </ul>
-            </div>
+            <p className="mt-4 text-sm text-amber-200">
+              ↗ Tu vas être redirigé vers le partenaire pour poursuivre ta
+              demande.
+            </p>
 
             <a
               href={diagnosticOffer.trackingUrl}
               target="_blank"
               rel="noopener noreferrer sponsored"
-              className="mt-8 flex w-full items-center justify-center rounded-2xl bg-green-400 px-6 py-4 text-center text-lg font-black text-slate-950 transition hover:bg-green-300"
+              className="mt-6 inline-flex rounded-2xl bg-green-500 px-6 py-3 font-black text-slate-950 transition hover:bg-green-400"
             >
               {diagnosticOffer.buttonLabel || "Comparer les diagnostics"} →
             </a>
-
-            <p className="mt-4 text-center text-xs leading-5 text-slate-500">
-              Tu seras redirigé vers le site du partenaire pour poursuivre ta
-              demande. PiloEco peut percevoir une rémunération si une mise en
-              relation éligible est réalisée.
-            </p>
           </div>
         )}
       </div>

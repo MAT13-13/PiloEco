@@ -34,6 +34,7 @@ type AnalyseCategory =
   | "ambassadeur"
   | "assuranceObseques"
   | "creditImmobilier"
+  | "rachatCredits"
   | "diagnosticImmobilier"
   | "mutuelleSenior"
   | "mutuelleProfessionnelle"
@@ -596,6 +597,27 @@ const categories: Record<
     ],
   },
 
+  rachatCredits: {
+    label: "Rachat de crédits",
+    icon: "💳",
+    message:
+      "Je vais t’orienter vers la solution de regroupement de crédits adaptée à ta situation.",
+    questions: [
+      {
+        key: "housingStatus",
+        type: "select",
+        emoji: "🏠",
+        title: "Quelle est ta situation ?",
+        description:
+          "Choisis simplement ta situation de logement.",
+        options: [
+          "Propriétaire",
+          "Locataire",
+        ],
+      },
+    ],
+  },
+
   diagnosticImmobilier: {
     label: "Diagnostic immobilier",
     icon: "📋",
@@ -875,12 +897,11 @@ const universeOrder: AnalyseUniverse[] = [
 
 const universes: Record<AnalyseUniverse, UniverseConfig> = {
   familleQuotidien: {
-    label: "Famille & Quotidien",
-    icon: "👨‍👩‍👧",
+    label: "Beauté & Artisanat",
+    icon: "🌸",
     description:
-      "Aides, quotidien et solutions utiles pour la famille.",
+      "Beauté, créations artisanales et idées faites main.",
     categories: [
-      "famille",
       "beauteArtisanat",
     ],
   },
@@ -953,6 +974,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
       "Épargne, patrimoine, banque et solutions financières.",
     categories: [
       "epargneRetraite",
+      "rachatCredits",
       "crypto",
       "banque",
     ],
@@ -1003,6 +1025,7 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "travaux",
   "mutuelleSenior",
   "epargneRetraite",
+  "rachatCredits",
   "auto",
   "moto",
   "mobilitesDouces",
@@ -1038,6 +1061,7 @@ const missionSlugToAnalyseCategory: Record<
   "ambassadeur-gselect": "ambassadeur",
   "assurance-obseques": "assuranceObseques",
   "credit-immobilier": "creditImmobilier",
+  "rachat-credits": "rachatCredits",
   "diagnostic-immobilier": "diagnosticImmobilier",
   "location-meublee": "locationMeublee",
   "habitation": "habitation",
@@ -1465,6 +1489,11 @@ export default function AnalysePage() {
   router.push("/missions/location-meublee");
   return;
 }
+
+      if (selectedCategory === "rachatCredits") {
+        router.push("/missions/rachat-credits");
+        return;
+      }
 
       router.push("/analyse-loading");
     } catch (error) {

@@ -7,50 +7,12 @@ export default function GazMissionPage() {
     <MissionLayout
       icon="🔥"
       title="Optimiser ton contrat de gaz"
-      subtitle="Analyse ton contrat actuel et découvre si une solution plus adaptée à ta consommation peut être intéressante."
-      basePrice={120}
-      recommendedPrice={90}
+      subtitle="Pilo t’oriente vers une solution pour vérifier si tu peux réduire ta facture."
+      basePrice={0}
+      recommendedPrice={0}
       recommendedName="Offre gaz adaptée"
-      advice="Compare le prix du kWh, l'abonnement, les conditions du contrat et les éventuelles offres combinées électricité + gaz."
-      fields={[
-        {
-          name: "currentProvider",
-          label: "Quel est ton fournisseur actuel ?",
-          type: "text",
-          defaultValue: "",
-        },
-        {
-          name: "monthlyPrice",
-          label: "Combien paies-tu actuellement par mois ?",
-          type: "number",
-          defaultValue: 90,
-        },
-        {
-          name: "housingType",
-          label: "Quel logement est concerné ?",
-          type: "select",
-          defaultValue: "Maison",
-          options: [
-            "Appartement",
-            "Maison",
-            "Autre",
-          ],
-        },
-        {
-          name: "useType",
-          label: "À quoi sert principalement le gaz ?",
-          type: "select",
-          defaultValue: "Chauffage",
-          options: [
-            "Chauffage",
-            "Eau chaude",
-            "Cuisson",
-            "Chauffage + eau chaude",
-            "Chauffage + eau chaude + cuisson",
-            "Autre",
-          ],
-        },
-      ]}
+      advice="Consulte la solution proposée et compare le tarif, l’abonnement et les conditions avec ton contrat actuel avant de changer."
+      fields={[]}
       offerPath="/offres/gaz"
     />
   );

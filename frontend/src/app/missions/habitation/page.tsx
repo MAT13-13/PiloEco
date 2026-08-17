@@ -26,7 +26,7 @@ export default function HabitationMissionPage() {
       recommendedName:
         "Devis personnalisé Leocare",
       advice:
-        "Tu vas être redirigé vers Leocare afin d'obtenir un devis personnalisé. Tu restes libre de poursuivre ou non ta demande.",
+        "Accède à Leocare pour obtenir un tarif personnalisé selon ton logement et les garanties choisies.",
       external: true,
     },
 
@@ -51,39 +51,17 @@ export default function HabitationMissionPage() {
     <MissionLayout
       icon="🏠"
       title="Comparer ton assurance habitation"
-      subtitle="Pilo analyse ton contrat habitation pour vérifier si tu pourrais payer moins cher."
-      basePrice={32}
-      recommendedPrice={18}
-      recommendedName="Comparer ton assurance habitation"
-      advice="Pilo estime qu'une économie est possible sur ton assurance habitation. Le tarif définitif dépendra de ton logement, de ta situation et des garanties choisies."
+      subtitle="Choisis simplement la solution que tu souhaites consulter."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Solution assurance habitation"
+      advice="Pilo t’oriente vers une solution partenaire pour obtenir un tarif adapté à ton logement."
       dynamicOfferField="offer"
       dynamicOffers={dynamicOffers}
       fields={[
         {
-          name: "monthlyPrice",
-          label: "Cotisation mensuelle",
-          type: "number",
-          defaultValue: 32,
-        },
-        {
-          name: "surface",
-          label: "Surface du logement (m²)",
-          type: "number",
-          defaultValue: 80,
-        },
-        {
-          name: "status",
-          label: "Situation",
-          type: "select",
-          defaultValue: "Locataire",
-          options: [
-            "Locataire",
-            "Propriétaire",
-          ],
-        },
-        {
           name: "offer",
-          label: "Offre partenaire",
+          label: "Quelle solution souhaites-tu consulter ?",
           type: "select",
           defaultValue: "Leocare",
           options: partnerOptions,

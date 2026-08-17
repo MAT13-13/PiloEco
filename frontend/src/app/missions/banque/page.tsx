@@ -7,38 +7,13 @@ export default function BanqueMissionPage() {
     <MissionLayout
       icon="🏦"
       title="Optimiser tes frais bancaires"
-      subtitle="Pilo compare les frais bancaires pour trouver une meilleure offre."
-
-      basePrice={18}
-      recommendedPrice={6}
-
-      recommendedName="Banque Éco"
-
-      advice="Pilo pense qu'une banque en ligne pourrait réduire tes frais tout en conservant les mêmes services."
-
+      subtitle="Pilo t’oriente vers une solution pour découvrir une offre bancaire potentiellement plus avantageuse."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Offre bancaire partenaire"
+      advice="Découvre la solution proposée et compare ses frais, ses services et ses conditions avec ta banque actuelle."
+      fields={[]}
       offerPath="/offres/banque"
-
-      fields={[
-        {
-          name: "bank",
-          label: "Banque actuelle",
-          type: "text",
-          defaultValue: "",
-        },
-        {
-          name: "monthlyPrice",
-          label: "Frais mensuels",
-          type: "number",
-          defaultValue: 18,
-        },
-        {
-          name: "card",
-          label: "Carte bancaire",
-          type: "select",
-          defaultValue: "Classique",
-          options: ["Classique", "Premium", "Gold"],
-        },
-      ]}
     />
   );
 }

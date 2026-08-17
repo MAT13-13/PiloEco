@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Field = {
   name: string;
@@ -133,6 +133,14 @@ type MissionLayoutProps = {
    * Exemple : assurance emprunteur GSelect.
    */
   selfServiceQuote?: boolean;
+
+  /*
+   * Permet à une mission de récupérer les réponses enregistrées
+   * par la page Analyse dans localStorage ("pilo-analysis").
+   *
+   * Désactivé par défaut pour ne modifier aucun parcours existant.
+   */
+  inheritAnalysisValues?: boolean;
 };
 
 export default function MissionLayout({
@@ -159,6 +167,7 @@ export default function MissionLayout({
   partnerName,
   purchaseLabel = "✅ J’ai réalisé cet achat",
   selfServiceQuote = false,
+  inheritAnalysisValues = false,
 }: MissionLayoutProps) {
   const router = useRouter();
 
@@ -179,6 +188,38 @@ export default function MissionLayout({
       ])
     )
   );
+
+  useEffect(() => {
+    if (!inheritAnalysisValues) {
+      return;
+    }
+
+    try {
+      const rawAnalysis = localStorage.getItem("pilo-analysis");
+
+      if (!rawAnalysis) {
+        return;
+      }
+
+      const parsedAnalysis = JSON.parse(rawAnalysis) as {
+        values?: Record<string, string | number>;
+      };
+
+      if (!parsedAnalysis.values) {
+        return;
+      }
+
+      setValues((previousValues) => ({
+        ...previousValues,
+        ...parsedAnalysis.values,
+      }));
+    } catch (error) {
+      console.error(
+        "Impossible de récupérer les réponses de l’analyse Pilo :",
+        error
+      );
+    }
+  }, [inheritAnalysisValues]);
 
   const currentPrice = Number(
     values.monthlyPrice ?? basePrice
@@ -408,15 +449,9 @@ export default function MissionLayout({
       }
 
       return (
-        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-          <p className="font-bold text-white">
-            Tu as choisi cette offre ?
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            Confirme ta souscription pour enregistrer le nouveau
-            contrat dans Pilo Monitoring et suivre son prix,
-            son engagement et ses échéances.
+        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+          <p className="text-sm font-bold text-white">
+            Tu as souscrit ?
           </p>
 
           <Link
@@ -428,7 +463,7 @@ export default function MissionLayout({
               completionActionClassName
             }
           >
-            ✅ J’ai souscrit
+            ✅ Ajouter à mon suivi Pilo
           </Link>
         </div>
       );
@@ -439,18 +474,10 @@ export default function MissionLayout({
       offerHref;
 
     return (
-      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-        <p className="font-bold text-white">
-          Achat ou prestation ponctuelle
-        </p>
-
-        <p className="mt-2 text-sm leading-6 text-slate-400">
-          Cette action ne crée pas de contrat dans le Monitoring.
-        </p>
-
+      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
         {purchaseConfirmed ? (
-          <p className="mt-4 font-bold text-green-300">
-            ✅ Achat confirmé dans Pilo.
+          <p className="font-bold text-green-300">
+            ✅ Action confirmée dans Pilo.
           </p>
         ) : (
           <button
@@ -595,38 +622,32 @@ export default function MissionLayout({
           )}
 
           {pricingMode === "known" ? (
-            <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-              <p className="text-green-300">
-                Économie annuelle estimée
+            <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-green-300">
+                Recommandation Pilo
               </p>
 
-              <h2 className="mt-2 text-5xl font-black text-green-400">
-                {yearlySaving} €
-              </h2>
+              <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-2">
+                <h2 className="text-4xl font-black text-green-400">
+                  {yearlySaving} €
+                </h2>
+                <p className="pb-1 text-sm text-slate-300">
+                  d&apos;économie annuelle estimée
+                </p>
+              </div>
 
-              <p className="mt-3 text-sm text-slate-300">
-                Cette estimation est calculée à partir des tarifs
-                actuellement connus par Pilo.
-              </p>
-
-              <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-green-300">
-                Solution partenaire adaptée
-              </p>
-
-              <h3 className="mt-3 text-2xl font-black">
+              <h3 className="mt-5 text-2xl font-black">
                 {finalRecommendedName}
               </h3>
 
-              <p className="mt-3 text-slate-300">
+              <p className="mt-2 leading-6 text-slate-300">
                 {finalAdvice}
               </p>
 
               {opensExternalWebsite && (
-                <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                  Tu vas être redirigé vers le site du partenaire.
-                  Vérifie le tarif et les conditions avant de poursuivre.
-                  Tu restes entièrement libre de ton choix.
-                </div>
+                <p className="mt-4 text-sm text-amber-200">
+                  ↗ Tu vas être redirigé vers le partenaire pour vérifier le tarif et les conditions.
+                </p>
               )}
 
               {opensExternalWebsite ? (
@@ -654,125 +675,37 @@ export default function MissionLayout({
               )}
             </div>
           ) : (
-            <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
-                💡 Opportunité d&apos;économie détectée
-              </p>
-
-              {selfServiceQuote ? (
-                <>
-                  <div className="mt-5 rounded-2xl border border-green-500/20 bg-slate-950/40 p-5">
-                    <p className="font-bold text-white">
-                      🛡️ Aucune démarche téléphonique
-                    </p>
-
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      Aucune démarche téléphonique ne sera effectuée par la
-                      suite. Tu restes maître de ta démarche et avances à ton
-                      rythme.
-                    </p>
-                  </div>
-
-                  <div className="mt-4 rounded-2xl border border-green-500/20 bg-slate-950/40 p-5">
-                    <p className="font-bold text-green-300">
-                      ✅ Tu réalises ta démarche toi-même
-                    </p>
-
-                    <p className="mt-2 text-sm leading-6 text-slate-300">
-                      Tu consultes la solution proposée et poursuis toi-même
-                      les différentes étapes jusqu&apos;à la souscription si
-                      tu le souhaites. Aucune action n&apos;est réalisée sans
-                      ton accord.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {isExclusivePartner ? (
-                    <>
-                      <h2 className="mt-3 text-3xl font-black text-white">
-                        Ton avantage partenaire PiloEco
-                      </h2>
-
-                      <p className="mt-4 text-slate-300">
-                        Pilo a sélectionné un partenaire dédié pour répondre
-                        à ton besoin.
-                      </p>
-
-                      <div className="mt-5 rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
-                        <p className="text-lg font-black text-green-300">
-                          🎁 Avantage exclusif PiloEco
-                        </p>
-
-                        <p className="mt-2 text-sm leading-6 text-slate-300">
-                          Profite de l&apos;avantage négocié par PiloEco auprès
-                          de notre partenaire. Le tarif final dépend de ton
-                          déménagement et sera calculé directement lors de
-                          ta demande de devis.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="mt-3 text-3xl font-black text-white">
-                        Vérifie si tu peux réellement payer moins cher
-                      </h2>
-
-                      <p className="mt-4 text-slate-300">
-                        Pilo a identifié une ou plusieurs solutions
-                        susceptibles de correspondre à ton besoin.
-                      </p>
-
-                      <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
-                        <p className="font-bold text-white">
-                          Plusieurs partenaires peuvent t&apos;être proposés
-                        </p>
-
-                        <p className="mt-2 text-sm leading-6 text-slate-300">
-                          Les solutions affichées dépendent de tes réponses
-                          et de ton besoin. Lorsque le tarif est personnalisé,
-                          Pilo ne peut pas annoncer une économie avant que
-                          le partenaire ait calculé ton prix ou ton devis.
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/5 p-5">
-                <p className="font-bold text-green-300">
-                  🎯 L&apos;objectif ne change pas
+            <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-green-300">
+                  Recommandation Pilo
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Pilo est là pour t&apos;aider à réduire tes dépenses,
-                  pas pour te pousser à changer de contrat ou à acheter.
-                  Consulte les propositions, compare-les à ce que tu
-                  paies aujourd&apos;hui et poursuis uniquement si
-                  l&apos;économie est réelle pour toi.
-                </p>
+                {isExclusivePartner && (
+                  <span className="rounded-full border border-green-400/30 bg-green-500/10 px-3 py-1 text-xs font-black text-green-300">
+                    🎁 Avantage PiloEco
+                  </span>
+                )}
               </div>
 
-              <p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-green-300">
-                Solution partenaire adaptée
-              </p>
-
-              <h3 className="mt-3 text-2xl font-black">
+              <h2 className="mt-4 text-2xl font-black text-white sm:text-3xl">
                 {finalRecommendedName}
-              </h3>
+              </h2>
 
-              <p className="mt-3 text-slate-300">
+              <p className="mt-3 leading-6 text-slate-300">
                 {finalAdvice}
               </p>
 
+              {selfServiceQuote && (
+                <p className="mt-4 text-sm font-semibold text-green-200">
+                  ✅ Tu réalises la démarche toi-même, à ton rythme.
+                </p>
+              )}
+
               {opensExternalWebsite && (
-                <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                  En cliquant sur le bouton, tu seras redirigé
-                  vers le site du partenaire pour consulter son
-                  offre, obtenir un tarif ou demander un devis.
-                  Tu restes libre de poursuivre ou non.
-                </div>
+                <p className="mt-4 text-sm text-amber-200">
+                  ↗ Le bouton ouvre le site du partenaire. Tu restes libre de poursuivre ou non.
+                </p>
               )}
 
               {opensExternalWebsite ? (
@@ -794,18 +727,12 @@ export default function MissionLayout({
               )}
 
               {selectedOffer?.contactPhone && (
-                <div className="mt-6 rounded-2xl border border-green-500/20 bg-slate-950/50 p-5">
-                  <p className="font-bold text-white">
-                    📞 Tu préfères parler à quelqu&apos;un ?
+                <div className="mt-6 rounded-2xl border border-green-500/20 bg-slate-950/50 p-4">
+                  <p className="text-sm font-bold text-white">
+                    📞 Besoin d&apos;un accompagnement ?
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-300">
-                    Si tu souhaites être rassuré ou accompagné, tu peux
-                    contacter directement le partenaire. Ce contact reste
-                    entièrement facultatif.
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
                     <a
                       href={`tel:${selectedOffer.contactPhone}`}
                       className="inline-flex items-center justify-center rounded-xl border border-green-400/40 bg-green-500/10 px-5 py-3 font-bold text-green-300 transition hover:bg-green-500/20"
@@ -830,23 +757,13 @@ export default function MissionLayout({
                     >
                       {copiedPhone === selectedOffer.contactPhone
                         ? "✅ Numéro copié"
-                        : "📋 Copier le numéro"}
+                        : "📋 Copier"}
                     </button>
                   </div>
 
-                  <p className="mt-3 text-sm font-semibold text-white">
-                    {selectedOffer.contactPhone.replace(
-                      "+33",
-                      "0"
-                    ).replace(
-                      /(\d{2})(?=\d)/g,
-                      "$1 "
-                    ).trim()}
-                  </p>
-
                   {selectedOffer.contactCode && (
                     <p className="mt-3 text-sm text-slate-300">
-                      Code avantage à communiquer :{" "}
+                      Code avantage :{" "}
                       <span className="font-black text-green-300">
                         {selectedOffer.contactCode}
                       </span>
@@ -860,18 +777,6 @@ export default function MissionLayout({
                 finalHref,
                 finalRecommendedName
               )}
-
-              <div className="mt-7 border-t border-white/10 pt-5">
-                <p className="text-sm font-bold text-white">
-                  Une fois ton tarif obtenu
-                </p>
-
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Reviens dans Pilo avec le prix proposé. Pilo pourra
-                  alors le comparer à ta dépense actuelle et calculer
-                  ton économie réelle.
-                </p>
-              </div>
             </div>
           )}
 
@@ -891,12 +796,6 @@ export default function MissionLayout({
                   {selectedAlternativeOffer.advice}
                 </p>
               )}
-
-              <p className="mt-4 text-xs leading-5 text-slate-500">
-                Cette solution est proposée comme alternative.
-                Compare son tarif et ses conditions avec les autres
-                propositions avant de prendre ta décision.
-              </p>
 
               {selectedAlternativeOffer.external ? (
                 <a
@@ -953,12 +852,6 @@ export default function MissionLayout({
                   {thirdOffer.advice}
                 </p>
               )}
-
-              <p className="mt-4 text-xs leading-5 text-slate-500">
-                Cette solution constitue une autre possibilité.
-                Pilo te laisse comparer librement les propositions
-                disponibles selon ton besoin.
-              </p>
 
               {thirdOffer.external ? (
                 <a

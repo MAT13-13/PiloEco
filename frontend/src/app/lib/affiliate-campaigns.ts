@@ -121,6 +121,102 @@ export type AffiliateCampaign = {
 
 export const affiliateCampaigns: AffiliateCampaign[] = [
   {
+    id: 13982,
+    provider: "91m2",
+    name: "Rachat de crédit à la consommation et immobilier",
+    slug: "rachat-credit-conso-immobilier",
+    model: "CPL",
+    payout: 12,
+    status: "approved",
+    universe: "credit",
+    category: "Rachat de crédits",
+
+    trackingUrl:
+      "https://stella-2.com/clc/_i3Z31sTNr9__GeAQkqQkA",
+
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: null,
+
+    title: "Étudier un regroupement de crédits",
+
+    description:
+      "Accédez à une simulation pour étudier une solution de regroupement de crédits à la consommation et immobilier selon votre situation.",
+
+    buttonLabel: "Faire une simulation",
+
+    tags: [
+      "credit",
+      "credits",
+      "rachat credit",
+      "regroupement credit",
+      "credit consommation",
+      "credit immobilier",
+      "mensualite",
+      "proprietaire",
+    ],
+
+    compliance: {
+      regulated: true,
+      avoidClaims: [
+        "meilleur taux garanti",
+        "économies garanties",
+        "réduction garantie des mensualités",
+      ],
+      note:
+        "Le regroupement de crédits peut augmenter la durée de remboursement et le coût total du crédit.",
+    },
+  },
+
+  {
+    id: 13981,
+    provider: "91m2",
+    name: "Rachats de crédits locataire",
+    slug: "rachat-credits-locataire",
+    model: "CPL",
+    payout: 15,
+    status: "approved",
+    universe: "credit",
+    category: "Rachat de crédits",
+
+    trackingUrl:
+      "https://stella-2.com/clc/kHdF-T1mPsiKUbJ7UvQWTA",
+
+    support: "mailing",
+    integrated: true,
+    published: true,
+    endDate: null,
+
+    title: "Étudier un regroupement de crédits locataire",
+
+    description:
+      "Accédez à une simulation de regroupement de crédits adaptée à une situation de locataire.",
+
+    buttonLabel: "Faire une simulation",
+
+    tags: [
+      "credit",
+      "credits",
+      "rachat credit",
+      "regroupement credit",
+      "mensualite",
+      "locataire",
+    ],
+
+    compliance: {
+      regulated: true,
+      avoidClaims: [
+        "mensualité divisée par 2 garantie",
+        "économies garanties",
+        "réduction garantie des mensualités",
+      ],
+      note:
+        "Le regroupement de crédits peut augmenter la durée de remboursement et le coût total du crédit. L'éligibilité dépend de l'étude du dossier par le partenaire.",
+    },
+  },
+
+  {
     id: 13964,
     provider: "91m2",
     name: "Fenêtres",

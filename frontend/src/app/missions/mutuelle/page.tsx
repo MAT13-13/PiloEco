@@ -6,12 +6,12 @@ export default function MutuelleMissionPage() {
   return (
     <MissionLayout
       icon="❤️"
-      title="Optimiser ta mutuelle santé"
-      subtitle="Analyse ta mutuelle actuelle et découvre si une solution plus adaptée à tes besoins peut être intéressante."
-      basePrice={70}
-      recommendedPrice={50}
-      recommendedName="Mutuelle santé optimisée"
-      advice="Compare ton niveau de couverture et ton budget afin d'identifier une solution adaptée à tes besoins."
+      title="Trouver une mutuelle santé adaptée"
+      subtitle="Indique simplement ta situation et ton besoin principal."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Mutuelle santé adaptée"
+      advice="Pilo t’oriente vers une solution correspondant à ton profil et à tes priorités de couverture."
       fields={[
         {
           name: "situation",
@@ -26,12 +26,6 @@ export default function MutuelleMissionPage() {
             "Sans emploi",
             "Autre",
           ],
-        },
-        {
-          name: "monthlyPrice",
-          label: "Combien paies-tu actuellement par mois ?",
-          type: "number",
-          defaultValue: 70,
         },
         {
           name: "priority",

@@ -1,0 +1,4505 @@
+﻿============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\page.tsx
+============================================================
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+import PiloNavigation from "../components/PiloNavigation";
+import { supabase } from "../lib/supabase";
+
+type MissionCatalog = {
+  id: string;
+  slug: string;
+  title: string;
+  icon: string;
+  category: string | null;
+  status: "available" | "pending" | "disabled";
+  route: string | null;
+  sort_order: number;
+  is_premium: boolean;
+};
+
+type MissionUniverse = {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  slugs: string[];
+};
+
+const missionUniverses: MissionUniverse[] = [
+  {
+    id: "famille-quotidien",
+    label: "Famille & Quotidien",
+    icon: "ðŸ‘¨â€ðŸ‘©â€ðŸ‘§",
+    description: "Aides, quotidien et solutions utiles pour la famille.",
+    slugs: ["famille", "beaute-artisanat"],
+  },
+  {
+    id: "sante-protection",
+    label: "SantÃ© & Protection",
+    icon: "â¤ï¸",
+    description: "SantÃ©, assurances et solutions de protection.",
+    slugs: [
+      "mutuelle",
+      "mutuelle-sante",
+      "mutuelle-senior",
+      "mutuelle-professionnelle",
+      "animaux",
+      "assurance-animaux",
+      "assurance-emprunteur",
+      "assurance-obseques",
+      "ambassadeur",
+      "ambassadeur-gselect",
+    ],
+  },
+  {
+    id: "energie-telecoms",
+    label: "Ã‰nergie & TÃ©lÃ©coms",
+    icon: "âš¡",
+    description: "Ã‰lectricitÃ©, gaz, tÃ©lÃ©phone et connexion Internet.",
+    slugs: [
+      "electricite",
+      "gaz",
+      "mobile",
+      "telephone",
+      "telephone-senior",
+      "internet",
+    ],
+  },
+  {
+    id: "maison-immobilier",
+    label: "Maison & Immobilier",
+    icon: "ðŸ ",
+    description: "Logement, immobilier, travaux, sÃ©curitÃ© et dÃ©mÃ©nagement.",
+    slugs: [
+      "credit-immobilier",
+      "diagnostic-immobilier",
+      "location-meublee",
+      "habitation",
+      "assurance-habitation",
+      "travaux",
+      "securite",
+      "alarme-securite",
+      "demenagement",
+      "debarras",
+    ],
+  },
+  {
+    id: "auto-moto-mobilite",
+    label: "Auto, Moto & MobilitÃ©",
+    icon: "ðŸš—",
+    description: "Assurances, entretien, Ã©quipement et nouvelles mobilitÃ©s.",
+    slugs: [
+      "auto",
+      "assurance-auto",
+      "moto",
+      "assurance-moto",
+      "services-auto",
+      "service-auto",
+      "moto-equipement",
+      "mobilites-douces",
+    ],
+  },
+  {
+    id: "finance-patrimoine",
+    label: "Finance & Patrimoine",
+    icon: "ðŸ’°",
+    description: "Ã‰pargne, patrimoine, banque et solutions financiÃ¨res.",
+    slugs: [
+      "epargne-retraite",
+      "crypto",
+      "cryptomonnaies",
+      "banque",
+    ],
+  },
+  {
+    id: "pro-numerique",
+    label: "Pro & NumÃ©rique",
+    icon: "ðŸ’¼",
+    description: "Solutions professionnelles et services numÃ©riques.",
+    slugs: [
+      "site-internet-pro",
+      "formation",
+      "cybersecurite",
+      "services-entreprises",
+      "logiciels",
+      "streaming",
+    ],
+  },
+  {
+    id: "voyages-loisirs",
+    label: "Voyages & Loisirs",
+    icon: "âœˆï¸",
+    description: "Voyages et solutions adaptÃ©es Ã  tes projets de loisirs.",
+    slugs: ["voyage"],
+  },
+];
+
+export default function MissionsPage() {
+  const [availableMissions, setAvailableMissions] = useState<
+    MissionCatalog[]
+  >([]);
+
+  const [selectedUniverse, setSelectedUniverse] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadMissions() {
+      try {
+        setLoading(true);
+        setErrorMessage("");
+
+        const { data, error } = await supabase
+          .from("mission_catalog")
+          .select(
+            `
+              id,
+              slug,
+              title,
+              icon,
+              category,
+              status,
+              route,
+              sort_order,
+              is_premium
+            `
+          )
+          .neq("status", "disabled")
+          .order("sort_order", {
+            ascending: true,
+          });
+
+        if (!mounted) {
+          return;
+        }
+
+        if (error) {
+          console.error(
+            "Erreur chargement mission_catalog :",
+            error
+          );
+
+          setErrorMessage(
+            "Impossible de charger les missions pour le moment."
+          );
+
+          return;
+        }
+
+        const missions =
+          (data as MissionCatalog[] | null) ?? [];
+
+        setAvailableMissions(
+          missions.filter(
+            (mission) =>
+              mission.status === "available"
+          )
+        );
+
+      } catch (error) {
+        console.error(
+          "Erreur inattendue mission_catalog :",
+          error
+        );
+
+        if (mounted) {
+          setErrorMessage(
+            "Impossible de charger les missions pour le moment."
+          );
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadMissions();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const activeUniverse = selectedUniverse
+    ? missionUniverses.find(
+        (universe) => universe.id === selectedUniverse
+      ) ?? null
+    : null;
+
+  const activeUniverseMissions = activeUniverse
+    ? availableMissions.filter((mission) =>
+        activeUniverse.slugs.includes(mission.slug)
+      )
+    : [];
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl">
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-green-400 sm:text-sm">
+          PiloEco
+        </p>
+
+        <h1 className="mt-2 text-3xl font-black sm:text-4xl">
+          Mes missions
+        </h1>
+
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+          Choisis un univers pour retrouver rapidement les missions et solutions disponibles.
+        </p>
+
+        <PiloNavigation />
+
+        {!loading && !errorMessage && (
+          <section className="mt-8">
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4 sm:max-w-sm">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-green-400">
+                Disponibles
+              </p>
+
+              <p className="mt-2 text-3xl font-black text-white">
+                {availableMissions.length}
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                missions accessibles maintenant
+              </p>
+            </div>
+          </section>
+        )}
+
+        {loading && (
+          <div className="mt-10 rounded-3xl border border-green-500/20 bg-green-500/5 p-8 text-center">
+            <div className="text-4xl">ðŸ¦</div>
+
+            <p className="mt-4 font-black text-green-300">
+              Pilo prÃ©pare tes missions...
+            </p>
+
+            <p className="mt-2 text-sm text-slate-500">
+              Les solutions disponibles sont en cours de chargement.
+            </p>
+          </div>
+        )}
+
+        {!loading && errorMessage && (
+          <div className="mt-10 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
+            <p className="font-black text-red-300">
+              Impossible de charger les missions
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              {errorMessage}
+            </p>
+          </div>
+        )}
+
+        {!loading && !errorMessage && !activeUniverse && (
+          <section className="mt-10">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400 sm:text-sm">
+              Univers Pilo
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black">
+              Choisis ton domaine
+            </h2>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+              Seules les missions actuellement disponibles sont affichÃ©es.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {missionUniverses.map((universe) => {
+                const count = availableMissions.filter(
+                  (mission) =>
+                    universe.slugs.includes(mission.slug)
+                ).length;
+
+                return (
+                  <button
+                    key={universe.id}
+                    type="button"
+                    onClick={() =>
+                      setSelectedUniverse(universe.id)
+                    }
+                    className="group rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-5xl">
+                        {universe.icon}
+                      </span>
+
+                      <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-bold text-slate-400 group-hover:border-green-500/30 group-hover:text-green-300">
+                        {count} mission{count > 1 ? "s" : ""}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-5 text-xl font-black">
+                      {universe.label}
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {universe.description}
+                    </p>
+
+                    <p className="mt-5 text-sm font-bold text-green-400">
+                      Voir les missions â†’
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {!loading && !errorMessage && activeUniverse && (
+          <section className="mt-10">
+            <button
+              type="button"
+              onClick={() => setSelectedUniverse(null)}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400"
+            >
+              â† Retour aux univers
+            </button>
+
+            <div className="mt-8">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-green-400">
+                {activeUniverse.icon} Univers Pilo
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black">
+                {activeUniverse.label}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                {activeUniverse.description}
+              </p>
+            </div>
+
+            {activeUniverseMissions.length === 0 ? (
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+                <p className="font-bold text-white">
+                  Aucune mission disponible actuellement dans cet univers.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {activeUniverseMissions.map((mission) => {
+                  const missionRoute =
+                    mission.route ||
+                    `/missions/${mission.slug}`;
+
+                  return (
+                    <Link
+                      key={mission.id}
+                      href={missionRoute}
+                      className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 transition hover:-translate-y-1 hover:border-green-400 hover:bg-slate-800 sm:p-6"
+                    >
+                      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
+
+                      {mission.is_premium && (
+                        <div className="absolute right-4 top-4 rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-purple-300">
+                          Premium
+                        </div>
+                      )}
+
+                      <div className="relative">
+                        <div className="text-3xl sm:text-4xl">
+                          {mission.icon}
+                        </div>
+
+                        <h3 className="mt-4 pr-16 text-lg font-black leading-6 sm:text-xl">
+                          {mission.title}
+                        </h3>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500 transition group-hover:text-green-300 sm:text-sm">
+                          {mission.slug === "ambassadeur" ||
+                          mission.slug === "ambassadeur-gselect"
+                            ? "DÃ©couvrir l'opportunitÃ© â†’"
+                            : "Voir les recommandations â†’"}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        <div className="h-10" />
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\ambassadeur\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+
+const GSELECT_AMBASSADEUR_URL =
+  "https://affilie.gselect-assurances.fr/Guillaume_Garnier?indicateur=5216";
+
+export default function AmbassadeurMissionPage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-5xl">
+        <Link
+          href="/dashboard"
+          className="text-green-400 hover:underline"
+        >
+          â† Retour au dashboard
+        </Link>
+
+        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900">
+          <div className="p-8 md:p-12">
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
+              ðŸ’¶ OpportunitÃ© Pilo
+            </p>
+
+            <h1 className="mt-4 max-w-3xl text-4xl font-black md:text-5xl">
+              GÃ©nÃ©rer un complÃ©ment de revenus
+            </h1>
+
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+              PiloEco te permet de dÃ©couvrir le programme Ambassadeur
+              GSelect Assurances et de recommander une solution utile
+              autour de toi.
+            </p>
+
+            <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-7">
+              <div className="flex flex-col gap-6 md:flex-row md:items-center">
+                <div className="text-6xl">
+                  ðŸ¤
+                </div>
+
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-green-300">
+                    Partenaire exclusif
+                  </p>
+
+                  <h2 className="mt-2 text-3xl font-black">
+                    GSelect Assurances
+                  </h2>
+
+                  <p className="mt-3 max-w-2xl leading-7 text-slate-300">
+                    Rejoins le programme Ambassadeur GSelect et dÃ©couvre
+                    comment recommander leurs solutions d&apos;assurance
+                    Ã  ton entourage.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6">
+                <div className="text-3xl">ðŸ”—</div>
+
+                <h3 className="mt-4 text-xl font-black">
+                  Ton lien personnel
+                </h3>
+
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  Une fois inscrit, tu peux utiliser ton lien Ambassadeur
+                  pour recommander GSelect.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6">
+                <div className="text-3xl">ðŸ¤</div>
+
+                <h3 className="mt-4 text-xl font-black">
+                  Tu recommandes
+                </h3>
+
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  Tu peux prÃ©senter les solutions GSelect aux personnes
+                  de ton entourage susceptibles d&apos;Ãªtre intÃ©ressÃ©es.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-6">
+                <div className="text-3xl">ðŸ’°</div>
+
+                <h3 className="mt-4 text-xl font-black">
+                  Tu peux Ãªtre rÃ©munÃ©rÃ©
+                </h3>
+
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  Une rÃ©munÃ©ration peut Ãªtre versÃ©e selon les conditions
+                  du programme Ambassadeur GSelect.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-7">
+              <p className="font-black text-white">
+                ðŸ’¡ Exemple
+              </p>
+
+              <p className="mt-3 leading-7 text-slate-300">
+                Le programme peut permettre de gÃ©nÃ©rer un complÃ©ment de
+                revenus grÃ¢ce aux recommandations rÃ©alisÃ©es et validÃ©es
+                par GSelect.
+              </p>
+
+              <p className="mt-4 text-sm leading-6 text-slate-500">
+                Les rÃ©munÃ©rations ne sont pas garanties et dÃ©pendent des
+                conditions, validations et modalitÃ©s du programme GSelect
+                Assurances.
+              </p>
+            </div>
+
+            <div className="mt-10 text-center">
+              <a
+                href={GSELECT_AMBASSADEUR_URL}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="inline-flex rounded-2xl bg-green-500 px-8 py-4 text-lg font-black text-slate-950 transition hover:bg-green-400"
+              >
+                ðŸ’¶ Devenir Ambassadeur GSelect â†’
+              </a>
+
+              <p className="mx-auto mt-4 max-w-xl text-xs leading-5 text-slate-500">
+                Tu vas Ãªtre redirigÃ© vers le site de GSelect Assurances.
+                Consulte les conditions du programme avant de t&apos;inscrire.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\animaux\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+import PiloAdvice from "../../components/PiloAdvice";
+
+export default function AnimauxOfferPage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-4xl">
+        <Link
+          href="/missions/animaux"
+          className="text-green-400 hover:underline"
+        >
+          â† Retour Ã  la mission animaux
+        </Link>
+
+        <section className="mt-8 rounded-[2rem] border border-green-500/20 bg-white/5 p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            Solution animaux identifiÃ©e par Pilo
+          </p>
+
+          <h1 className="mt-4 text-5xl font-black">
+            ðŸ¶ Assurance animaux
+          </h1>
+
+          <p className="mt-5 max-w-3xl text-slate-300">
+            Pilo t&apos;aide Ã  identifier les dÃ©penses liÃ©es Ã  la protection
+            de ton animal qui pourraient Ãªtre optimisÃ©es.
+          </p>
+
+          <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              ðŸ’¡ OpportunitÃ© d&apos;Ã©conomie dÃ©tectÃ©e
+            </p>
+
+            <h2 className="mt-3 text-3xl font-black">
+              Compare avant de changer
+            </h2>
+
+            <p className="mt-4 text-slate-300">
+              Le tarif d&apos;une assurance animaux dÃ©pend notamment de
+              l&apos;animal, de son Ã¢ge, de sa race et du niveau de garanties.
+              Pilo ne chiffre donc pas une Ã©conomie tant qu&apos;un vrai tarif
+              partenaire n&apos;a pas Ã©tÃ© obtenu.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
+              ðŸ©º Frais vÃ©tÃ©rinaires
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-slate-900 p-6">
+              ðŸ¾ Solutions pour chiens, chats et NAC
+            </div>
+          </div>
+
+          <PiloAdvice
+            title="Comment Pilo t'aide ?"
+            message="Pilo te redirige vers une solution partenaire afin d'obtenir un tarif rÃ©el. Tu peux ensuite comparer ce montant Ã  ta dÃ©pense actuelle et dÃ©cider uniquement si l'offre est rÃ©ellement intÃ©ressante pour toi."
+          />
+
+          <div className="mt-8 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+              Partenaire assurance animaux
+            </p>
+
+            <h2 className="mt-3 text-2xl font-black">
+              Compare les assurances animaux
+            </h2>
+
+            <p className="mt-4 text-slate-300">
+              Compare gratuitement diffÃ©rentes solutions d&apos;assurance
+              pour chien, chat ou NAC et obtiens un tarif adaptÃ© Ã  ton animal.
+            </p>
+
+            <a
+              href="https://stella-2.com/clc/PyCCpFfs3jche1T9Ly4w0w"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-6 inline-flex rounded-2xl bg-green-500 px-6 py-3 font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Comparer les assurances animaux â†’
+            </a>
+
+            <p className="mt-4 text-xs leading-5 text-slate-500">
+              Lien partenaire. PiloEco peut percevoir une rÃ©munÃ©ration si tu
+              effectues une action Ã©ligible auprÃ¨s du partenaire.
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6">
+            <p className="font-bold text-white">
+              ðŸŽ¯ L&apos;objectif reste l&apos;Ã©conomie
+            </p>
+
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              Obtiens d&apos;abord ton tarif rÃ©el auprÃ¨s du partenaire, puis
+              compare-le Ã  ton contrat actuel. Pilo pourra ensuite t&apos;aider
+              Ã  dÃ©terminer si le changement reprÃ©sente rÃ©ellement une
+              Ã©conomie.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\assurance\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+
+const assurances = [
+  {
+    icon: "ðŸš—",
+    title: "Assurance auto",
+    description:
+      "Compare ton assurance auto et dÃ©couvre les solutions partenaires adaptÃ©es.",
+    saving: "OpportunitÃ© d'Ã©conomie",
+    href: "/missions/auto",
+  },
+  {
+    icon: "ðŸï¸",
+    title: "Assurance moto",
+    description:
+      "Compare ton assurance moto et dÃ©couvre les solutions adaptÃ©es Ã  ton profil.",
+    saving: "OpportunitÃ© d'Ã©conomie",
+    href: "/missions/moto",
+  },
+  {
+    icon: "ðŸ ",
+    title: "Assurance habitation",
+    description:
+      "Compare ton assurance logement et dÃ©couvre les solutions partenaires disponibles.",
+    saving: "OpportunitÃ© d'Ã©conomie",
+    href: "/missions/habitation",
+  },
+  {
+    icon: "ðŸ¶",
+    title: "Assurance animaux",
+    description:
+      "Analyse la protection de ton chien ou chat et compare les solutions disponibles.",
+    saving: "OpportunitÃ© d'Ã©conomie",
+    href: "/missions/animaux",
+  },
+  {
+    icon: "ðŸ¦",
+    title: "Assurance emprunteur",
+    description:
+      "Analyse ton assurance de prÃªt et dÃ©couvre si une solution partenaire peut t'aider Ã  rÃ©duire son coÃ»t.",
+    saving: "OpportunitÃ© d'Ã©conomie",
+    href: "/missions/assurance-emprunteur",
+  },
+];
+
+export default function AssuranceHubPage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-5xl">
+        <Link
+          href="/dashboard"
+          className="text-green-400 hover:underline"
+        >
+          â† Retour au dashboard
+        </Link>
+
+        <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            Hub assurances
+          </p>
+
+          <h1 className="mt-3 text-5xl font-black">
+            ðŸ›¡ï¸ Tes assurances
+          </h1>
+
+          <p className="mt-5 max-w-3xl text-xl text-slate-300">
+            Pilo regroupe ici les missions liÃ©es aux assurances afin de
+            t&apos;aider Ã  identifier les contrats qui peuvent Ãªtre optimisÃ©s.
+          </p>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {assurances.map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="rounded-3xl border border-white/10 bg-slate-900 p-6 transition hover:-translate-y-1 hover:border-green-400/60 hover:bg-slate-800"
+              >
+                <div className="text-5xl">
+                  {item.icon}
+                </div>
+
+                <h2 className="mt-5 text-2xl font-black">
+                  {item.title}
+                </h2>
+
+                <p className="mt-3 text-slate-300">
+                  {item.description}
+                </p>
+
+                <p className="mt-5 font-black text-green-400">
+                  ðŸ’¡ {item.saving}
+                </p>
+
+                <div className="mt-6 inline-block rounded-full bg-green-500 px-5 py-3 font-black text-slate-950">
+                  Ouvrir la mission â†’
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\assurance-emprunteur\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+const GSELECT_CLIENT_URL =
+  "https://client.gselect-assurances.fr/Guillaume_Garnier?indicateur=5216";
+
+const GSELECT_AMBASSADEUR_URL =
+  "https://affilie.gselect-assurances.fr/Guillaume_Garnier?indicateur=5216";
+
+export default function AssuranceEmprunteurMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ¦"
+      title="Optimiser ton assurance emprunteur"
+      subtitle="Analyse ton assurance de prÃªt actuelle et dÃ©couvre si une solution partenaire peut t'aider Ã  rÃ©duire son coÃ»t."
+      basePrice={50}
+      recommendedPrice={50}
+      recommendedName="GSelect Assurances"
+      advice="AccÃ¨de au parcours GSelect pour Ã©tudier ton assurance emprunteur et obtenir une proposition personnalisÃ©e."
+      pricingMode="quote"
+      selfServiceQuote={true}
+      fields={[
+        {
+          name: "projectType",
+          label: "Quel est ton besoin ?",
+          type: "select",
+          defaultValue: "Changer mon assurance emprunteur",
+          options: [
+            "Changer mon assurance emprunteur",
+            "Assurer un nouveau prÃªt",
+            "Comparer mon assurance actuelle",
+          ],
+        },
+        {
+          name: "loanType",
+          label: "Quel type de prÃªt souhaites-tu assurer ?",
+          type: "select",
+          defaultValue: "RÃ©sidence principale",
+          options: [
+            "RÃ©sidence principale",
+            "RÃ©sidence secondaire",
+            "Investissement locatif",
+            "PrÃªt professionnel",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label:
+            "Combien te coÃ»te environ ton assurance emprunteur par mois ?",
+          type: "number",
+          defaultValue: 50,
+        },
+        {
+          name: "partner",
+          label: "Solution partenaire",
+          type: "select",
+          defaultValue: "GSelect Assurances",
+          options: ["GSelect Assurances"],
+        },
+      ]}
+      dynamicOfferField="partner"
+      dynamicOffers={{
+        "GSelect Assurances": {
+          href: GSELECT_CLIENT_URL,
+          buttonLabel: "Obtenir une Ã©tude avec GSelect â†’",
+          recommendedName: "GSelect Assurances",
+          advice:
+            "AccÃ¨de au parcours GSelect pour Ã©tudier ton assurance emprunteur et obtenir une proposition personnalisÃ©e.",
+          external: true,
+          completionType: "none",
+        },
+      }}
+      thirdOfferTitle="ðŸ’¼ Une autre opportunitÃ© avec GSelect"
+      thirdOffer={{
+        href: GSELECT_AMBASSADEUR_URL,
+        buttonLabel: "ðŸ’¼ DÃ©couvrir le programme Ambassadeur â†’",
+        recommendedName: "Devenir Ambassadeur GSelect",
+        advice:
+          "Envie de gÃ©nÃ©rer un complÃ©ment de revenus ? DÃ©couvre le programme Ambassadeur GSelect et recommande leurs solutions autour de toi. Consulte les conditions du programme et les modalitÃ©s de rÃ©munÃ©ration directement auprÃ¨s de GSelect.",
+        external: true,
+        completionType: "none",
+      }}
+      completionType="none"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\assurance-obseques\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function AssuranceObsequesMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ•Šï¸"
+      title="Comparer une assurance obsÃ¨ques"
+      subtitle="Pilo t'aide Ã  identifier une solution adaptÃ©e pour anticiper le financement et l'organisation de tes obsÃ¨ques."
+      basePrice={35}
+      recommendedPrice={25}
+      recommendedName="Solution assurance obsÃ¨ques"
+      advice="Le tarif et les garanties dÃ©pendent notamment de ton Ã¢ge, du capital choisi et des conditions du contrat."
+      fields={[
+        {
+          name: "age",
+          label: "Quel est ton Ã¢ge ?",
+          type: "number",
+          defaultValue: 65,
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget mensuel envisages-tu ?",
+          type: "number",
+          defaultValue: 35,
+        },
+      ]}
+      offerPath="/offres/assurance-obseques"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\auto\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+export default function AutoMissionPage() {
+  const auto91m2 = getAffiliateCampaignById(13963);
+
+  const comparateurDisponible =
+    auto91m2?.published === true &&
+    Boolean(auto91m2.trackingUrl);
+
+  const partnerOptions = [
+    "Leocare",
+    ...(comparateurDisponible
+      ? ["Comparateur auto"]
+      : []),
+  ];
+
+  const dynamicOffers = {
+    Leocare: {
+      href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300139",
+      buttonLabel:
+        "Calculer mon tarif chez Leocare",
+      recommendedName:
+        "Devis personnalisÃ© Leocare",
+      advice:
+        "Tu vas Ãªtre redirigÃ© vers Leocare afin d'obtenir un devis personnalisÃ©. Tu restes libre de poursuivre ou non ta demande.",
+      external: true,
+    },
+
+    ...(comparateurDisponible && auto91m2
+      ? {
+          "Comparateur auto": {
+            href: auto91m2.trackingUrl,
+            buttonLabel:
+              auto91m2.buttonLabel,
+            recommendedName:
+              auto91m2.title,
+            advice:
+              auto91m2.description,
+            external: true,
+          },
+        }
+      : {}),
+  };
+
+  return (
+    <MissionLayout
+      icon="ðŸš—"
+      title="Comparer ton assurance auto"
+      subtitle="Pilo analyse ton contrat auto pour vÃ©rifier si tu pourrais payer moins cher."
+      basePrice={68}
+      recommendedPrice={45}
+      recommendedName="Comparer ton assurance auto"
+      advice="Pilo estime qu'une Ã©conomie est possible sur ton assurance auto. Le tarif dÃ©finitif dÃ©pendra de ton profil, de ton vÃ©hicule et des garanties choisies."
+      dynamicOfferField="offer"
+      dynamicOffers={dynamicOffers}
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Cotisation mensuelle",
+          type: "number",
+          defaultValue: 68,
+        },
+        {
+          name: "vehicle",
+          label: "VÃ©hicule",
+          type: "text",
+          defaultValue: "",
+        },
+        {
+          name: "driverProfile",
+          label: "Profil du conducteur",
+          type: "select",
+          defaultValue:
+            "Conducteur expÃ©rimentÃ©",
+          options: [
+            "Jeune conducteur",
+            "Conducteur expÃ©rimentÃ©",
+            "Conducteur avec malus",
+          ],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: partnerOptions,
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\banque\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function BanqueMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ¦"
+      title="Optimiser tes frais bancaires"
+      subtitle="Pilo compare les frais bancaires pour trouver une meilleure offre."
+
+      basePrice={18}
+      recommendedPrice={6}
+
+      recommendedName="Banque Ã‰co"
+
+      advice="Pilo pense qu'une banque en ligne pourrait rÃ©duire tes frais tout en conservant les mÃªmes services."
+
+      offerPath="/offres/banque"
+
+      fields={[
+        {
+          name: "bank",
+          label: "Banque actuelle",
+          type: "text",
+          defaultValue: "",
+        },
+        {
+          name: "monthlyPrice",
+          label: "Frais mensuels",
+          type: "number",
+          defaultValue: 18,
+        },
+        {
+          name: "card",
+          label: "Carte bancaire",
+          type: "select",
+          defaultValue: "Classique",
+          options: ["Classique", "Premium", "Gold"],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\beaute-artisanat\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function BeauteArtisanatMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸŒ¸"
+      title="BeautÃ© & crÃ©ations artisanales"
+      subtitle="Trouve une crÃ©ation faite main, personnalisÃ©e et adaptÃ©e Ã  ton envie, ton style ou l'occasion."
+      basePrice={50}
+      recommendedPrice={35}
+      recommendedName="CrÃ©ation artisanale personnalisÃ©e"
+      advice="PrivilÃ©gie une crÃ©ation adaptÃ©e Ã  ton budget, Ã  l'occasion et au niveau de personnalisation souhaitÃ©."
+      offerPath="/offres/beaute-artisanat"
+      fields={[
+        {
+          name: "creationType",
+          label: "Quel type de crÃ©ation recherches-tu ?",
+          type: "select",
+          defaultValue: "Press-on nails personnalisÃ©s",
+          options: [
+            "Press-on nails personnalisÃ©s",
+            "Bougie florale faite main",
+            "Cadre floral",
+            "MacramÃ© & dÃ©coration",
+            "Cadeau naissance artisanal",
+            "Fleurs sÃ©chÃ©es & composition",
+            "Autre crÃ©ation personnalisÃ©e",
+          ],
+        },
+        {
+          name: "occasion",
+          label: "Pour quelle occasion ?",
+          type: "select",
+          defaultValue: "Pour me faire plaisir",
+          options: [
+            "Pour me faire plaisir",
+            "Anniversaire",
+            "Naissance",
+            "Mariage",
+            "Saint-Valentin",
+            "FÃªte des mÃ¨res",
+            "NoÃ«l",
+            "Remerciement",
+            "DÃ©coration de la maison",
+            "Autre occasion",
+          ],
+        },
+        {
+          name: "style",
+          label: "Quel style recherches-tu ?",
+          type: "select",
+          defaultValue: "Floral",
+          options: [
+            "Floral",
+            "BohÃ¨me",
+            "Naturel",
+            "Ã‰lÃ©gant",
+            "Minimaliste",
+            "Romantique",
+            "ColorÃ©",
+            "PersonnalisÃ©",
+          ],
+        },
+        {
+          name: "budget",
+          label: "Quel est ton budget ?",
+          type: "select",
+          defaultValue: "30 Ã  50 â‚¬",
+          options: [
+            "Moins de 20 â‚¬",
+            "20 Ã  30 â‚¬",
+            "30 Ã  50 â‚¬",
+            "50 Ã  80 â‚¬",
+            "80 Ã  120 â‚¬",
+            "Plus de 120 â‚¬",
+          ],
+        },
+        {
+          name: "personalization",
+          label: "Souhaites-tu une crÃ©ation personnalisÃ©e ?",
+          type: "select",
+          defaultValue: "Oui",
+          options: [
+            "Oui",
+            "Non",
+            "Je ne sais pas encore",
+          ],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\credit-immobilier\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function CreditImmobilierMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ "
+      title="Optimiser ton crÃ©dit immobilier"
+      subtitle="Indique le montant de ton projet et Pilo t'oriente vers une solution de courtage adaptÃ©e."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Solution de courtage immobilier"
+      advice="Pilo peut t'orienter vers un courtier partenaire pour Ã©tudier ton projet. Le taux, les frais et l'acceptation dÃ©pendent de ton dossier."
+      fields={[
+        {
+          name: "amount",
+          label: "Montant du projet estimÃ© (â‚¬)",
+          type: "number",
+          defaultValue: 200000,
+        },
+      ]}
+      offerPath="/offres/credit-immobilier"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\crypto\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function CryptoMissionPage() {
+  return (
+    <MissionLayout
+      icon="â‚¿"
+      title="Explorer les cryptomonnaies"
+      subtitle="Pilo t'aide Ã  identifier une solution liÃ©e aux crypto-actifs tout en gardant en tÃªte les risques associÃ©s."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Solution crypto"
+      advice="Les crypto-actifs sont des placements risquÃ©s. Pilo peut t'orienter vers une solution partenaire, mais tu dois vÃ©rifier les conditions, les frais et les risques avant toute dÃ©cision."
+      fields={[
+        {
+          name: "cryptoNeed",
+          label: "Quel est ton besoin ?",
+          type: "select",
+          defaultValue: "DÃ©couvrir une plateforme",
+          options: [
+            "DÃ©couvrir une plateforme",
+            "Acheter des cryptomonnaies",
+            "Investir",
+            "Autre",
+          ],
+        },
+      ]}
+      offerPath="/offres/crypto"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\cybersecurite\page.tsx
+============================================================
+export default function CyberSecuritePage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-5xl">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+          PiloEco
+        </p>
+
+        <h1 className="mt-3 text-4xl font-black">
+          ðŸ›¡ï¸ CybersÃ©curitÃ©
+        </h1>
+
+        <p className="mt-4 text-slate-300">
+          ProtÃ©gez votre vie numÃ©rique grÃ¢ce Ã  des solutions reconnues pour
+          sÃ©curiser votre connexion et prÃ©server votre confidentialitÃ©.
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {/* NordVPN */}
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">
+              ðŸŒ ProtÃ©ger ma connexion Internet
+            </h2>
+
+            <p className="mt-4 text-slate-300">
+              Chiffrez votre connexion, sÃ©curisez vos donnÃ©es sur les rÃ©seaux
+              Wi-Fi publics et protÃ©gez votre vie privÃ©e avec NordVPN.
+            </p>
+
+            <a
+              href="https://nordvpn.com/fr/coupon/deal/?coupon=extra1yoff&utm_campaign=off314&utm_content&utm_medium=affiliate&utm_source=aff2495&utm_term="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-block rounded-xl bg-green-500 px-5 py-3 font-bold text-black transition hover:bg-green-400"
+            >
+              DÃ©couvrir NordVPN
+            </a>
+          </div>
+
+          {/* Abelssoft */}
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">
+              ðŸ•µï¸ ProtÃ©ger ma vie privÃ©e
+            </h2>
+
+            <p className="mt-4 text-slate-300">
+              RÃ©duisez le suivi en ligne, protÃ©gez vos donnÃ©es personnelles et
+              reprenez le contrÃ´le de votre confidentialitÃ© grÃ¢ce Ã 
+              AntiBrowserSpy.
+            </p>
+
+            <a
+              href="https://www.kqzyfj.com/click-101847438-15402312"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-block rounded-xl bg-green-500 px-5 py-3 font-bold text-black transition hover:bg-green-400"
+            >
+              ProtÃ©ger ma vie privÃ©e
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\debarras\page.tsx
+============================================================
+"use client";
+
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+const propertyLabels: Record<string, string> = {
+  Maison: "une maison",
+  Appartement: "un appartement",
+  Cave: "une cave",
+  Garage: "un garage",
+  Grenier: "un grenier",
+  Locaux: "des locaux",
+  Autre: "ton espace",
+};
+
+export default function DebarrasOffersPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-slate-300">
+              Chargement de ton projet...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <DebarrasOffersContent />
+    </Suspense>
+  );
+}
+
+function DebarrasOffersContent() {
+  const searchParams = useSearchParams();
+
+  const propertyType =
+    searchParams.get("propertyType") ?? "Maison";
+
+  const surface = searchParams.get("surface");
+
+  const propertyLabel =
+    propertyLabels[propertyType] ?? "ton espace";
+
+  const debarrasOffer =
+    getAffiliateCampaignById(13927);
+
+  const offerDisponible =
+    debarrasOffer?.published === true &&
+    Boolean(debarrasOffer.trackingUrl);
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-4xl">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+          PiloEco
+        </p>
+
+        <h1 className="mt-3 text-4xl font-black">
+          ðŸ“¦ DÃ©barrasser {propertyLabel}
+        </h1>
+
+        <p className="mt-4 text-slate-300">
+          Pilo a identifiÃ© une solution pouvant correspondre
+          Ã  ton besoin de dÃ©barras.
+        </p>
+
+        <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">
+            Ton projet
+          </p>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-sm text-slate-400">
+                Type de dÃ©barras
+              </p>
+
+              <p className="mt-1 font-bold text-white">
+                {propertyType}
+              </p>
+            </div>
+
+            {surface && (
+              <div>
+                <p className="text-sm text-slate-400">
+                  Surface approximative
+                </p>
+
+                <p className="mt-1 font-bold text-white">
+                  {surface} mÂ²
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {!offerDisponible || !debarrasOffer ? (
+          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-xl font-bold">
+              Offre bientÃ´t disponible
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              Pilo recherche actuellement une solution partenaire
+              adaptÃ©e Ã  ton besoin de dÃ©barras.
+            </p>
+          </div>
+        ) : (
+          <article className="mt-8 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">
+                  Solution identifiÃ©e par Pilo
+                </p>
+
+                <h2 className="mt-3 text-3xl font-black">
+                  Solution pour dÃ©barrasser {propertyLabel}
+                </h2>
+              </div>
+
+              <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-400">
+                Disponible
+              </span>
+            </div>
+
+            <p className="mt-5 text-slate-300">
+              {debarrasOffer.description}
+            </p>
+
+            <p className="mt-4 text-slate-300">
+              Ton besoin concerne{" "}
+              <strong className="text-white">
+                {propertyLabel}
+              </strong>
+              {surface ? (
+                <>
+                  {" "}
+                  d&apos;environ{" "}
+                  <strong className="text-white">
+                    {surface} mÂ²
+                  </strong>
+                </>
+              ) : null}
+              .
+            </p>
+
+            <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+              En cliquant sur ce bouton, tu seras redirigÃ© vers
+              le site de notre partenaire. Tu restes libre de
+              poursuivre ou non ta demande.
+            </div>
+
+            <a
+              href={debarrasOffer.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-8 inline-flex rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-950 transition hover:bg-green-400"
+            >
+              {debarrasOffer.buttonLabel}
+            </a>
+
+            <p className="mt-5 text-xs text-slate-500">
+              Offre proposÃ©e via un partenaire externe. Pilo ne
+              privilÃ©gie pas une offre selon sa rÃ©munÃ©ration.
+            </p>
+          </article>
+        )}
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\demenagement\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function DemenagementMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸšš"
+      title="PrÃ©parer et optimiser ton dÃ©mÃ©nagement"
+      subtitle="Choisis le service dont tu as besoin pour mieux maÃ®triser les dÃ©penses liÃ©es Ã  ton dÃ©mÃ©nagement."
+      basePrice={900}
+      recommendedPrice={900}
+      recommendedName="Solution de dÃ©mÃ©nagement adaptÃ©e"
+      pricingMode="quote"
+      advice="Compare les services inclus dans ton devis avant de confirmer ton dÃ©mÃ©nagement."
+      fields={[
+        {
+          name: "moveType",
+          label: "Quel service recherches-tu ?",
+          type: "select",
+          defaultValue: "DÃ©mÃ©nageur professionnel",
+          options: [
+            "DÃ©mÃ©nageur professionnel",
+            "Location de camion",
+            "Garde-meubles",
+            "Cartons et matÃ©riel",
+            "Changement dâ€™adresse",
+            "Autre",
+          ],
+        },
+        {
+          name: "distance",
+          label: "Quelle distance environ vas-tu parcourir ?",
+          type: "number",
+          defaultValue: 120,
+        },
+        {
+          name: "estimatedBudget",
+          label: "Quel budget as-tu prÃ©vu ?",
+          type: "number",
+          defaultValue: 900,
+        },
+      ]}
+      dynamicOfferField="moveType"
+      dynamicOffers={{
+        "DÃ©mÃ©nageur professionnel": {
+          href: "https://www.gentlemen-demenagement.com/piloeco",
+          buttonLabel: "ðŸšš Obtenir mon devis avec -8 %",
+          recommendedName:
+            "Les Gentlemen du DÃ©mÃ©nagement",
+          advice:
+            "GrÃ¢ce au partenariat PiloEco, bÃ©nÃ©ficie de 8 % de remise sur ton dÃ©mÃ©nagement avec Les Gentlemen du DÃ©mÃ©nagement.",
+          external: true,
+
+          exclusivePartner: true,
+
+          contactPhone: "+33475460404",
+          contactPhoneLabel: "Parler Ã  un conseiller",
+          contactCode: "PILO26GDD",
+
+          completionType: "purchase",
+          provider: "Les Gentlemen du DÃ©mÃ©nagement",
+          offerName: "DÃ©mÃ©nagement â€” avantage PiloEco -8 %",
+        },
+      }}
+      completionType="purchase"
+      purchaseLabel="âœ… Jâ€™ai rÃ©alisÃ© mon dÃ©mÃ©nagement"
+      offerPath="/missions"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\diagnostic-immobilier\page.tsx
+============================================================
+"use client";
+
+import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+export default function DiagnosticImmobilierOfferPage() {
+  const diagnosticOffer = getAffiliateCampaignById(13931);
+
+  const offerDisponible =
+    diagnosticOffer?.published === true &&
+    Boolean(diagnosticOffer.trackingUrl);
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-3xl">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+          PiloEco
+        </p>
+
+        <h1 className="mt-3 text-4xl font-black">
+          ðŸ“‹ Diagnostic immobilier
+        </h1>
+
+        <p className="mt-4 text-lg text-slate-300">
+          Pilo a identifiÃ© une solution partenaire pour t&apos;aider Ã  rÃ©aliser
+          ton diagnostic immobilier.
+        </p>
+
+        {!offerDisponible || !diagnosticOffer ? (
+          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-xl font-bold">
+              Offre bientÃ´t disponible
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              Pilo recherche actuellement une solution partenaire adaptÃ©e Ã  ce
+              besoin.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-10 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
+            <div className="flex items-center gap-4">
+              <div className="text-5xl">
+                ðŸ 
+              </div>
+
+              <div>
+                <p className="text-sm font-bold uppercase tracking-wider text-green-400">
+                  Solution partenaire
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black">
+                  {diagnosticOffer.title}
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-6 leading-7 text-slate-300">
+              {diagnosticOffer.description}
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-slate-950/60 p-5">
+              <p className="font-bold text-white">
+                Cette solution peut notamment concerner :
+              </p>
+
+              <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                <li>âœ“ Diagnostic de performance Ã©nergÃ©tique (DPE)</li>
+                <li>âœ“ Vente d&apos;un logement</li>
+                <li>âœ“ Mise en location</li>
+                <li>âœ“ Projet de rÃ©novation Ã©nergÃ©tique</li>
+              </ul>
+            </div>
+
+            <a
+              href={diagnosticOffer.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-8 flex w-full items-center justify-center rounded-2xl bg-green-400 px-6 py-4 text-center text-lg font-black text-slate-950 transition hover:bg-green-300"
+            >
+              {diagnosticOffer.buttonLabel || "Comparer les diagnostics"} â†’
+            </a>
+
+            <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+              Tu seras redirigÃ© vers le site du partenaire pour poursuivre ta
+              demande. PiloEco peut percevoir une rÃ©munÃ©ration si une mise en
+              relation Ã©ligible est rÃ©alisÃ©e.
+            </p>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\electricite\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function ElectriciteMissionPage() {
+  return (
+    <MissionLayout
+      icon="âš¡"
+      title="Comparer ton contrat d'Ã©lectricitÃ©"
+      subtitle="Pilo analyse ton contrat d'Ã©lectricitÃ© et t'indique les Ã©conomies potentielles."
+      basePrice={95}
+      recommendedPrice={72}
+      recommendedName="Optimisation Ã©lectricitÃ©"
+      offerPath="/offres/electricite"
+      advice="Pilo pense que tu pourrais rÃ©duire ta facture avec une offre plus adaptÃ©e Ã  ta consommation. Les partenaires Ã©nergie sont actuellement en cours dâ€™intÃ©gration."
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Facture mensuelle actuelle",
+          type: "number",
+          defaultValue: 95,
+        },
+        {
+          name: "consumption",
+          label: "Consommation annuelle (kWh)",
+          type: "number",
+          defaultValue: 4500,
+        },
+        {
+          name: "counter",
+          label: "Type de compteur",
+          type: "select",
+          defaultValue: "Linky",
+          options: ["Linky", "Ancien compteur"],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\epargne-retraite\page.tsx
+============================================================
+"use client";
+
+import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+export default function EpargneRetraiteOfferPage() {
+  const retraiteOffer = getAffiliateCampaignById(13915);
+
+  const offerDisponible =
+    retraiteOffer?.published === true &&
+    Boolean(retraiteOffer.trackingUrl);
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-3xl">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+          PiloEco
+        </p>
+
+        <h1 className="mt-3 text-4xl font-black">
+          ðŸ’° Ã‰pargne & retraite
+        </h1>
+
+        <p className="mt-4 text-lg text-slate-300">
+          Pilo a identifiÃ© une solution partenaire pour dÃ©couvrir et comparer
+          des solutions d&apos;Ã©pargne retraite.
+        </p>
+
+        {!offerDisponible || !retraiteOffer ? (
+          <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-xl font-bold">
+              Offre bientÃ´t disponible
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              Pilo recherche actuellement une solution partenaire adaptÃ©e Ã  ce
+              besoin.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-10 rounded-3xl border border-green-500/30 bg-slate-900 p-8">
+            <div className="flex items-center gap-4">
+              <div className="text-5xl">
+                ðŸ’°
+              </div>
+
+              <div>
+                <p className="text-sm font-bold uppercase tracking-wider text-green-400">
+                  Solution partenaire
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black">
+                  {retraiteOffer.title}
+                </h2>
+              </div>
+            </div>
+
+            <p className="mt-6 leading-7 text-slate-300">
+              {retraiteOffer.description}
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-slate-950/60 p-5">
+              <p className="font-bold text-white">
+                Avant de choisir une solution :
+              </p>
+
+              <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                <li>âœ“ VÃ©rifie les frais du contrat</li>
+                <li>âœ“ Compare les diffÃ©rents supports proposÃ©s</li>
+                <li>âœ“ VÃ©rifie les conditions de sortie</li>
+                <li>âœ“ Choisis une solution adaptÃ©e Ã  ton horizon de placement</li>
+              </ul>
+            </div>
+
+            {retraiteOffer.compliance?.note && (
+              <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                {retraiteOffer.compliance.note}
+              </div>
+            )}
+
+            <a
+              href={retraiteOffer.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-8 flex w-full items-center justify-center rounded-2xl bg-green-400 px-6 py-4 text-center text-lg font-black text-slate-950 transition hover:bg-green-300"
+            >
+              {retraiteOffer.buttonLabel || "Comparer les solutions retraite"} â†’
+            </a>
+
+            <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+              Tu seras redirigÃ© vers le site du partenaire. Les informations
+              prÃ©sentÃ©es par PiloEco ne constituent pas un conseil en
+              investissement. PiloEco peut percevoir une rÃ©munÃ©ration pour une
+              mise en relation Ã©ligible.
+            </p>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\famille\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function FamilleMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ‘¨â€ðŸ‘©â€ðŸ‘§"
+      title="Optimiser ton budget famille"
+      subtitle="Pilo analyse les dÃ©penses du foyer et te redirige vers les dispositifs officiels adaptÃ©s."
+      basePrice={180}
+      recommendedPrice={140}
+      recommendedName="Budget Famille Ã‰co"
+      advice="Selon ta situation, certaines dÃ©penses familiales peuvent Ãªtre rÃ©duites grÃ¢ce Ã  des aides publiques ou des dispositifs adaptÃ©s."
+      offerPath="/offres/famille"
+      dynamicOfferField="mainExpense"
+      dynamicOffers={{
+        ActivitÃ©s: {
+          href: "https://www.service-public.gouv.fr/particuliers/vosdroits/F33680",
+          buttonLabel: "Voir les aides aux activitÃ©s",
+          recommendedName: "ActivitÃ©s extrascolaires",
+          advice:
+            "DÃ©couvre les aides possibles pour financer les activitÃ©s sportives, culturelles ou de loisirs des enfants.",
+          external: true,
+        },
+
+        Cantine: {
+          href: "https://www.service-public.gouv.fr/particuliers/vosdroits/F19294",
+          buttonLabel: "Voir les aides pour la cantine",
+          recommendedName: "Aides Ã  la cantine scolaire",
+          advice:
+            "Consulte les aides disponibles pour rÃ©duire les frais de restauration scolaire selon ta situation et ton quotient familial.",
+          external: true,
+        },
+
+        Garde: {
+          href: "https://www.service-public.gouv.fr/particuliers/vosdroits/N156",
+          buttonLabel: "Voir les aides liÃ©es aux enfants",
+          recommendedName: "Naissance et garde dâ€™enfant",
+          advice:
+            "Retrouve les informations officielles sur les allocations, la prime Ã  la naissance et les aides liÃ©es Ã  la garde dâ€™enfant.",
+          external: true,
+        },
+
+        Transport: {
+          href: "https://www.service-public.gouv.fr/particuliers/vosdroits/F1872",
+          buttonLabel: "Voir les aides au transport scolaire",
+          recommendedName: "Transport scolaire",
+          advice:
+            "Consulte les informations et les aides disponibles concernant le transport scolaire de tes enfants.",
+          external: true,
+        },
+
+        SantÃ©: {
+          href: "https://www.service-public.gouv.fr/particuliers/recherche?globalSearch=true&keyword=sant%C3%A9",
+          buttonLabel: "Rechercher les aides santÃ©",
+          recommendedName: "SantÃ© de la famille",
+          advice:
+            "AccÃ¨de aux informations officielles concernant la santÃ©, les remboursements, les droits et les aides disponibles.",
+          external: true,
+        },
+
+        Abonnements: {
+          href: "https://www.service-public.gouv.fr/particuliers/recherche?globalSearch=true&keyword=abonnement",
+          buttonLabel: "Voir les informations sur les abonnements",
+          recommendedName: "Abonnements du foyer",
+          advice:
+            "Consulte les informations officielles relatives aux abonnements, aux contrats et aux droits des consommateurs.",
+          external: true,
+        },
+      }}
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Budget mensuel famille",
+          type: "number",
+          defaultValue: 180,
+        },
+        {
+          name: "children",
+          label: "Nombre dâ€™enfants",
+          type: "number",
+          defaultValue: 1,
+        },
+        {
+          name: "mainExpense",
+          label: "DÃ©pense principale",
+          type: "select",
+          defaultValue: "ActivitÃ©s",
+          options: [
+            "ActivitÃ©s",
+            "Cantine",
+            "Garde",
+            "Transport",
+            "SantÃ©",
+            "Abonnements",
+          ],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\fintech\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function FintechMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ’³"
+      title="Optimiser tes finances et ton budget"
+      subtitle="Analyse les services financiers que tu utilises et identifie les solutions qui peuvent t'aider Ã  mieux gÃ©rer ton budget."
+      basePrice={20}
+      recommendedPrice={10}
+      recommendedName="Solution budget optimisÃ©e"
+      advice="Pilo analyse ton besoin afin de t'orienter vers une solution financiÃ¨re adaptÃ©e."
+      fields={[
+        {
+          name: "serviceType",
+          label: "Quel service souhaites-tu optimiser ?",
+          type: "select",
+          defaultValue: "Gestion du budget",
+          options: [
+            "CrÃ©dit immobilier",
+            "Ã‰pargne",
+            "Gestion du budget",
+            "Investissement",
+            "Paiements",
+            "Rachat de crÃ©dits",
+            "Regroupement de crÃ©dits",
+            "Transferts d'argent",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Combien te coÃ»te actuellement ce service par mois ?",
+          type: "number",
+          defaultValue: 20,
+        },
+      ]}
+      offerPath="/offres/fintech"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\formation\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+
+export default function FormationMissionPage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href="/missions"
+          className="text-sm font-bold text-green-400 transition hover:text-green-300"
+        >
+          â† Retour aux missions
+        </Link>
+
+        <div className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            ðŸŽ“ Mission Pilo
+          </p>
+
+          <h1 className="mt-4 text-4xl font-black">
+            Trouver une formation dans le digital
+          </h1>
+
+          <p className="mt-4 text-lg leading-7 text-slate-300">
+            Tu souhaites te former, dÃ©velopper de nouvelles compÃ©tences ou
+            prÃ©parer une reconversion dans le digital ?
+          </p>
+
+          <div className="mt-8 rounded-2xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400">
+              Solution partenaire disponible
+            </p>
+
+            <h2 className="mt-3 text-2xl font-black">
+              Formation en ligne & digital
+            </h2>
+
+            <p className="mt-3 leading-7 text-slate-300">
+              Pilo a sÃ©lectionnÃ© une solution partenaire qui te permet de
+              dÃ©couvrir des formations en ligne dans le digital et de vÃ©rifier
+              les possibilitÃ©s correspondant Ã  ton projet.
+            </p>
+
+            <Link
+              href="/offres/formation"
+              className="mt-6 inline-flex rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-950 transition hover:bg-green-400"
+            >
+              DÃ©couvrir les formations â†’
+            </Link>
+          </div>
+
+          <p className="mt-5 text-xs leading-5 text-slate-500">
+            Tu restes libre de poursuivre ou non auprÃ¨s du partenaire.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\gaz\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function GazMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ”¥"
+      title="Optimiser ton contrat de gaz"
+      subtitle="Analyse ton contrat actuel et dÃ©couvre si une solution plus adaptÃ©e Ã  ta consommation peut Ãªtre intÃ©ressante."
+      basePrice={120}
+      recommendedPrice={90}
+      recommendedName="Offre gaz adaptÃ©e"
+      advice="Compare le prix du kWh, l'abonnement, les conditions du contrat et les Ã©ventuelles offres combinÃ©es Ã©lectricitÃ© + gaz."
+      fields={[
+        {
+          name: "currentProvider",
+          label: "Quel est ton fournisseur actuel ?",
+          type: "text",
+          defaultValue: "",
+        },
+        {
+          name: "monthlyPrice",
+          label: "Combien paies-tu actuellement par mois ?",
+          type: "number",
+          defaultValue: 90,
+        },
+        {
+          name: "housingType",
+          label: "Quel logement est concernÃ© ?",
+          type: "select",
+          defaultValue: "Maison",
+          options: [
+            "Appartement",
+            "Maison",
+            "Autre",
+          ],
+        },
+        {
+          name: "useType",
+          label: "Ã€ quoi sert principalement le gaz ?",
+          type: "select",
+          defaultValue: "Chauffage",
+          options: [
+            "Chauffage",
+            "Eau chaude",
+            "Cuisson",
+            "Chauffage + eau chaude",
+            "Chauffage + eau chaude + cuisson",
+            "Autre",
+          ],
+        },
+      ]}
+      offerPath="/offres/gaz"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\habitation\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+export default function HabitationMissionPage() {
+  const habitation91m2 =
+    getAffiliateCampaignById(13962);
+
+  const comparateurDisponible =
+    habitation91m2?.published === true &&
+    Boolean(habitation91m2.trackingUrl);
+
+  const partnerOptions = [
+    "Leocare",
+    ...(comparateurDisponible
+      ? ["Comparateur habitation"]
+      : []),
+  ];
+
+  const dynamicOffers = {
+    Leocare: {
+      href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300140",
+      buttonLabel:
+        "Calculer mon tarif chez Leocare",
+      recommendedName:
+        "Devis personnalisÃ© Leocare",
+      advice:
+        "Tu vas Ãªtre redirigÃ© vers Leocare afin d'obtenir un devis personnalisÃ©. Tu restes libre de poursuivre ou non ta demande.",
+      external: true,
+    },
+
+    ...(comparateurDisponible &&
+    habitation91m2
+      ? {
+          "Comparateur habitation": {
+            href: habitation91m2.trackingUrl,
+            buttonLabel:
+              habitation91m2.buttonLabel,
+            recommendedName:
+              habitation91m2.title,
+            advice:
+              habitation91m2.description,
+            external: true,
+          },
+        }
+      : {}),
+  };
+
+  return (
+    <MissionLayout
+      icon="ðŸ "
+      title="Comparer ton assurance habitation"
+      subtitle="Pilo analyse ton contrat habitation pour vÃ©rifier si tu pourrais payer moins cher."
+      basePrice={32}
+      recommendedPrice={18}
+      recommendedName="Comparer ton assurance habitation"
+      advice="Pilo estime qu'une Ã©conomie est possible sur ton assurance habitation. Le tarif dÃ©finitif dÃ©pendra de ton logement, de ta situation et des garanties choisies."
+      dynamicOfferField="offer"
+      dynamicOffers={dynamicOffers}
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Cotisation mensuelle",
+          type: "number",
+          defaultValue: 32,
+        },
+        {
+          name: "surface",
+          label: "Surface du logement (mÂ²)",
+          type: "number",
+          defaultValue: 80,
+        },
+        {
+          name: "status",
+          label: "Situation",
+          type: "select",
+          defaultValue: "Locataire",
+          options: [
+            "Locataire",
+            "PropriÃ©taire",
+          ],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: partnerOptions,
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\internet\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function InternetMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸŒ"
+      title="Comparer ton offre Internet"
+      subtitle="Pilo recherche une box Internet moins chÃ¨re."
+
+      basePrice={38}
+      recommendedPrice={25}
+
+      recommendedName="Fibre Ã‰co"
+
+      advice="Pilo a trouvÃ© une offre fibre offrant des performances similaires pour un prix infÃ©rieur."
+
+      offerPath="/offres/internet"
+
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Prix actuel",
+          type: "number",
+          defaultValue: 38,
+        },
+        {
+          name: "speed",
+          label: "DÃ©bit (Mb/s)",
+          type: "number",
+          defaultValue: 1000,
+        },
+        {
+          name: "provider",
+          label: "OpÃ©rateur",
+          type: "text",
+          defaultValue: "",
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\location-meublee\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function LocationMeubleeMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ˜ï¸"
+      title="GÃ©rer ma location meublÃ©e"
+      subtitle="RÃ©ponds Ã  quelques questions pour dÃ©couvrir une solution adaptÃ©e Ã  la gestion comptable et fiscale de ta location meublÃ©e."
+      basePrice={0}
+      recommendedPrice={0}
+      recommendedName="Solution comptable LMNP"
+      offerPath="/offres/location-meublee"
+      advice="Les besoins comptables et fiscaux peuvent varier selon ton activitÃ©, ton rÃ©gime dâ€™imposition et ta situation personnelle."
+      fields={[
+        {
+          name: "situation",
+          label: "OÃ¹ en es-tu dans ton projet ?",
+          type: "select",
+          defaultValue: "Je loue dÃ©jÃ  un logement meublÃ©",
+          options: [
+            "Je loue dÃ©jÃ  un logement meublÃ©",
+            "Je vais bientÃ´t louer un logement meublÃ©",
+            "Je me renseigne avant de me lancer",
+          ],
+        },
+        {
+          name: "locationType",
+          label: "Quel type de location est concernÃ© ?",
+          type: "select",
+          defaultValue: "Location meublÃ©e longue durÃ©e",
+          options: [
+            "Location meublÃ©e longue durÃ©e",
+            "Location saisonniÃ¨re / courte durÃ©e",
+            "Les deux",
+            "Je ne sais pas encore",
+          ],
+        },
+        {
+          name: "need",
+          label: "De quoi as-tu principalement besoin ?",
+          type: "select",
+          defaultValue: "GÃ©rer ma comptabilitÃ© LMNP",
+          options: [
+            "GÃ©rer ma comptabilitÃ© LMNP",
+            "PrÃ©parer ma dÃ©claration fiscale",
+            "ÃŠtre accompagnÃ© dans mes dÃ©marches",
+            "Comprendre quel rÃ©gime choisir",
+            "Je ne sais pas encore",
+          ],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\logiciels\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function LogicielsMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ’»"
+      title="Optimiser tes logiciels et abonnements numÃ©riques"
+      subtitle="Analyse ton logiciel actuel ou trouve une solution plus adaptÃ©e Ã  ton besoin."
+      basePrice={20}
+      recommendedPrice={10}
+      recommendedName="Solution logicielle adaptÃ©e"
+      advice="Compare les fonctions rÃ©ellement utiles, le nombre dâ€™utilisateurs et le coÃ»t mensuel avant de choisir une nouvelle solution."
+      fields={[
+        {
+          name: "contractStatus",
+          label: "Quelle est ta situation ?",
+          type: "select",
+          defaultValue: "Jâ€™utilise dÃ©jÃ  un logiciel",
+          options: [
+            "Jâ€™utilise dÃ©jÃ  un logiciel",
+            "Je cherche un logiciel",
+          ],
+        },
+        {
+          name: "provider",
+          label: "Quel logiciel ou service est concernÃ© ?",
+          type: "text",
+          defaultValue: "",
+        },
+        {
+          name: "softwareType",
+          label: "Quel type de logiciel recherches-tu ?",
+          type: "select",
+          defaultValue: "Bureautique",
+          options: [
+            "Bureautique",
+            "Design et crÃ©ation",
+            "ComptabilitÃ©",
+            "Gestion de projet",
+            "CybersÃ©curitÃ©",
+            "Stockage cloud",
+            "Communication",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget mensuel souhaites-tu prÃ©voir ?",
+          type: "number",
+          defaultValue: 15,
+        },
+      ]}
+      offerPath="/offres/logiciels"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mobile\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MobileMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ“±"
+      title="Comparer ton forfait mobile"
+      subtitle="Pilo analyse ton forfait actuel et tâ€™oriente vers une offre mobile adaptÃ©e Ã  ton usage."
+      basePrice={45}
+      recommendedPrice={15}
+      recommendedName="Offre mobile adaptÃ©e"
+      advice="Compare les forfaits disponibles selon ton budget, ton besoin en donnÃ©es mobiles et le type dâ€™offre recherchÃ©."
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Prix actuel par mois",
+          type: "number",
+          defaultValue: 45,
+        },
+        {
+          name: "data",
+          label: "Internet inclus en Go",
+          type: "number",
+          defaultValue: 150,
+        },
+        {
+          name: "operator",
+          label: "OpÃ©rateur actuel",
+          type: "select",
+          defaultValue: "Orange",
+          options: [
+            "Bouygues Telecom",
+            "B&You",
+            "Free Mobile",
+            "Lebara",
+            "Lyca Mobile",
+            "Orange",
+            "Prixtel",
+            "RED by SFR",
+            "SFR",
+            "Sosh",
+            "YouPrice",
+            "Autre",
+          ],
+        },
+        {
+          name: "offerType",
+          label: "Quel type dâ€™offre recherches-tu ?",
+          type: "select",
+          defaultValue: "Forfait SIM 1 mois",
+          options: [
+            "eSIM",
+            "Forfait international",
+            "Forfait prÃ©payÃ©",
+            "Forfait SIM 1 mois",
+            "Forfait SIM 24 mois",
+          ],
+        },
+      ]}
+      dynamicOfferField="offerType"
+      dynamicOffers={{
+        eSIM: {
+          href: "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Ffr%2Fesim%2F",
+          buttonLabel: "DÃ©couvrir lâ€™eSIM Lyca Mobile",
+          recommendedName: "Lyca Mobile â€“ eSIM",
+          advice:
+            "DÃ©couvre lâ€™eSIM Lyca Mobile et vÃ©rifie sa compatibilitÃ© avec ton tÃ©lÃ©phone.",
+          external: true,
+        },
+
+        "Forfait international": {
+          href: "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Ffr%2Fbundles%2Fforfait-prepaye%2F%23international",
+          buttonLabel: "Voir les forfaits internationaux",
+          recommendedName: "Lyca Mobile â€“ International",
+          advice:
+            "DÃ©couvre les forfaits adaptÃ©s aux appels et aux usages internationaux.",
+          external: true,
+        },
+
+        "Forfait prÃ©payÃ©": {
+          href: "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Ffr%2Fbundles%2Fforfait-prepaye%2F%23forfaits",
+          buttonLabel: "Voir les forfaits prÃ©payÃ©s",
+          recommendedName: "Lyca Mobile â€“ Forfaits prÃ©payÃ©s",
+          advice:
+            "DÃ©couvre les offres prÃ©payÃ©es Lyca Mobile sans abonnement mobile classique.",
+          external: true,
+        },
+
+        "Forfait SIM 1 mois": {
+          href: "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Fabo%2Ffr%2Fbundles%2Fsim-only-deals%2F%231-mois",
+          buttonLabel: "DÃ©couvrir les forfaits 1 mois",
+          recommendedName: "Lyca Mobile â€“ Forfaits SIM 1 mois",
+          advice:
+            "DÃ©couvre les forfaits SIM Lyca Mobile proposÃ©s sur une durÃ©e dâ€™un mois.",
+          external: true,
+        },
+
+        "Forfait SIM 24 mois": {
+          href: "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Fabo%2Ffr%2Fbundles%2Fsim-only-deals%2F%2324-mois",
+          buttonLabel: "DÃ©couvrir les forfaits 24 mois",
+          recommendedName: "Lyca Mobile â€“ Forfaits SIM 24 mois",
+          advice:
+            "DÃ©couvre les forfaits SIM Lyca Mobile proposÃ©s sur une durÃ©e de 24 mois.",
+          external: true,
+        },
+      }}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mobilite\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MobiliteMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸš—"
+      title="Optimiser tes dÃ©penses de mobilitÃ©"
+      subtitle="Pilo compare tes dÃ©penses liÃ©es Ã  la voiture et aux transports."
+
+      basePrice={120}
+      recommendedPrice={90}
+
+      recommendedName="MobilitÃ© Ã‰co"
+
+      advice="Pilo pense que tes dÃ©penses de mobilitÃ© peuvent Ãªtre rÃ©duites en regroupant certains contrats ou en changeant d'offre."
+
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Budget mensuel",
+          type: "number",
+          defaultValue: 120,
+        },
+        {
+          name: "vehicle",
+          label: "Type de vÃ©hicule",
+          type: "select",
+          defaultValue: "Voiture",
+          options: [
+            "Voiture",
+            "Moto",
+            "Transports",
+            "Mixte",
+          ],
+        },
+        {
+          name: "km",
+          label: "KilomÃ¨tres / an",
+          type: "number",
+          defaultValue: 12000,
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mobilites-douces\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MobilitesDoucesMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸš²"
+      title="Assurer un vÃ©lo ou une nouvelle mobilitÃ©"
+      subtitle="Choisis le type de vÃ©hicule Ã  assurer pour dÃ©couvrir lâ€™offre Ulygo adaptÃ©e."
+      basePrice={20}
+      recommendedPrice={15}
+      recommendedName="Assurance mobilitÃ© adaptÃ©e"
+      advice="SÃ©lectionne ton type de mobilitÃ© pour Ãªtre redirigÃ© vers lâ€™offre Ulygo correspondante."
+      fields={[
+        {
+          name: "mobilityType",
+          label: "Quel type de mobilitÃ© souhaites-tu assurer ?",
+          type: "select",
+          defaultValue: "VÃ©lo",
+          options: [
+            "Trottinette Ã©lectrique et nouvelles mobilitÃ©s",
+            "VÃ©lo",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget mensuel souhaites-tu consacrer Ã  lâ€™assurance ?",
+          type: "select",
+          defaultValue: "De 10 â‚¬ Ã  20 â‚¬",
+          options: [
+            "Moins de 10 â‚¬",
+            "De 10 â‚¬ Ã  20 â‚¬",
+            "Plus de 20 â‚¬",
+          ],
+        },
+      ]}
+      dynamicOfferField="mobilityType"
+      dynamicOffers={{
+        "Trottinette Ã©lectrique et nouvelles mobilitÃ©s": {
+          href: "https://dte.ulygo.fr/?P51162958C0F5191&redir=https%3A%2F%2Fulygo.fr%2Fassurance-nouvelles-mobilites-nvei",
+          buttonLabel: "DÃ©couvrir lâ€™assurance nouvelles mobilitÃ©s",
+          recommendedName:
+            "Ulygo â€“ Assurance trottinette et nouvelles mobilitÃ©s",
+          advice:
+            "DÃ©couvre les garanties Ulygo pour les trottinettes Ã©lectriques, EDPM et nouvelles mobilitÃ©s.",
+          external: true,
+        },
+
+        VÃ©lo: {
+          href: "https://dte.ulygo.fr/?P51162958C0F5191&redir=https%3A%2F%2Fulygo.fr%2Fassurance-velo-cycliste",
+          buttonLabel: "DÃ©couvrir lâ€™assurance vÃ©lo",
+          recommendedName: "Ulygo â€“ Assurance vÃ©lo",
+          advice:
+            "DÃ©couvre les garanties Ulygo pour les vÃ©los musculaires, vÃ©los Ã©lectriques, VTT, vÃ©los de route et vÃ©los cargo.",
+          external: true,
+        },
+      }}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\moto\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MotoMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸï¸"
+      title="Comparer ton assurance moto"
+      subtitle="Pilo analyse ton contrat moto pour vÃ©rifier si tu pourrais payer moins cher."
+
+      basePrice={45}
+      recommendedPrice={30}
+
+      recommendedName="Devis personnalisÃ© Leocare"
+
+      advice="Pilo estime qu'une Ã©conomie est possible sur ton assurance moto. Le tarif dÃ©finitif dÃ©pendra de ton vÃ©hicule, de ton profil et des garanties choisies."
+
+      dynamicOfferField="offer"
+
+      dynamicOffers={{
+        Leocare: {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300138",
+          buttonLabel: "Calculer mon tarif chez Leocare",
+          recommendedName: "Devis personnalisÃ© Leocare",
+          advice:
+            "Tu vas Ãªtre redirigÃ© vers Leocare afin d'obtenir un devis personnalisÃ©. Tu restes libre de poursuivre ou non ta demande.",
+          external: true,
+        },
+      }}
+
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Cotisation mensuelle",
+          type: "number",
+          defaultValue: 45,
+        },
+        {
+          name: "vehicleType",
+          label: "Type de deux-roues",
+          type: "select",
+          defaultValue: "Moto",
+          options: ["Moto", "Scooter"],
+        },
+        {
+          name: "engineSize",
+          label: "CylindrÃ©e",
+          type: "select",
+          defaultValue: "125 cmÂ³",
+          options: [
+            "50 cmÂ³",
+            "125 cmÂ³",
+            "Entre 126 et 500 cmÂ³",
+            "Plus de 500 cmÂ³",
+          ],
+        },
+        {
+          name: "offer",
+          label: "Offre partenaire",
+          type: "select",
+          defaultValue: "Leocare",
+          options: ["Leocare"],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\moto-equipement\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MotoEquipementMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸï¸"
+      title="Entretenir ou Ã©quiper ta moto"
+      subtitle="Choisis ton besoin pour dÃ©couvrir des solutions partenaires dÃ©diÃ©es aux piÃ¨ces, accessoires et Ã©quipements deux-roues."
+      basePrice={150}
+      recommendedPrice={120}
+      recommendedName="Solution moto partenaire"
+      offerPath="/offres/moto-equipement"
+      advice="Compare les rÃ©fÃ©rences, compatibilitÃ©s, prix et conditions de livraison avant de choisir ton Ã©quipement."
+      fields={[
+        {
+          name: "needType",
+          label: "Que recherches-tu ?",
+          type: "select",
+          defaultValue: "Moto",
+          options: [
+            "Casques",
+            "Ã‰quipement motard",
+            "Accessoires moto",
+            "Bagagerie",
+            "High-tech",
+            "Pneus moto",
+            "Moto",
+            "Scooter",
+            "Moto 50cc",
+            "Mobylette",
+            "Maxi-scooter",
+            "Tout-terrain",
+            "Quad",
+            "Outillage",
+            "VÃ©lo",
+            "Promotions & dÃ©stockage",
+            "NouveautÃ©s",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget souhaites-tu consacrer Ã  ce besoin ?",
+          type: "number",
+          defaultValue: 150,
+        },
+      ]}
+      dynamicOfferField="needType"
+      dynamicOffers={{
+        Casques: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fcasque%2F",
+          buttonLabel: "Voir les casques",
+          recommendedName: "La BÃ©canerie â€“ Casques",
+          advice:
+            "DÃ©couvre les casques disponibles chez La BÃ©canerie et choisis un modÃ¨le adaptÃ© Ã  ta pratique.",
+          external: true,
+        },
+
+        "Ã‰quipement motard": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fequipement-motard%2F",
+          buttonLabel: "Voir lâ€™Ã©quipement motard",
+          recommendedName: "La BÃ©canerie â€“ Ã‰quipement motard",
+          advice:
+            "DÃ©couvre les Ã©quipements destinÃ©s au motard et sÃ©lectionne les produits adaptÃ©s Ã  ton usage.",
+          external: true,
+        },
+
+        "Accessoires moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les accessoires moto",
+          recommendedName: "La BÃ©canerie â€“ Accessoires moto",
+          advice:
+            "DÃ©couvre les accessoires et Ã©quipements disponibles pour complÃ©ter ou amÃ©liorer ta moto.",
+          external: true,
+        },
+
+        Bagagerie: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir la bagagerie moto",
+          recommendedName: "La BÃ©canerie â€“ Bagagerie",
+          advice:
+            "DÃ©couvre les solutions de rangement et de bagagerie adaptÃ©es Ã  ton deux-roues.",
+          external: true,
+        },
+
+        "High-tech": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les Ã©quipements high-tech",
+          recommendedName: "La BÃ©canerie â€“ High-tech",
+          advice:
+            "DÃ©couvre les accessoires technologiques et Ã©quipements connectÃ©s pour la moto.",
+          external: true,
+        },
+
+        "Pneus moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les pneus moto",
+          recommendedName: "La BÃ©canerie â€“ Pneus moto",
+          advice:
+            "DÃ©couvre les solutions disponibles pour remplacer ou Ã©quiper les pneus de ta moto.",
+          external: true,
+        },
+
+        Moto: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto%2F",
+          buttonLabel: "Voir les piÃ¨ces et Ã©quipements moto",
+          recommendedName: "La BÃ©canerie â€“ Moto",
+          advice:
+            "DÃ©couvre les piÃ¨ces, accessoires et Ã©quipements disponibles pour ta moto.",
+          external: true,
+        },
+
+        Scooter: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fscooter%2F",
+          buttonLabel: "Voir les piÃ¨ces scooter",
+          recommendedName: "La BÃ©canerie â€“ Scooter",
+          advice:
+            "DÃ©couvre les piÃ¨ces, accessoires et Ã©quipements disponibles pour ton scooter.",
+          external: true,
+        },
+
+        "Moto 50cc": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmoto-50cc%2F",
+          buttonLabel: "Voir les Ã©quipements 50cc",
+          recommendedName: "La BÃ©canerie â€“ Moto 50cc",
+          advice:
+            "DÃ©couvre les piÃ¨ces et Ã©quipements adaptÃ©s aux motos 50cc.",
+          external: true,
+        },
+
+        Mobylette: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmobylette%2F",
+          buttonLabel: "Voir les piÃ¨ces mobylette",
+          recommendedName: "La BÃ©canerie â€“ Mobylette",
+          advice:
+            "DÃ©couvre les piÃ¨ces et accessoires disponibles pour les mobylettes.",
+          external: true,
+        },
+
+        "Maxi-scooter": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fmaxi-scooter%2F",
+          buttonLabel: "Voir les Ã©quipements maxi-scooter",
+          recommendedName: "La BÃ©canerie â€“ Maxi-scooter",
+          advice:
+            "DÃ©couvre les piÃ¨ces et Ã©quipements disponibles pour les maxi-scooters.",
+          external: true,
+        },
+
+        "Tout-terrain": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Ftout-terrain%2F",
+          buttonLabel: "Voir lâ€™Ã©quipement tout-terrain",
+          recommendedName: "La BÃ©canerie â€“ Tout-terrain",
+          advice:
+            "DÃ©couvre les piÃ¨ces, accessoires et Ã©quipements destinÃ©s Ã  la pratique tout-terrain.",
+          external: true,
+        },
+
+        Quad: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fquad%2F",
+          buttonLabel: "Voir les piÃ¨ces quad",
+          recommendedName: "La BÃ©canerie â€“ Quad",
+          advice:
+            "DÃ©couvre les piÃ¨ces et accessoires disponibles pour ton quad.",
+          external: true,
+        },
+
+        Outillage: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Foutillage%2F",
+          buttonLabel: "Voir lâ€™outillage",
+          recommendedName: "La BÃ©canerie â€“ Outillage",
+          advice:
+            "DÃ©couvre lâ€™outillage nÃ©cessaire pour entretenir et rÃ©parer ton deux-roues.",
+          external: true,
+        },
+
+        VÃ©lo: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Fvelo%2F",
+          buttonLabel: "Voir les Ã©quipements vÃ©lo",
+          recommendedName: "La BÃ©canerie â€“ VÃ©lo",
+          advice:
+            "DÃ©couvre les piÃ¨ces, accessoires et Ã©quipements proposÃ©s pour le vÃ©lo.",
+          external: true,
+        },
+
+        "Promotions & dÃ©stockage": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Frecherche%2F%3Fvf%3D1%26destockage%3D1%26promo%3D1",
+          buttonLabel: "Voir les promotions",
+          recommendedName: "La BÃ©canerie â€“ Promotions & dÃ©stockage",
+          advice:
+            "DÃ©couvre les produits actuellement en promotion ou en dÃ©stockage chez La BÃ©canerie.",
+          external: true,
+        },
+
+        NouveautÃ©s: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301532&url=https%3A%2F%2Fwww.la-becanerie.com%2Frecherche%2F%3Fnew%3D1",
+          buttonLabel: "Voir les nouveautÃ©s",
+          recommendedName: "La BÃ©canerie â€“ NouveautÃ©s",
+          advice:
+            "DÃ©couvre les nouveautÃ©s rÃ©cemment ajoutÃ©es au catalogue La BÃ©canerie.",
+          external: true,
+        },
+      }}
+      alternativeOfferField="needType"
+      alternativeTitle="Comparer avec MAXXESS"
+      alternativeOffers={{
+        Casques: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fcasque-moto-15%2F%3Fcategories%3DCasque%2520int%25C3%25A9gral~Casque%2520jet~Casque%2520modulable~Casque%2520crossover~Casque%2520Cross",
+          buttonLabel: "Voir les casques chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Casques moto",
+          advice:
+            "Compare Ã©galement les casques disponibles chez MAXXESS selon ton type de pratique et ton budget.",
+          external: true,
+        },
+
+        "Ã‰quipement motard": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategories%2Fequipement-du-motard-12",
+          buttonLabel: "Voir lâ€™Ã©quipement chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Ã‰quipement du motard",
+          advice:
+            "DÃ©couvre les vÃªtements, protections et Ã©quipements du motard proposÃ©s par MAXXESS.",
+          external: true,
+        },
+
+        "Accessoires moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Faccessoires-de-la-moto-13",
+          buttonLabel: "Voir les accessoires chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Accessoires moto",
+          advice:
+            "Compare les accessoires moto disponibles chez MAXXESS selon ton besoin.",
+          external: true,
+        },
+
+        Bagagerie: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fbagagerie-301",
+          buttonLabel: "Voir la bagagerie chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Bagagerie",
+          advice:
+            "DÃ©couvre les sacs, top cases et solutions de transport disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "High-tech": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fhigh-tech-220",
+          buttonLabel: "Voir le high-tech chez MAXXESS",
+          recommendedName: "MAXXESS â€“ High-tech moto",
+          advice:
+            "DÃ©couvre les Ã©quipements high-tech et accessoires connectÃ©s proposÃ©s par MAXXESS.",
+          external: true,
+        },
+
+        "Pneus moto": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fpneu%2Fmerchants",
+          buttonLabel: "Voir les pneus chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Pneus moto",
+          advice:
+            "Compare les pneus disponibles chez MAXXESS en fonction de ta moto et de ton utilisation.",
+          external: true,
+        },
+
+        Moto: {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2F",
+          buttonLabel: "DÃ©couvrir MAXXESS",
+          recommendedName: "MAXXESS â€“ Moto",
+          advice:
+            "DÃ©couvre Ã©galement les Ã©quipements, accessoires et produits moto disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "Tout-terrain": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fcategorie%2Fcross-tt-enduro-14",
+          buttonLabel: "Voir le tout-terrain chez MAXXESS",
+          recommendedName: "MAXXESS â€“ Cross, TT & Enduro",
+          advice:
+            "Compare les Ã©quipements dÃ©diÃ©s au cross, tout-terrain et enduro disponibles chez MAXXESS.",
+          external: true,
+        },
+
+        "Promotions & dÃ©stockage": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23301763&url=https%3A%2F%2Fwww.maxxess.fr%2Fbons-plans",
+          buttonLabel: "Voir les bons plans MAXXESS",
+          recommendedName: "MAXXESS â€“ Bons plans",
+          advice:
+            "DÃ©couvre les offres et bons plans actuellement disponibles chez MAXXESS.",
+          external: true,
+        },
+      }}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mutuelle\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MutuelleMissionPage() {
+  return (
+    <MissionLayout
+      icon="â¤ï¸"
+      title="Optimiser ta mutuelle santÃ©"
+      subtitle="Analyse ta mutuelle actuelle et dÃ©couvre si une solution plus adaptÃ©e Ã  tes besoins peut Ãªtre intÃ©ressante."
+      basePrice={70}
+      recommendedPrice={50}
+      recommendedName="Mutuelle santÃ© optimisÃ©e"
+      advice="Compare ton niveau de couverture et ton budget afin d'identifier une solution adaptÃ©e Ã  tes besoins."
+      fields={[
+        {
+          name: "situation",
+          label: "Quelle est ta situation ?",
+          type: "select",
+          defaultValue: "SalariÃ©",
+          options: [
+            "SalariÃ©",
+            "IndÃ©pendant",
+            "RetraitÃ©",
+            "Ã‰tudiant",
+            "Sans emploi",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Combien paies-tu actuellement par mois ?",
+          type: "number",
+          defaultValue: 70,
+        },
+        {
+          name: "priority",
+          label: "Quel est ton besoin principal ?",
+          type: "select",
+          defaultValue: "Soins courants",
+          options: [
+            "Soins courants",
+            "Optique",
+            "Dentaire",
+            "Hospitalisation",
+            "Couverture complÃ¨te",
+          ],
+        },
+      ]}
+      offerPath="/offres/mutuelle"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mutuelle-professionnelle\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MutuelleProfessionnelleMissionPage() {
+  return (
+    <MissionLayout
+      icon="â¤ï¸"
+      title="Mutuelle Professionnelle"
+      subtitle="Trouve une solution de mutuelle santÃ© adaptÃ©e Ã  ton activitÃ© professionnelle et Ã  ta situation."
+      basePrice={90}
+      recommendedPrice={70}
+      recommendedName="Mutuelle santÃ© TNS partenaire"
+      offerPath="/offres/mutuelle-professionnelle"
+      advice="Compare les garanties, les niveaux de remboursement, les exclusions et le tarif proposÃ© avant de choisir ta mutuelle professionnelle."
+      fields={[
+        {
+          name: "professionalStatus",
+          label: "Quel est ton statut professionnel ?",
+          type: "select",
+          defaultValue: "Auto-entrepreneur",
+          options: [
+            "Auto-entrepreneur",
+            "Artisan / CommerÃ§ant",
+            "Profession libÃ©rale",
+            "GÃ©rant majoritaire de SARL",
+            "Travailleur indÃ©pendant",
+            "Autre",
+          ],
+        },
+        {
+          name: "coverage",
+          label: "Qui souhaites-tu couvrir ?",
+          type: "select",
+          defaultValue: "Moi uniquement",
+          options: [
+            "Moi uniquement",
+            "Moi + conjoint",
+            "Moi + enfant(s)",
+            "Toute ma famille",
+          ],
+        },
+        {
+          name: "priority",
+          label: "Quel est ton besoin principal ?",
+          type: "select",
+          defaultValue: "RÃ©duire le prix de ma mutuelle",
+          options: [
+            "RÃ©duire le prix de ma mutuelle",
+            "AmÃ©liorer mes remboursements",
+            "Optique",
+            "Dentaire",
+            "Hospitalisation",
+            "MÃ©decines douces",
+            "Trouver ma premiÃ¨re mutuelle professionnelle",
+          ],
+        },
+        {
+          name: "currentPrice",
+          label: "Combien paies-tu actuellement par mois ?",
+          type: "number",
+          defaultValue: "90",
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\mutuelle-senior\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function MutuelleSeniorMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ‘µ"
+      title="Comparer une mutuelle senior"
+      subtitle="Pilo t'aide Ã  identifier une solution de mutuelle adaptÃ©e aux besoins des seniors."
+      basePrice={90}
+      recommendedPrice={70}
+      recommendedName="Solution mutuelle senior"
+      advice="Le tarif et les garanties dÃ©pendent de ton Ã¢ge, de ta situation et du niveau de couverture choisi."
+      fields={[
+        {
+          name: "age",
+          label: "Quel est ton Ã¢ge ?",
+          type: "number",
+          defaultValue: 65,
+        },
+        {
+          name: "monthlyPrice",
+          label: "Combien paies-tu actuellement par mois ?",
+          type: "number",
+          defaultValue: 90,
+        },
+      ]}
+      offerPath="/offres/mutuelle-senior"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\nutrition-animaux\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+type AnimalType = "Chien" | "Chat";
+
+type DogProductType =
+  | "Calculer la ration"
+  | "Croquettes"
+  | "Terrines"
+  | "Moelleux par Thierry Marx";
+
+type CatProductType =
+  | "Croquettes"
+  | "Terrines"
+  | "Friandises"
+  | "Moelleux par Thierry Marx";
+
+type ProductType = DogProductType | CatProductType;
+
+type OfferConfig = {
+  href: string;
+  title: string;
+  description: string;
+  buttonLabel: string;
+};
+
+const dogOffers: Record<DogProductType, OfferConfig> = {
+  "Calculer la ration": {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2Fcalculez-la-ration-de-votre-chien",
+    title: "Calculateur de ration Babâ€™in pour chien",
+    description:
+      "Estime la ration quotidienne adaptÃ©e Ã  ton chien avant de choisir son alimentation.",
+    buttonLabel: "Calculer la ration de mon chien",
+  },
+
+  Croquettes: {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F3-croquettes-premium-chiens%3Ftype-de-produit%3Dcroquettes",
+    title: "Croquettes premium Babâ€™in pour chiens",
+    description:
+      "DÃ©couvre les croquettes premium Babâ€™in proposÃ©es pour les chiens.",
+    buttonLabel: "Voir les croquettes pour chiens",
+  },
+
+  Terrines: {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F3-croquettes-premium-chiens%3Ftype-de-produit%3Dterrines",
+    title: "Terrines Babâ€™in pour chiens",
+    description:
+      "DÃ©couvre les terrines Babâ€™in disponibles pour complÃ©ter ou varier lâ€™alimentation de ton chien.",
+    buttonLabel: "Voir les terrines pour chiens",
+  },
+
+  "Moelleux par Thierry Marx": {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F3-croquettes-premium-chiens%3Ftype-de-produit%3Dmoelleux-par-thierry-marx",
+    title: "Moelleux Babâ€™in par Thierry Marx pour chiens",
+    description:
+      "DÃ©couvre les recettes moelleuses Babâ€™in par Thierry Marx proposÃ©es pour les chiens.",
+    buttonLabel: "Voir les moelleux pour chiens",
+  },
+};
+
+const catOffers: Record<CatProductType, OfferConfig> = {
+  Croquettes: {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F13-croquettes-premium-chats%3Ftype-de-produit%3Dcroquettes",
+    title: "Croquettes premium Babâ€™in pour chats",
+    description:
+      "DÃ©couvre les croquettes premium Babâ€™in proposÃ©es pour les chats.",
+    buttonLabel: "Voir les croquettes pour chats",
+  },
+
+  Terrines: {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F13-croquettes-premium-chats%3Ftype-de-produit%3Dterrines",
+    title: "Terrines Babâ€™in pour chats",
+    description:
+      "DÃ©couvre les terrines Babâ€™in disponibles pour varier lâ€™alimentation de ton chat.",
+    buttonLabel: "Voir les terrines pour chats",
+  },
+
+  Friandises: {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F13-croquettes-premium-chats%3Ftype-de-produit%3Dfriandise",
+    title: "Friandises Babâ€™in pour chats",
+    description:
+      "DÃ©couvre les friandises Babâ€™in proposÃ©es pour les chats.",
+    buttonLabel: "Voir les friandises pour chats",
+  },
+
+  "Moelleux par Thierry Marx": {
+    href: "https://bwx.babin-nutrition.com/?P5138E358C0F51F1&redir=https%3A%2F%2Fwww.babin-nutrition.com%2F13-croquettes-premium-chats%3Ftype-de-produit%3Dmoelleux-par-thierry-marx",
+    title: "Moelleux Babâ€™in par Thierry Marx pour chats",
+    description:
+      "DÃ©couvre les recettes moelleuses Babâ€™in par Thierry Marx proposÃ©es pour les chats.",
+    buttonLabel: "Voir les moelleux pour chats",
+  },
+};
+
+const dogProductOptions: DogProductType[] = [
+  "Calculer la ration",
+  "Croquettes",
+  "Moelleux par Thierry Marx",
+  "Terrines",
+];
+
+const catProductOptions: CatProductType[] = [
+  "Croquettes",
+  "Friandises",
+  "Moelleux par Thierry Marx",
+  "Terrines",
+];
+
+export default function NutritionAnimauxMissionPage() {
+  const [animalType, setAnimalType] =
+    useState<AnimalType>("Chien");
+
+  const [productType, setProductType] =
+    useState<ProductType>("Croquettes");
+
+  const productOptions =
+    animalType === "Chien"
+      ? dogProductOptions
+      : catProductOptions;
+
+  const offer = useMemo(() => {
+    if (animalType === "Chien") {
+      return dogOffers[productType as DogProductType];
+    }
+
+    return catOffers[productType as CatProductType];
+  }, [animalType, productType]);
+
+  function updateAnimal(nextAnimal: AnimalType) {
+    setAnimalType(nextAnimal);
+
+    if (nextAnimal === "Chien") {
+      setProductType("Croquettes");
+      return;
+    }
+
+    setProductType("Croquettes");
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-4xl">
+        <Link
+          href="/missions"
+          className="text-green-400 hover:underline"
+        >
+          â† Retour aux missions
+        </Link>
+
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            ðŸ¾ Mission Pilo
+          </p>
+
+          <h1 className="mt-4 text-4xl font-black">
+            Choisir une alimentation adaptÃ©e
+          </h1>
+
+          <p className="mt-4 text-slate-300">
+            SÃ©lectionne ton animal puis le type dâ€™alimentation recherchÃ©.
+          </p>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <label>
+              <p className="mb-2 font-semibold">
+                Pour quel animal recherches-tu une alimentation ?
+              </p>
+
+              <select
+                value={animalType}
+                onChange={(event) =>
+                  updateAnimal(event.target.value as AnimalType)
+                }
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
+              >
+                <option value="Chien">Chien</option>
+                <option value="Chat">Chat</option>
+              </select>
+            </label>
+
+            <label>
+              <p className="mb-2 font-semibold">
+                Quel produit recherches-tu ?
+              </p>
+
+              <select
+                value={productType}
+                onChange={(event) =>
+                  setProductType(event.target.value as ProductType)
+                }
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
+              >
+                {productOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Offre partenaire correspondant Ã  ton choix
+            </p>
+
+            <h2 className="mt-4 text-3xl font-black">
+              {offer.title}
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              {offer.description}
+            </p>
+
+            <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-slate-400">
+                Ton choix
+              </p>
+
+              <p className="mt-1 font-bold text-white">
+                {animalType} Â· {productType}
+              </p>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+              En cliquant sur le bouton, tu seras redirigÃ© vers le site de
+              notre partenaire. Tu restes libre de poursuivre ou non ton
+              achat.
+            </div>
+
+            <a
+              href={offer.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-black transition hover:bg-green-400"
+            >
+              {offer.buttonLabel}
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\rachat-credits\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function RachatCreditsMissionPage() {
+  return (
+    <MissionLayout
+  icon="ðŸ’³"
+  title="RÃ©duire tes mensualitÃ©s de crÃ©dits"
+  subtitle="Pilo tâ€™oriente vers une solution de regroupement de crÃ©dits adaptÃ©e Ã  ta situation."
+  basePrice={0}
+  recommendedPrice={0}
+  recommendedName="Solution de rachat de crÃ©dits"
+  advice="Le regroupement de crÃ©dits peut permettre de rÃ©duire le montant de tes mensualitÃ©s. Les conditions et lâ€™acceptation dÃ©pendent de ta situation et de lâ€™Ã©tude de ton dossier."
+  fields={[]}
+  offerPath="/offres/rachat-credits"
+  inheritAnalysisValues={true}
+/>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\securite\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function SecuriteMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ”"
+      title="ProtÃ©ger ton logement"
+      subtitle="DÃ©cris ton besoin et Pilo t'aide Ã  identifier une solution de sÃ©curitÃ© adaptÃ©e Ã  ton logement."
+      basePrice={40}
+      recommendedPrice={25}
+      recommendedName="Solution de sÃ©curitÃ© adaptÃ©e"
+      advice="Compare le prix de lâ€™abonnement, la durÃ©e dâ€™engagement et les Ã©quipements inclus avant de choisir une nouvelle solution."
+      fields={[
+        {
+          name: "serviceType",
+          label: "Quel service est concernÃ© ?",
+          type: "select",
+          defaultValue: "TÃ©lÃ©surveillance",
+          options: [
+            "Alarme connectÃ©e",
+            "CamÃ©ras",
+            "DÃ©tecteurs",
+            "Sonnette connectÃ©e",
+            "TÃ©lÃ©surveillance",
+            "Autre",
+          ],
+        },
+        {
+          name: "housingType",
+          label: "Quel logement est concernÃ© ?",
+          type: "select",
+          defaultValue: "Maison",
+          options: [
+            "Appartement",
+            "Local professionnel",
+            "Maison",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget mensuel souhaites-tu prÃ©voir ?",
+          type: "number",
+          defaultValue: 25,
+        },
+      ]}
+      offerPath="/offres/securite"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\services-auto\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+const autodistributionOffer = {
+  href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23301537",
+  buttonLabel: "DÃ©couvrir Autodistribution",
+  recommendedName: "Autodistribution â€“ PiÃ¨ces et Ã©quipements auto",
+  advice:
+    "DÃ©couvre les piÃ¨ces, Ã©quipements et solutions automobiles disponibles chez Autodistribution.",
+  external: true,
+};
+
+export default function ServicesAutoMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ”§"
+      title="Entretenir, rÃ©parer ou Ã©quiper ton vÃ©hicule"
+      subtitle="Choisis ton besoin : trouve un garage avec AD, commande tes piÃ¨ces sur Oscaro, dÃ©couvre Autodistribution ou trouve tes pneus et jantes avec Autopink."
+      basePrice={180}
+      recommendedPrice={140}
+      recommendedName="Solution partenaire automobile"
+      advice="SÃ©lectionne la rubrique correspondant Ã  ton besoin pour accÃ©der Ã  lâ€™offre partenaire adaptÃ©e."
+      fields={[
+        {
+          name: "serviceType",
+          label: "Que recherches-tu pour ton vÃ©hicule ?",
+          type: "select",
+          defaultValue: "Entretien ou rÃ©paration en garage",
+          options: [
+            "Entretien ou rÃ©paration en garage",
+            "DÃ©marrage Ã©lectrique",
+            "Direction / Suspension / Train",
+            "Embrayage et boÃ®te de vitesse",
+            "Entretien et nettoyage",
+            "Essuie-glaces et piÃ¨ces",
+            "Filtres et huile",
+            "Freinage",
+            "Optiques / Phares / Ampoules",
+            "Outillage",
+            "PiÃ¨ces moteur",
+            "Pneus Ã©tÃ©",
+            "Pneus hiver",
+            "Pneus 4 saisons",
+            "Pneus camionnette",
+            "Pneus moto",
+            "Jantes et roues complÃ¨tes",
+            "Autre",
+          ],
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget souhaites-tu consacrer Ã  ce besoin ?",
+          type: "select",
+          defaultValue: "De 50 â‚¬ Ã  150 â‚¬",
+          options: [
+            "Moins de 50 â‚¬",
+            "De 50 â‚¬ Ã  150 â‚¬",
+            "Plus de 150 â‚¬",
+          ],
+        },
+      ]}
+      dynamicOfferField="serviceType"
+      dynamicOffers={{
+        "Entretien ou rÃ©paration en garage": {
+          href: "https://track.effiliation.com/servlet/effi.redir?id_compteur=23300914&url=https%3A%2F%2Fwww.ad.fr%2F",
+          buttonLabel: "Trouver un garage AD",
+          recommendedName: "AD â€“ Entretien et rÃ©paration automobile",
+          advice:
+            "Trouve un garage AD pour entretenir ou rÃ©parer ton vÃ©hicule et consulte les services disponibles prÃ¨s de chez toi.",
+          external: true,
+        },
+
+        "DÃ©marrage Ã©lectrique": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fdemarrage-electrique-702600-c",
+          buttonLabel: "Voir le dÃ©marrage Ã©lectrique",
+          recommendedName: "Oscaro â€“ DÃ©marrage Ã©lectrique",
+          advice:
+            "DÃ©couvre les batteries, dÃ©marreurs, alternateurs et piÃ¨ces liÃ©es au dÃ©marrage Ã©lectrique.",
+          external: true,
+        },
+
+        "Direction / Suspension / Train": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fdirection-suspension-train-702558-c",
+          buttonLabel: "Voir les piÃ¨ces de direction et suspension",
+          recommendedName: "Oscaro â€“ Direction, suspension et train",
+          advice:
+            "DÃ©couvre les piÃ¨ces de direction, suspension et train adaptÃ©es Ã  ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Embrayage et boÃ®te de vitesse": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fembrayage-et-boite-de-vitesse-702611-c",
+          buttonLabel: "Voir les piÃ¨ces dâ€™embrayage",
+          recommendedName: "Oscaro â€“ Embrayage et boÃ®te de vitesse",
+          advice:
+            "DÃ©couvre les kits dâ€™embrayage et les piÃ¨ces liÃ©es Ã  la boÃ®te de vitesse.",
+          external: true,
+        },
+
+        "Entretien et nettoyage": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fentretien-et-nettoyage-702667-c",
+          buttonLabel: "Voir les produits dâ€™entretien",
+          recommendedName: "Oscaro â€“ Entretien et nettoyage",
+          advice:
+            "DÃ©couvre les produits utiles pour entretenir, nettoyer et protÃ©ger ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Essuie-glaces et piÃ¨ces": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fessuie-glaces-et-pieces-702578-c",
+          buttonLabel: "Voir les essuie-glaces",
+          recommendedName: "Oscaro â€“ Essuie-glaces et piÃ¨ces",
+          advice:
+            "DÃ©couvre les balais dâ€™essuie-glace et les piÃ¨ces compatibles avec ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Filtres et huile": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Ffiltres-et-huile-702615-c",
+          buttonLabel: "Voir les filtres et huiles",
+          recommendedName: "Oscaro â€“ Filtres et huile",
+          advice:
+            "DÃ©couvre les filtres, huiles moteur et produits nÃ©cessaires Ã  lâ€™entretien courant.",
+          external: true,
+        },
+
+        Freinage: {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Ffreinage-702551-c",
+          buttonLabel: "Voir les piÃ¨ces de freinage",
+          recommendedName: "Oscaro â€“ Freinage",
+          advice:
+            "DÃ©couvre les plaquettes, disques et autres piÃ¨ces de freinage adaptÃ©es Ã  ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Optiques / Phares / Ampoules": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Foptiques-phares-ampoules-702715-c",
+          buttonLabel: "Voir les optiques et ampoules",
+          recommendedName: "Oscaro â€“ Optiques, phares et ampoules",
+          advice:
+            "DÃ©couvre les phares, optiques et ampoules compatibles avec ton vÃ©hicule.",
+          external: true,
+        },
+
+        Outillage: {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Foutillage-702627-c",
+          buttonLabel: "Voir lâ€™outillage auto",
+          recommendedName: "Oscaro â€“ Outillage",
+          advice:
+            "DÃ©couvre lâ€™outillage nÃ©cessaire pour entretenir ou rÃ©parer ton vÃ©hicule.",
+          external: true,
+        },
+
+        "PiÃ¨ces moteur": {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2Fpieces-moteur-702538-c",
+          buttonLabel: "Voir les piÃ¨ces moteur",
+          recommendedName: "Oscaro â€“ PiÃ¨ces moteur",
+          advice:
+            "DÃ©couvre les piÃ¨ces moteur compatibles avec ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Pneus Ã©tÃ©": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2Fpneus_ete.html",
+          buttonLabel: "Voir les pneus Ã©tÃ©",
+          recommendedName: "Autopink â€“ Pneus Ã©tÃ©",
+          advice:
+            "Trouve des pneus Ã©tÃ© adaptÃ©s Ã  ton vÃ©hicule et sÃ©lectionne directement tes dimensions sur Autopink.",
+          external: true,
+        },
+
+        "Pneus hiver": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2Fpneus_hiver.html",
+          buttonLabel: "Voir les pneus hiver",
+          recommendedName: "Autopink â€“ Pneus hiver",
+          advice:
+            "Trouve des pneus hiver adaptÃ©s Ã  ton vÃ©hicule pour amÃ©liorer lâ€™adhÃ©rence par temps froid.",
+          external: true,
+        },
+
+        "Pneus 4 saisons": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2Fpneus_toutes_saisons.html",
+          buttonLabel: "Voir les pneus 4 saisons",
+          recommendedName: "Autopink â€“ Pneus 4 saisons",
+          advice:
+            "Trouve des pneus toutes saisons adaptÃ©s Ã  ton vÃ©hicule pour une utilisation polyvalente toute lâ€™annÃ©e.",
+          external: true,
+        },
+
+        "Pneus camionnette": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2Fpneu_camionnette.html",
+          buttonLabel: "Voir les pneus camionnette",
+          recommendedName: "Autopink â€“ Pneus camionnette",
+          advice:
+            "Trouve des pneus adaptÃ©s aux utilitaires et camionnettes selon les dimensions de ton vÃ©hicule.",
+          external: true,
+        },
+
+        "Pneus moto": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2Fpneus_moto.html",
+          buttonLabel: "Voir les pneus moto",
+          recommendedName: "Autopink â€“ Pneus moto",
+          advice:
+            "Trouve les pneus adaptÃ©s Ã  ta moto puis affine ton choix selon ton type de deux-roues.",
+          external: true,
+        },
+
+        "Jantes et roues complÃ¨tes": {
+          href: "https://esa.autopink-shop.fr/?P51306958C0F5171&redir=https%3A%2F%2Fwww.autopink-shop.fr%2FRoues_completes.html",
+          buttonLabel: "Voir les jantes et roues complÃ¨tes",
+          recommendedName: "Autopink â€“ Jantes et roues complÃ¨tes",
+          advice:
+            "DÃ©couvre les roues complÃ¨tes et les solutions de jantes disponibles pour ton vÃ©hicule.",
+          external: true,
+        },
+
+        Autre: {
+          href: "https://irh.oscaro.com/?P51395558C0F52191&redir=https%3A%2F%2Fwww.oscaro.com%2F",
+          buttonLabel: "DÃ©couvrir toutes les piÃ¨ces Oscaro",
+          recommendedName: "Oscaro â€“ Toutes les piÃ¨ces auto",
+          advice:
+            "DÃ©couvre toutes les catÃ©gories de piÃ¨ces dÃ©tachÃ©es disponibles sur Oscaro.",
+          external: true,
+        },
+      }}
+      thirdOffer={autodistributionOffer}
+      thirdOfferTitle="Autre partenaire automobile"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\services-entreprises\page.tsx
+============================================================
+"use client";
+
+import { Suspense } from "react";
+import MissionLayout from "../../components/MissionLayout";
+
+export default function ServicesEntreprisesMissionPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-slate-300">
+              Chargement de la mission...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <MissionLayout
+        icon="ðŸ¢"
+        title="Optimiser tes services professionnels"
+        subtitle="DÃ©cris ton activitÃ© et Pilo t'aide Ã  identifier les solutions adaptÃ©es Ã  ton entreprise."
+        basePrice={150}
+        recommendedPrice={120}
+        recommendedName="Services professionnels optimisÃ©s"
+        advice="Compare les garanties, les exclusions, les franchises et le tarif avant de souscrire une assurance professionnelle."
+       fields={[
+  {
+    name: "serviceType",
+    label: "Quel service professionnel recherches-tu ?",
+    type: "select",
+    defaultValue: "Assurance dÃ©cennale",
+    options: [
+      "Assurance dÃ©cennale",
+    ],
+  },
+  {
+    name: "activity",
+    label: "Quelle est ton activitÃ© principale ?",
+    type: "select",
+    defaultValue: "Artisan du bÃ¢timent",
+    options: [
+      "Artisan du bÃ¢timent",
+      "MaÃ§on",
+      "Charpentier",
+      "Plombier",
+      "Ã‰lectricien",
+      "Architecte",
+      "Entreprise gÃ©nÃ©rale du bÃ¢timent",
+      "Autre",
+    ],
+  },
+]}
+        offerPath="/offres/services-entreprises"
+        dynamicOfferField="serviceType"
+        dynamicOffers={{
+          "Assurance dÃ©cennale": {
+            href: "https://stella-2.com/clc/1xumfaIDKujvDbncH2H9xw",
+            buttonLabel: "DÃ©couvrir les solutions dÃ©cennales",
+          },
+        }}
+      />
+    </Suspense>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\site-internet-pro\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function SiteInternetProMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸŒ"
+      title="CrÃ©er ou refaire ton site internet professionnel"
+      subtitle="DÃ©cris ton projet et Pilo t'aide Ã  trouver une solution adaptÃ©e pour crÃ©er ou moderniser le site internet de ton entreprise."
+      basePrice={1500}
+      recommendedPrice={1000}
+      recommendedName="Solution site internet professionnel"
+      advice="Compare le contenu de la prestation, l'hÃ©bergement, la maintenance, l'accompagnement et les modalitÃ©s de paiement avant de choisir."
+      fields={[
+        {
+          name: "projectType",
+          label: "Quel est ton projet ?",
+          type: "select",
+          defaultValue: "CrÃ©ation d'un site",
+          options: [
+            "CrÃ©ation d'un site",
+            "Refonte d'un site existant",
+          ],
+        },
+        {
+          name: "siteType",
+          label: "Quel type de site souhaites-tu ?",
+          type: "select",
+          defaultValue: "Site vitrine",
+          options: [
+            "Site vitrine",
+            "Site e-commerce",
+            "Site professionnel",
+            "Je ne sais pas encore",
+          ],
+        },
+        {
+          name: "budget",
+          label: "Quel budget souhaites-tu prÃ©voir ?",
+          type: "number",
+          defaultValue: 1500,
+        },
+      ]}
+      offerPath="/offres/site-internet-pro"
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\streaming\page.tsx
+============================================================
+"use client";
+
+import MissionLayout from "../../components/MissionLayout";
+
+export default function StreamingMissionPage() {
+  return (
+    <MissionLayout
+      icon="ðŸ“º"
+      title="Optimiser tes abonnements"
+      subtitle="Pilo analyse tes abonnements streaming et numÃ©riques."
+
+      basePrice={42}
+      recommendedPrice={24}
+
+      recommendedName="Pack Streaming Ã‰co"
+
+      advice="Pilo a trouvÃ© plusieurs abonnements redondants. En regroupant tes services, tu pourrais Ã©conomiser chaque mois."
+
+      offerPath="/offres/streaming"
+
+      fields={[
+        {
+          name: "monthlyPrice",
+          label: "Budget mensuel",
+          type: "number",
+          defaultValue: 42,
+        },
+        {
+          name: "services",
+          label: "Nombre d'abonnements",
+          type: "number",
+          defaultValue: 4,
+        },
+        {
+          name: "favorite",
+          label: "Plateforme principale",
+          type: "select",
+          defaultValue: "Netflix",
+          options: [
+            "Netflix",
+            "Disney+",
+            "Prime Video",
+            "Canal+",
+            "Max",
+            "Paramount+",
+          ],
+        },
+      ]}
+    />
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\telephone-senior\page.tsx
+============================================================
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+type EquipmentType =
+  | "Smartphone simplifiÃ©"
+  | "TÃ©lÃ©phone mobile simple 4G"
+  | "TÃ©lÃ©phone fixe senior"
+  | "Forfait mobile senior Doro Connect";
+
+type OfferConfig = {
+  href: string;
+  title: string;
+  description: string;
+  buttonLabel: string;
+  budgetLabel: string;
+  budgetOptions: string[];
+};
+
+const offers: Record<EquipmentType, OfferConfig> = {
+  "Smartphone simplifiÃ©": {
+    href: "https://uxe.doro.com/?P51186158C0F52111&redir=https%3A%2F%2Fwww.doro.com%2Ffr-fr%2Ftelephones-et-accessoires%2Fsmartphones%2F",
+    title: "Smartphones Doro pour seniors",
+    description:
+      "DÃ©couvre les smartphones Doro simplifiÃ©s, avec une interface lisible et des fonctions pensÃ©es pour les seniors.",
+    buttonLabel: "Voir les smartphones Doro",
+    budgetLabel: "Quel budget souhaites-tu consacrer au smartphone ?",
+    budgetOptions: [
+      "Moins de 250 â‚¬",
+      "De 250 â‚¬ Ã  300 â‚¬",
+      "Plus de 300 â‚¬",
+    ],
+  },
+
+  "TÃ©lÃ©phone mobile simple 4G": {
+    href: "https://uxe.doro.com/?P51186158C0F52111&redir=https%3A%2F%2Fwww.doro.com%2Ffr-fr%2Ftelephones-et-accessoires%2Ftelephones-mobiles%2F",
+    title: "TÃ©lÃ©phones mobiles simples 4G Doro",
+    description:
+      "DÃ©couvre les tÃ©lÃ©phones portables Doro 4G simples Ã  utiliser. Les modÃ¨les proposÃ©s restent dans une gamme allant jusquâ€™Ã  environ 160 â‚¬.",
+    buttonLabel: "Voir les tÃ©lÃ©phones mobiles Doro",
+    budgetLabel: "Quel budget souhaites-tu consacrer au tÃ©lÃ©phone mobile ?",
+    budgetOptions: [
+      "Moins de 80 â‚¬",
+      "De 80 â‚¬ Ã  120 â‚¬",
+      "De 120 â‚¬ Ã  160 â‚¬",
+    ],
+  },
+
+  "TÃ©lÃ©phone fixe senior": {
+    href: "https://uxe.doro.com/?P51186158C0F52111&redir=https%3A%2F%2Fwww.doro.com%2Ffr-fr%2Ftelephones-et-accessoires%2Fappareils-pour-la-maison%2F",
+    title: "TÃ©lÃ©phones fixes Doro pour seniors",
+    description:
+      "DÃ©couvre les tÃ©lÃ©phones fixes et sans fil Doro pour la maison. Les modÃ¨les proposÃ©s restent dans une gamme allant jusquâ€™Ã  environ 110 â‚¬.",
+    buttonLabel: "Voir les tÃ©lÃ©phones fixes Doro",
+    budgetLabel: "Quel budget souhaites-tu consacrer au tÃ©lÃ©phone fixe ?",
+    budgetOptions: [
+      "Moins de 50 â‚¬",
+      "De 50 â‚¬ Ã  80 â‚¬",
+      "De 80 â‚¬ Ã  110 â‚¬",
+    ],
+  },
+
+  "Forfait mobile senior Doro Connect": {
+    href: "https://uxe.doro.com/?P51186158C0F52111&redir=https%3A%2F%2Fwww.doro.com%2Ffr-fr%2Fdoro-connect%2F",
+    title: "Doro Connect â€“ Forfait mobile senior",
+    description:
+      "DÃ©couvre Doro Connect, une offre mobile pensÃ©e pour les seniors avec un accompagnement adaptÃ©.",
+    buttonLabel: "DÃ©couvrir Doro Connect",
+    budgetLabel: "Quel budget mensuel souhaites-tu consacrer au forfait ?",
+    budgetOptions: [
+      "Moins de 10 â‚¬ par mois",
+      "De 10 â‚¬ Ã  20 â‚¬ par mois",
+      "Plus de 20 â‚¬ par mois",
+    ],
+  },
+};
+
+const equipmentOptions: EquipmentType[] = [
+  "Forfait mobile senior Doro Connect",
+  "Smartphone simplifiÃ©",
+  "TÃ©lÃ©phone fixe senior",
+  "TÃ©lÃ©phone mobile simple 4G",
+];
+
+export default function TelephoneSeniorMissionPage() {
+  const [equipmentType, setEquipmentType] =
+    useState<EquipmentType>("Smartphone simplifiÃ©");
+
+  const offer = offers[equipmentType];
+
+  const [budgetByEquipment, setBudgetByEquipment] = useState<
+    Record<EquipmentType, string>
+  >({
+    "Smartphone simplifiÃ©":
+      offers["Smartphone simplifiÃ©"].budgetOptions[0],
+    "TÃ©lÃ©phone mobile simple 4G":
+      offers["TÃ©lÃ©phone mobile simple 4G"].budgetOptions[0],
+    "TÃ©lÃ©phone fixe senior":
+      offers["TÃ©lÃ©phone fixe senior"].budgetOptions[0],
+    "Forfait mobile senior Doro Connect":
+      offers["Forfait mobile senior Doro Connect"].budgetOptions[0],
+  });
+
+  const currentBudget = budgetByEquipment[equipmentType];
+
+  const summary = useMemo(() => {
+    return `${equipmentType} Â· ${currentBudget}`;
+  }, [equipmentType, currentBudget]);
+
+  function updateEquipment(nextEquipment: EquipmentType) {
+    setEquipmentType(nextEquipment);
+  }
+
+  function updateBudget(nextBudget: string) {
+    setBudgetByEquipment((current) => ({
+      ...current,
+      [equipmentType]: nextBudget,
+    }));
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <div className="mx-auto max-w-4xl">
+        <Link
+          href="/missions"
+          className="text-green-400 hover:underline"
+        >
+          â† Retour aux missions
+        </Link>
+
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8">
+          <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            ðŸ“± Mission Pilo
+          </p>
+
+          <h1 className="mt-4 text-4xl font-black">
+            Choisir un tÃ©lÃ©phone senior adaptÃ©
+          </h1>
+
+          <p className="mt-4 text-slate-300">
+            SÃ©lectionne simplement le type dâ€™Ã©quipement recherchÃ© et la
+            fourchette de prix souhaitÃ©e.
+          </p>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <label>
+              <p className="mb-2 font-semibold">
+                Quel Ã©quipement recherches-tu ?
+              </p>
+
+              <select
+                value={equipmentType}
+                onChange={(event) =>
+                  updateEquipment(event.target.value as EquipmentType)
+                }
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
+              >
+                {equipmentOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <p className="mb-2 font-semibold">
+                {offer.budgetLabel}
+              </p>
+
+              <select
+                value={currentBudget}
+                onChange={(event) => updateBudget(event.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3"
+              >
+                {offer.budgetOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="mt-10 rounded-3xl border border-green-500/30 bg-green-500/10 p-6">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-300">
+              Offre partenaire correspondant Ã  ton choix
+            </p>
+
+            <h2 className="mt-4 text-3xl font-black">
+              {offer.title}
+            </h2>
+
+            <p className="mt-3 text-slate-300">
+              {offer.description}
+            </p>
+
+            <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-slate-400">
+                Ton choix
+              </p>
+
+              <p className="mt-1 font-bold text-white">
+                {summary}
+              </p>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+              En cliquant sur le bouton, tu seras redirigÃ© vers le site de
+              notre partenaire. Tu restes libre de poursuivre ou non ton
+              achat ou ta souscription.
+            </div>
+
+            <a
+              href={offer.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-block rounded-xl bg-green-500 px-8 py-3 font-bold text-black transition hover:bg-green-400"
+            >
+              {offer.buttonLabel}
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\travaux\page.tsx
+============================================================
+"use client";
+
+import { Suspense } from "react";
+import MissionLayout from "../../components/MissionLayout";
+
+export default function TravauxMissionPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-slate-300">
+              Chargement de la mission...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <MissionLayout
+        icon="ðŸ› ï¸"
+        title="Optimiser tes travaux et rÃ©novations"
+        subtitle="DÃ©cris ton projet et Pilo t'aide Ã  identifier les solutions adaptÃ©es Ã  tes travaux."
+        basePrice={5000}
+        recommendedPrice={4000}
+        recommendedName="Projet travaux optimisÃ©"
+        advice="Selon ton projet, ton logement et ta situation, Pilo peut identifier diffÃ©rentes solutions adaptÃ©es Ã  tes besoins."
+        fields={[
+          {
+            name: "projectType",
+            label: "Quel type de travaux souhaites-tu rÃ©aliser ?",
+            type: "select",
+            defaultValue: "RÃ©novation Ã©nergÃ©tique",
+            options: [
+              "Adaptation du logement",
+              "AmÃ©nagement intÃ©rieur",
+              "Chauffage",
+              "Climatisation rÃ©versible",
+              "Cuisine",
+              "Douche sÃ©curisÃ©e",
+              "FenÃªtres",
+              "Isolation",
+              "Isolation des combles",
+              "Isolation des murs par l'extÃ©rieur",
+              "Menuiseries",
+              "Monte-escalier",
+              "Panneaux photovoltaÃ¯ques",
+              "Peinture et dÃ©coration",
+              "Peinture intÃ©rieure",
+              "Pompe Ã  chaleur",
+              "RÃ©novation Ã©nergÃ©tique",
+              "Salle de bain",
+              "VÃ©randa",
+              "Autre",
+            ],
+          },
+          {
+            name: "budget",
+            label: "Quel est ton budget estimÃ© ?",
+            type: "number",
+            defaultValue: 5000,
+          },
+        ]}
+        offerPath="/offres/travaux"
+        dynamicOfferField="projectType"
+        dynamicOffers={{
+          "Climatisation rÃ©versible": {
+            href: "https://stella-2.com/clc/01BzYSmAO0Cqbe_WKOa6xQ",
+            buttonLabel: "Obtenir des devis",
+          },
+
+          "Peinture et dÃ©coration": {
+            href: "https://stella-2.com/clc/_xf3wKnnmcurgbft0H_yww",
+            buttonLabel: "Obtenir des devis",
+          },
+
+          "Peinture intÃ©rieure": {
+            href: "https://stella-2.com/clc/_xf3wKnnmcurgbft0H_yww",
+            buttonLabel: "Obtenir des devis",
+          },
+
+          "Isolation des combles": {
+            href: "https://stella-2.com/clc/DgrSoXK-ewCkjdmuDG_1_A",
+            buttonLabel: "Obtenir un devis",
+          },
+
+          "Isolation des murs par l'extÃ©rieur": {
+            href: "https://stella-2.com/clc/tetUTsGk4uDET_7LpuRpuQ",
+            buttonLabel: "Estimer mes travaux",
+          },
+
+          "VÃ©randa": {
+            href: "https://stella-2.com/clc/RJejthsCv32yJKzNfgXupw",
+            buttonLabel: "Recevoir des devis vÃ©randa",
+          },
+        }}
+      />
+    </Suspense>
+  );
+}
+
+============================================================
+FICHIER : C:\Users\Utilisateur\PiloEco\frontend\src\app\missions\voyage\page.tsx
+============================================================
+import MissionLayout from "../../components/MissionLayout";
+
+const auchanVoyagesLinks: Record<string, string> = {
+  Albanie:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dal",
+  Angleterre:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dgb.angleterre",
+  Autriche:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dat",
+  BalÃ©ares:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dbaleares",
+  Danemark:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Ddk",
+  Espagne:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Des",
+  "Ã‰tats-Unis":
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dus",
+  Finlande:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dfi",
+  France:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dfr",
+  GrÃ¨ce:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dgr",
+  Guadeloupe:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dgp",
+  "ÃŽle Maurice":
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dmu",
+  Italie:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dit",
+  Maroc:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dma",
+  Mexique:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dmx",
+  Portugal:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dpt",
+  SuÃ¨de:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dse",
+  Suisse:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dch",
+  ThaÃ¯lande:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dth",
+  Tunisie:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dtn",
+  Turquie:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dtr",
+  Vietnam:
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2Fserp%3Ftype%3Dsejour%26s_c.type_voyage%3Dsejour%26s_c.BDES%3Dvn",
+  "Autre destination":
+    "https://vmx.voyages-auchan.com/?P51211D58C0F51D1&redir=https%3A%2F%2Fwww.voyages-auchan.com%2F",
+};
+
+const destinationOptions = [
+  "Albanie",
+  "Angleterre",
+  "Autriche",
+  "BalÃ©ares",
+  "Danemark",
+  "Espagne",
+  "Ã‰tats-Unis",
+  "Finlande",
+  "France",
+  "GrÃ¨ce",
+  "Guadeloupe",
+  "ÃŽle Maurice",
+  "Italie",
+  "Maroc",
+  "Mexique",
+  "Portugal",
+  "SuÃ¨de",
+  "Suisse",
+  "ThaÃ¯lande",
+  "Tunisie",
+  "Turquie",
+  "Vietnam",
+  "Autre destination",
+];
+
+function destinationPreposition(destination: string) {
+  if (
+    ["Portugal", "Maroc", "Mexique", "Vietnam", "Danemark"].includes(
+      destination
+    )
+  ) {
+    return "au";
+  }
+
+  if (["Ã‰tats-Unis", "BalÃ©ares"].includes(destination)) {
+    return "aux";
+  }
+
+  if (destination === "ÃŽle Maurice") {
+    return "Ã  lâ€™";
+  }
+
+  return "en";
+}
+
+const auchanDynamicOffers = Object.fromEntries(
+  destinationOptions.map((destination) => {
+    const isOther = destination === "Autre destination";
+
+    return [
+      destination,
+      {
+        href: auchanVoyagesLinks[destination],
+        buttonLabel: isOther
+          ? "DÃ©couvrir toutes les destinations"
+          : `Voir les sÃ©jours ${destinationPreposition(
+              destination
+            )} ${destination}`,
+        recommendedName: isOther
+          ? "Auchan Voyages â€“ Toutes les destinations"
+          : `Auchan Voyages â€“ SÃ©jours ${destinationPreposition(
+              destination
+            )} ${destination}`,
+        advice: isOther
+          ? "DÃ©couvre toutes les destinations proposÃ©es par Auchan Voyages, puis affine tes dates, ton budget et ton hÃ©bergement."
+          : "DÃ©couvre les sÃ©jours disponibles, puis affine les dates, la ville, lâ€™hÃ´tel et la formule directement chez notre partenaire.",
+        external: true,
+      },
+    ];
+  })
+);
+
+const vacancesBleuesOffers = {
+  Atlantique: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fen-atlantique",
+    buttonLabel: "DÃ©couvrir les sÃ©jours sur la cÃ´te Atlantique",
+    recommendedName: "Vacances Bleues â€“ CÃ´te Atlantique",
+    advice:
+      "DÃ©couvre les hÃ´tels, clubs et rÃ©sidences disponibles sur la cÃ´te Atlantique.",
+    external: true,
+  },
+
+  Campagne: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fa-la-campagne",
+    buttonLabel: "DÃ©couvrir les sÃ©jours Ã  la campagne",
+    recommendedName: "Vacances Bleues â€“ Campagne",
+    advice:
+      "Explore les hÃ´tels, clubs et rÃ©sidences disponibles Ã  la campagne.",
+    external: true,
+  },
+
+  "Circuit organisÃ©": {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues-voyages.fr%2F",
+    buttonLabel: "DÃ©couvrir les circuits organisÃ©s",
+    recommendedName: "Vacances Bleues â€“ Circuits organisÃ©s",
+    advice:
+      "DÃ©couvre les circuits et voyages organisÃ©s proposÃ©s par Vacances Bleues.",
+    external: true,
+  },
+
+  "Club vacances": {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-clubs-vacances-bleues",
+    buttonLabel: "Voir les clubs vacances",
+    recommendedName: "Vacances Bleues â€“ Clubs vacances",
+    advice:
+      "DÃ©couvre les clubs vacances en France et compare les formules proposÃ©es.",
+    external: true,
+  },
+
+  "CroisiÃ¨re fluviale": {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fsur-un-fleuve",
+    buttonLabel: "DÃ©couvrir les croisiÃ¨res fluviales",
+    recommendedName: "Vacances Bleues â€“ CroisiÃ¨res fluviales",
+    advice:
+      "DÃ©couvre les croisiÃ¨res proposÃ©es sur les fleuves de France.",
+    external: true,
+  },
+
+  "HÃ´tel haut de gamme": {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-hotels-vacances-bleues",
+    buttonLabel: "Voir les hÃ´tels Vacances Bleues",
+    recommendedName: "Vacances Bleues â€“ HÃ´tels haut de gamme",
+    advice:
+      "DÃ©couvre les hÃ´tels Vacances Bleues et choisis lâ€™Ã©tablissement adaptÃ© Ã  ton sÃ©jour.",
+    external: true,
+  },
+
+  MÃ©diterranÃ©e: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fen-mediterranee",
+    buttonLabel: "DÃ©couvrir les sÃ©jours en MÃ©diterranÃ©e",
+    recommendedName: "Vacances Bleues â€“ MÃ©diterranÃ©e",
+    advice:
+      "DÃ©couvre les hÃ´tels, clubs et rÃ©sidences Vacances Bleues en MÃ©diterranÃ©e.",
+    external: true,
+  },
+
+  Montagne: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fa-la-montagne",
+    buttonLabel: "DÃ©couvrir les sÃ©jours Ã  la montagne",
+    recommendedName: "Vacances Bleues â€“ Montagne",
+    advice:
+      "Explore les hÃ´tels, clubs et rÃ©sidences Vacances Bleues Ã  la montagne.",
+    external: true,
+  },
+
+  RÃ©sidence: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fpartir-avec-vacances-bleues%2Fnos-lieux-d-exception%2Fles-residences-vacances-bleues",
+    buttonLabel: "Voir les rÃ©sidences de vacances",
+    recommendedName: "Vacances Bleues â€“ RÃ©sidences",
+    advice:
+      "DÃ©couvre les rÃ©sidences disponibles pour un sÃ©jour plus autonome.",
+    external: true,
+  },
+
+  Ville: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2Ffr%2Fnos-destinations%2Fen-ville",
+    buttonLabel: "DÃ©couvrir les sÃ©jours en ville",
+    recommendedName: "Vacances Bleues â€“ SÃ©jours en ville",
+    advice:
+      "DÃ©couvre les Ã©tablissements Vacances Bleues situÃ©s au cÅ“ur des villes.",
+    external: true,
+  },
+
+  "Transfert aÃ©roport / Disneyland Paris": {
+    href: "https://www.tkqlhce.com/click-101847438-11423882",
+    buttonLabel: "RÃ©server mon transfert",
+    recommendedName:
+      "Magical Shuttle â€“ Transfert aÃ©roport & Disneyland Paris",
+    advice:
+      "RÃ©serve ton transfert en navette entre les aÃ©roports parisiens et Disneyland Paris avec Magical Shuttle.",
+    external: true,
+  },
+
+  Autre: {
+    href: "https://odx.vacancesbleues.fr/?P513A7F58C0F51F1&redir=https%3A%2F%2Fwww.vacancesbleues.fr%2F",
+    buttonLabel: "DÃ©couvrir toutes les offres Vacances Bleues",
+    recommendedName: "Vacances Bleues â€“ Toutes les offres",
+    advice:
+      "DÃ©couvre tous les sÃ©jours, hÃ´tels, clubs, rÃ©sidences et circuits proposÃ©s par Vacances Bleues.",
+    external: true,
+  },
+};
+
+const stayStyleOptions = [
+  "Atlantique",
+  "Campagne",
+  "Circuit organisÃ©",
+  "Club vacances",
+  "CroisiÃ¨re fluviale",
+  "HÃ´tel haut de gamme",
+  "MÃ©diterranÃ©e",
+  "Montagne",
+  "RÃ©sidence",
+  "Transfert aÃ©roport / Disneyland Paris",
+  "Ville",
+  "Autre",
+];
+
+const tripComOffer = {
+  href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23301536",
+  buttonLabel: "DÃ©couvrir les offres Trip.com",
+  recommendedName: "Trip.com â€“ Voyage",
+  advice:
+    "DÃ©couvre les offres disponibles chez Trip.com et vÃ©rifie les tarifs et conditions correspondant Ã  ton voyage.",
+  external: true,
+};
+
+export default function VoyageMissionPage() {
+  return (
+    <MissionLayout
+      icon="âœˆï¸"
+      title="Trouver un sÃ©jour adaptÃ©"
+      subtitle="Choisis ta destination, ton budget et ton besoin pour dÃ©couvrir les offres de nos partenaires voyage."
+      fields={[
+        {
+          name: "destination",
+          label: "OÃ¹ souhaites-tu voyager ?",
+          type: "select",
+          defaultValue: "Espagne",
+          options: destinationOptions,
+        },
+        {
+          name: "stayStyle",
+          label: "Quel type de sÃ©jour ou service recherches-tu ?",
+          type: "select",
+          defaultValue: "MÃ©diterranÃ©e",
+          options: stayStyleOptions,
+        },
+        {
+          name: "monthlyPrice",
+          label: "Quel budget souhaites-tu consacrer Ã  ce voyage ?",
+          type: "number",
+          defaultValue: 1500,
+        },
+        {
+          name: "travellers",
+          label: "Combien de personnes voyagent ?",
+          type: "number",
+          defaultValue: 2,
+        },
+      ]}
+      basePrice={1500}
+      recommendedPrice={1350}
+      recommendedName="Offre de voyage partenaire"
+      advice="Compare les offres disponibles avant de choisir celle qui correspond le mieux Ã  ton projet."
+      dynamicOfferField="destination"
+      dynamicOffers={auchanDynamicOffers}
+      alternativeOfferField="stayStyle"
+      alternativeOffers={vacancesBleuesOffers}
+      alternativeTitle="Autre offre ou service partenaire"
+      thirdOffer={tripComOffer}
+      thirdOfferTitle="Autre partenaire voyage"
+    />
+  );
+}
+

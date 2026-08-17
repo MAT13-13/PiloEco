@@ -45,7 +45,9 @@ type AnalyseCategory =
   | "cybersecurite"
   | "servicesEntreprises"
   | "debarras"
-  | "gaz";
+  | "gaz"
+  | "locationMeublee"
+  | "rachatCredits";
 
 type AnalysisPayload = {
   category: AnalyseCategory;
@@ -96,6 +98,8 @@ const categoryDescriptions: Record<
   servicesEntreprises: "Services aux entreprises",
   debarras: "Débarras",
   gaz: "Gaz",
+  locationMeublee: "Location meublée & LMNP",
+  rachatCredits: "Rachat de crédits",
 };
 
 const genericPartnerSteps = [
@@ -168,6 +172,53 @@ const loadingSteps: Record<
   servicesEntreprises: genericPartnerSteps,
   debarras: genericPartnerSteps,
   gaz: genericPartnerSteps,
+  locationMeublee: genericPartnerSteps,
+  rachatCredits: genericPartnerSteps,
+};
+
+const missionRouteByCategory: Record<
+  AnalyseCategory,
+  string
+> = {
+  famille: "/missions/famille",
+  telephone: "/missions/mobile",
+  telephoneSenior: "/missions/telephone-senior",
+  internet: "/missions/internet",
+  electricite: "/missions/electricite",
+  habitation: "/missions/habitation",
+  auto: "/missions/auto",
+  moto: "/missions/moto",
+  mutuelle: "/missions/mutuelle",
+  animaux: "/missions/animaux",
+  banque: "/missions/banque",
+  streaming: "/missions/streaming",
+  fintech: "/missions/fintech",
+  securite: "/missions/securite",
+  demenagement: "/missions/demenagement",
+  servicesAuto: "/missions/services-auto",
+  mobilitesDouces: "/missions/mobilites-douces",
+  travaux: "/missions/travaux",
+  logiciels: "/missions/logiciels",
+  formation: "/missions/formation",
+  voyage: "/missions/voyage",
+  beauteArtisanat: "/missions/beaute-artisanat",
+  siteInternetPro: "/missions/site-internet-pro",
+  assuranceEmprunteur: "/missions/assurance-emprunteur",
+  ambassadeur: "/missions/ambassadeur",
+  assuranceObseques: "/missions/assurance-obseques",
+  creditImmobilier: "/missions/credit-immobilier",
+  diagnosticImmobilier: "/missions/diagnostic-immobilier",
+  mutuelleSenior: "/missions/mutuelle-senior",
+  mutuelleProfessionnelle: "/missions/mutuelle-professionnelle",
+  epargneRetraite: "/missions/epargne-retraite",
+  motoEquipement: "/missions/moto-equipement",
+  crypto: "/missions/crypto",
+  cybersecurite: "/missions/cybersecurite",
+  servicesEntreprises: "/missions/services-entreprises",
+  debarras: "/missions/debarras",
+  gaz: "/missions/gaz",
+  locationMeublee: "/missions/location-meublee",
+  rachatCredits: "/missions/rachat-credits",
 };
 
 function isAnalyseCategory(
@@ -473,10 +524,17 @@ export default function AnalyseLoadingPage() {
     ) {
       const redirectTimer =
         window.setTimeout(() => {
+          if (!analysis) {
+            router.replace("/analyse");
+            return;
+          }
+
           router.replace(
-            "/analyse-result"
+            missionRouteByCategory[
+              analysis.category
+            ]
           );
-        }, 500);
+        }, 350);
 
       return () =>
         window.clearTimeout(
@@ -488,6 +546,7 @@ export default function AnalyseLoadingPage() {
     analysisFinished,
     errorMessage,
     router,
+    analysis,
   ]);
 
   return (
