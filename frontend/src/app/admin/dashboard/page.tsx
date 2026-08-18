@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import Link from "next/link";
 
 import AdminGuard from "../../components/AdminGuard";
 
+import AddContractModal from "./components/AddContractModal";
 import BusinessCards from "./components/BusinessCards";
 import PartnerRanking from "./components/PartnerRanking";
 import PartnersTable from "./components/PartnersTable";
@@ -20,15 +26,21 @@ export default function AdminDashboardPage() {
   const [statistics, setStatistics] =
     useState<DashboardStatistics | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
   const [errorMessage, setErrorMessage] =
     useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadDashboard() {
+  const loadDashboard = useCallback(
+    async (
+      showLoader = true
+    ) => {
       try {
-        setLoading(true);
+        if (showLoader) {
+          setLoading(true);
+        }
+
         setErrorMessage(null);
 
         const data =
@@ -47,12 +59,17 @@ export default function AdminDashboardPage() {
             : "Une erreur est survenue pendant le chargement."
         );
       } finally {
-        setLoading(false);
+        if (showLoader) {
+          setLoading(false);
+        }
       }
-    }
+    },
+    []
+  );
 
-    loadDashboard();
-  }, []);
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
 
   if (loading) {
     return (
@@ -74,7 +91,10 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (errorMessage || !statistics) {
+  if (
+    errorMessage ||
+    !statistics
+  ) {
     return (
       <AdminGuard>
         <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
@@ -99,7 +119,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() =>
-                  window.location.reload()
+                  void loadDashboard()
                 }
                 className="mt-6 rounded-xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-400"
               >
@@ -133,6 +153,12 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <AddContractModal
+                onSuccess={() =>
+                  loadDashboard(false)
+                }
+              />
+
               <Link
                 href="/admin"
                 className="rounded-xl border border-white/10 bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-800"
@@ -150,7 +176,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() =>
-                  window.location.reload()
+                  void loadDashboard(false)
                 }
                 className="rounded-xl bg-green-400 px-5 py-3 font-black text-slate-950 transition hover:bg-green-300"
               >

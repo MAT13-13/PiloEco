@@ -73,18 +73,21 @@ export async function GET(
     const userAgent =
       request.headers.get("user-agent");
 
-    const {
-      data: destination,
-      error,
-    } = await supabase.rpc(
-      "track_partner_click",
-      {
-        requested_partner_code:
-          cleanPartnerCode,
-        click_referrer: referrer,
-        click_user_agent: userAgent,
-      }
-    );
+    const clickId = crypto.randomUUID();
+
+const {
+  data: destination,
+  error,
+} = await supabase.rpc(
+  "track_partner_click_v2",
+  {
+    requested_partner_code:
+      cleanPartnerCode,
+    click_referrer: referrer,
+    click_user_agent: userAgent,
+    requested_click_id: clickId,
+  }
+);
 
     if (error) {
       console.error(

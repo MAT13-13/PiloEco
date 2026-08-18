@@ -12,7 +12,15 @@ export default function MotoMissionPage() {
       recommendedPrice={0}
       recommendedName="Devis personnalisé Leocare"
       advice="Accède à Leocare pour obtenir un tarif selon ton deux-roues, ton profil et les garanties choisies."
-      fields={[]}
+      fields={[
+        {
+          name: "offer",
+          label: "Solution proposée",
+          type: "select",
+          defaultValue: "Leocare",
+          options: ["Leocare"],
+        },
+      ]}
       dynamicOffers={{
         Leocare: {
           href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300138",
@@ -21,6 +29,10 @@ export default function MotoMissionPage() {
           advice:
             "Accède à Leocare pour obtenir un devis personnalisé selon ton deux-roues et tes besoins.",
           external: true,
+          completionType: "contract",
+          monitoringCategory: "moto",
+          provider: "Leocare",
+          offerName: "Assurance moto",
         },
       }}
       dynamicOfferField="offer"

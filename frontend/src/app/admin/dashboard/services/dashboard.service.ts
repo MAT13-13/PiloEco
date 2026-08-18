@@ -84,7 +84,10 @@ function getNumber(
   for (const key of possibleKeys) {
     const value = row[key];
 
-    if (typeof value === "number" && Number.isFinite(value)) {
+    if (
+      typeof value === "number" &&
+      Number.isFinite(value)
+    ) {
       return value;
     }
 
@@ -167,7 +170,9 @@ function calculateConversionRate(
     return 0;
   }
 
-  return Number(((sales / base) * 100).toFixed(1));
+  return Number(
+    ((sales / base) * 100).toFixed(1)
+  );
 }
 
 function getMonthKey(date: Date) {
@@ -187,7 +192,11 @@ function createLastTwelveMonths(): MonthlyRevenue[] {
   const months: MonthlyRevenue[] = [];
   const now = new Date();
 
-  for (let index = 11; index >= 0; index -= 1) {
+  for (
+    let index = 11;
+    index >= 0;
+    index -= 1
+  ) {
     const date = new Date(
       now.getFullYear(),
       now.getMonth() - index,
@@ -206,15 +215,49 @@ function createLastTwelveMonths(): MonthlyRevenue[] {
 
 export async function getDashboardStatistics():
 Promise<DashboardStatistics> {
+  /*
+   * partner_clicks
+   * = vrais clics sortants enregistrés par PiloEco
+   *
+   * partner_events
+   * = leads, ventes et commissions
+   *
+   * partner_profiles
+   * = informations des partenaires
+   *
+   * partner_offers
+   * = offres proposées par les partenaires
+   */
   const [
+    clicksResult,
     eventsResult,
     partnersResult,
     offersResult,
   ] = await Promise.all([
-    supabase.from("partner_events").select("*"),
-    supabase.from("partner_profiles").select("*"),
-    supabase.from("partner_offers").select("*"),
+    supabase
+      .from("partner_clicks")
+      .select("*"),
+
+    supabase
+      .from("partner_events")
+      .select("*"),
+
+    supabase
+      .from("partner_profiles")
+      .select("*"),
+
+    supabase
+      .from("partner_offers")
+      .select("*"),
   ]);
+
+  if (clicksResult.error) {
+    throw new Error(
+      `Impossible de charger les clics partenaires : ${
+        clicksResult.error.message
+      }`
+    );
+  }
 
   if (eventsResult.error) {
     throw new Error(
@@ -240,11 +283,21 @@ Promise<DashboardStatistics> {
     );
   }
 
-  const events = (eventsResult.data ?? []) as GenericRow[];
+  const clicks =
+    (clicksResult.data ?? []) as GenericRow[];
+
+  const events =
+    (eventsResult.data ?? []) as GenericRow[];
+
   const partnerRows =
     (partnersResult.data ?? []) as GenericRow[];
+
   const offerRows =
     (offersResult.data ?? []) as GenericRow[];
+
+  /*
+   * PARTENAIRES
+   */
 
   const partnerMap = new Map<
     string,
@@ -252,7 +305,8 @@ Promise<DashboardStatistics> {
   >();
 
   for (const partner of partnerRows) {
-    const partnerId = getString(partner, ["id"]);
+    const partnerId =
+      getString(partner, ["id"]);
 
     if (!partnerId) {
       continue;
@@ -260,11 +314,17 @@ Promise<DashboardStatistics> {
 
     partnerMap.set(partnerId, {
       partnerId,
+
       company: getString(
         partner,
-        ["company", "company_name", "name"],
+        [
+          "company",
+          "company_name",
+          "name",
+        ],
         "Partenaire sans nom"
       ),
+
       clicks: 0,
       leads: 0,
       sales: 0,
@@ -273,34 +333,53 @@ Promise<DashboardStatistics> {
     });
   }
 
-  const offerMap = new Map<string, OfferStatistic>();
+  /*
+   * OFFRES
+   */
+
+  const offerMap =
+    new Map<string, OfferStatistic>();
 
   for (const offer of offerRows) {
-    const offerId = getString(offer, ["id"]);
+    const offerId =
+      getString(offer, ["id"]);
 
     if (!offerId) {
       continue;
     }
 
-    const partnerId = getPartnerId(offer);
+    const partnerId =
+      getPartnerId(offer);
 
     offerMap.set(offerId, {
       offerId,
+
       offerName: getString(
         offer,
-        ["name", "title", "offer_name"],
+        [
+          "name",
+          "title",
+          "offer_name",
+        ],
         "Offre sans nom"
       ),
+
       partnerId,
+
       company:
         partnerId &&
         partnerMap.get(partnerId)?.company
           ? partnerMap.get(partnerId)!.company
           : getString(
               offer,
-              ["provider", "company", "brand"],
+              [
+                "provider",
+                "company",
+                "brand",
+              ],
               "Partenaire inconnu"
             ),
+
       clicks: 0,
       leads: 0,
       sales: 0,
@@ -308,12 +387,22 @@ Promise<DashboardStatistics> {
     });
   }
 
+  /*
+   * TOTAUX
+   */
+
   let totalClicks = 0;
   let totalLeads = 0;
   let totalSales = 0;
   let totalRevenue = 0;
 
-  const monthlyRevenue = createLastTwelveMonths();
+  /*
+   * REVENUS SUR 12 MOIS
+   */
+
+  const monthlyRevenue =
+    createLastTwelveMonths();
+
   const monthlyRevenueMap = new Map(
     monthlyRevenue.map((item) => [
       item.monthKey,
@@ -321,32 +410,90 @@ Promise<DashboardStatistics> {
     ])
   );
 
-  for (const event of events) {
-    const eventType = getEventType(event);
-    const partnerId = getPartnerId(event);
-    const offerId = getOfferId(event);
-    const revenue = getEventRevenue(event);
-    const eventDate = getEventDate(event);
+  /*
+   * CLICS
+   *
+   * Les clics viennent maintenant directement
+   * de la table partner_clicks.
+   */
 
-    const partnerStatistic = partnerId
-      ? partnerMap.get(partnerId)
-      : undefined;
+  for (const click of clicks) {
+    totalClicks += 1;
 
-    const offerStatistic = offerId
-      ? offerMap.get(offerId)
-      : undefined;
+    const partnerId =
+      getPartnerId(click);
 
-    if (eventType === "click") {
-      totalClicks += 1;
+    if (partnerId) {
+      const partnerStatistic =
+        partnerMap.get(partnerId);
 
       if (partnerStatistic) {
         partnerStatistic.clicks += 1;
       }
+    }
+
+    /*
+     * Si un jour partner_clicks possède
+     * un offer_id, le dashboard saura
+     * automatiquement compter les clics
+     * par offre.
+     */
+    const offerId =
+      getOfferId(click);
+
+    if (offerId) {
+      const offerStatistic =
+        offerMap.get(offerId);
 
       if (offerStatistic) {
         offerStatistic.clicks += 1;
       }
     }
+  }
+
+  /*
+   * ÉVÉNEMENTS
+   *
+   * partner_events sert maintenant
+   * principalement à enregistrer :
+   *
+   * lead
+   * sale
+   *
+   * Les clics ne sont PAS comptés ici
+   * afin d'éviter les doublons avec
+   * partner_clicks.
+   */
+
+  for (const event of events) {
+    const eventType =
+      getEventType(event);
+
+    const partnerId =
+      getPartnerId(event);
+
+    const offerId =
+      getOfferId(event);
+
+    const revenue =
+      getEventRevenue(event);
+
+    const eventDate =
+      getEventDate(event);
+
+    const partnerStatistic =
+      partnerId
+        ? partnerMap.get(partnerId)
+        : undefined;
+
+    const offerStatistic =
+      offerId
+        ? offerMap.get(offerId)
+        : undefined;
+
+    /*
+     * LEAD
+     */
 
     if (eventType === "lead") {
       totalLeads += 1;
@@ -360,8 +507,13 @@ Promise<DashboardStatistics> {
       }
     }
 
+    /*
+     * VENTE / CONTRAT
+     */
+
     if (eventType === "sale") {
       totalSales += 1;
+
       totalRevenue += revenue;
 
       if (partnerStatistic) {
@@ -374,8 +526,14 @@ Promise<DashboardStatistics> {
         offerStatistic.revenue += revenue;
       }
 
+      /*
+       * REVENU MENSUEL
+       */
+
       if (eventDate) {
-        const monthKey = getMonthKey(eventDate);
+        const monthKey =
+          getMonthKey(eventDate);
+
         const monthItem =
           monthlyRevenueMap.get(monthKey);
 
@@ -386,99 +544,182 @@ Promise<DashboardStatistics> {
     }
   }
 
-  const partners = Array.from(
-    partnerMap.values()
-  )
-    .map((partner) => ({
-      ...partner,
-      revenue: Number(partner.revenue.toFixed(2)),
-      conversionRate: calculateConversionRate(
-        partner.sales,
-        partner.leads,
-        partner.clicks
-      ),
-    }))
-    .sort((firstPartner, secondPartner) => {
-      return (
-        secondPartner.revenue -
-        firstPartner.revenue
-      );
-    });
+  /*
+   * STATISTIQUES PAR PARTENAIRE
+   */
 
-  const offers = Array.from(offerMap.values())
-    .map((offer) => ({
-      ...offer,
-      revenue: Number(offer.revenue.toFixed(2)),
-    }))
-    .sort((firstOffer, secondOffer) => {
-      return (
-        secondOffer.revenue -
-        firstOffer.revenue
+  const partners =
+    Array.from(partnerMap.values())
+      .map((partner) => ({
+        ...partner,
+
+        revenue: Number(
+          partner.revenue.toFixed(2)
+        ),
+
+        conversionRate:
+          calculateConversionRate(
+            partner.sales,
+            partner.leads,
+            partner.clicks
+          ),
+      }))
+      .sort(
+        (
+          firstPartner,
+          secondPartner
+        ) => {
+          /*
+           * Classement prioritaire par CA.
+           *
+           * Si aucun CA :
+           * classement par nombre de clics.
+           */
+          if (
+            secondPartner.revenue !==
+            firstPartner.revenue
+          ) {
+            return (
+              secondPartner.revenue -
+              firstPartner.revenue
+            );
+          }
+
+          return (
+            secondPartner.clicks -
+            firstPartner.clicks
+          );
+        }
       );
-    });
+
+  /*
+   * STATISTIQUES PAR OFFRE
+   */
+
+  const offers =
+    Array.from(offerMap.values())
+      .map((offer) => ({
+        ...offer,
+
+        revenue: Number(
+          offer.revenue.toFixed(2)
+        ),
+      }))
+      .sort(
+        (
+          firstOffer,
+          secondOffer
+        ) => {
+          if (
+            secondOffer.revenue !==
+            firstOffer.revenue
+          ) {
+            return (
+              secondOffer.revenue -
+              firstOffer.revenue
+            );
+          }
+
+          return (
+            secondOffer.clicks -
+            firstOffer.clicks
+          );
+        }
+      );
+
+  /*
+   * MOIS ACTUEL / MOIS PRÉCÉDENT
+   */
 
   const now = new Date();
 
-  const currentMonthKey = getMonthKey(now);
+  const currentMonthKey =
+    getMonthKey(now);
 
-  const previousMonthDate = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1
-  );
+  const previousMonthDate =
+    new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1
+    );
 
   const previousMonthKey =
     getMonthKey(previousMonthDate);
 
   const currentMonthRevenue =
-    monthlyRevenueMap.get(currentMonthKey)?.revenue ??
-    0;
+    monthlyRevenueMap
+      .get(currentMonthKey)
+      ?.revenue ?? 0;
 
   const previousMonthRevenue =
-    monthlyRevenueMap.get(previousMonthKey)?.revenue ??
-    0;
+    monthlyRevenueMap
+      .get(previousMonthKey)
+      ?.revenue ?? 0;
 
   let monthlyEvolution = 0;
 
   if (previousMonthRevenue > 0) {
     monthlyEvolution =
-      ((currentMonthRevenue -
-        previousMonthRevenue) /
-        previousMonthRevenue) *
-      100;
+      (
+        (
+          currentMonthRevenue -
+          previousMonthRevenue
+        ) /
+        previousMonthRevenue
+      ) * 100;
   } else if (currentMonthRevenue > 0) {
     monthlyEvolution = 100;
   }
+
+  /*
+   * RÉSULTAT FINAL
+   */
 
   return {
     totalClicks,
     totalLeads,
     totalSales,
-    totalRevenue: Number(totalRevenue.toFixed(2)),
-    conversionRate: calculateConversionRate(
-      totalSales,
-      totalLeads,
-      totalClicks
+
+    totalRevenue: Number(
+      totalRevenue.toFixed(2)
     ),
+
+    conversionRate:
+      calculateConversionRate(
+        totalSales,
+        totalLeads,
+        totalClicks
+      ),
 
     currentMonthRevenue: Number(
       currentMonthRevenue.toFixed(2)
     ),
+
     previousMonthRevenue: Number(
       previousMonthRevenue.toFixed(2)
     ),
+
     monthlyEvolution: Number(
       monthlyEvolution.toFixed(1)
     ),
 
-    topPartner: partners[0] ?? null,
-    topOffer: offers[0] ?? null,
+    topPartner:
+      partners[0] ?? null,
+
+    topOffer:
+      offers[0] ?? null,
 
     partners,
+
     offers,
-    monthlyRevenue: monthlyRevenue.map((item) => ({
-      ...item,
-      revenue: Number(item.revenue.toFixed(2)),
-    })),
+
+    monthlyRevenue:
+      monthlyRevenue.map((item) => ({
+        ...item,
+
+        revenue: Number(
+          item.revenue.toFixed(2)
+        ),
+      })),
   };
 }
