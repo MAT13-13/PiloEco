@@ -10,6 +10,12 @@ type Field = {
   type: "text" | "number" | "select";
   defaultValue: string | number;
   options?: string[];
+
+  // Affichage conditionnel facultatif d'un champ
+  showWhen?: {
+    field: string;
+    equals: string | string[];
+  };
 };
 
 type CompletionType =
@@ -100,6 +106,12 @@ type MissionLayoutProps = {
   dynamicOfferField?: string;
   dynamicOffers?: Record<string, DynamicOffer>;
 
+  // Permet de choisir dynamiquement quelle offre afficher
+  // en fonction de plusieurs champs.
+  dynamicOfferResolver?: (
+    values: Record<string, string | number>
+  ) => string;
+
   alternativeOfferField?: string;
   alternativeOffers?: Record<string, DynamicOffer>;
   alternativeTitle?: string;
@@ -157,6 +169,7 @@ export default function MissionLayout({
   offerPath = "/offres/mobile",
   dynamicOfferField,
   dynamicOffers,
+  dynamicOfferResolver,
   alternativeOfferField,
   alternativeOffers,
   alternativeTitle = "Autre offre partenaire",
@@ -246,9 +259,11 @@ export default function MissionLayout({
     monthlySaving * 12
   );
 
-  const selectedDynamicValue = dynamicOfferField
-    ? String(values[dynamicOfferField] ?? "")
-    : "";
+  const selectedDynamicValue = dynamicOfferResolver
+    ? dynamicOfferResolver(values)
+    : dynamicOfferField
+      ? String(values[dynamicOfferField] ?? "")
+      : "";
 
   const selectedOffer =
     dynamicOffers && selectedDynamicValue
@@ -522,6 +537,24 @@ export default function MissionLayout({
     );
   };
 
+  const visibleFields = fields.filter((field) => {
+    if (!field.showWhen) {
+      return true;
+    }
+
+    const currentValue = String(
+      values[field.showWhen.field] ?? ""
+    );
+
+    const acceptedValues = Array.isArray(
+      field.showWhen.equals
+    )
+      ? field.showWhen.equals
+      : [field.showWhen.equals];
+
+    return acceptedValues.includes(currentValue);
+  });
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-4xl">
@@ -546,7 +579,7 @@ export default function MissionLayout({
           </p>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {fields.map((field) => (
+            {visibleFields.map((field) => (
               <label key={field.name}>
                 <p className="mb-2 font-semibold">
                   {field.label}

@@ -780,12 +780,39 @@ const categories: Record<
       "Je vais préciser le besoin de ton entreprise afin de t'orienter vers le bon service partenaire.",
     questions: [
       {
-        key: "budget",
-        type: "number",
-        emoji: "💶",
-        title: "Quel budget souhaites-tu prévoir ?",
-        description: "Indique simplement ton budget approximatif en euros.",
-        placeholder: "Ex : 100",
+        key: "serviceType",
+        type: "select",
+        emoji: "🏢",
+        title: "Quel service professionnel recherches-tu ?",
+        description:
+          "Choisis le service dont ton entreprise a besoin.",
+        options: [
+          "Assurance décennale",
+          "Expert-comptable",
+        ],
+      },
+      {
+        key: "activity",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est ton activité principale ?",
+        description:
+          "Cette information aide Pilo à mieux orienter ta recherche.",
+        options: [
+          "Artisan du bâtiment",
+          "Maçon",
+          "Charpentier",
+          "Plombier",
+          "Électricien",
+          "Architecte",
+          "Entreprise générale du bâtiment",
+          "Commerce",
+          "Profession libérale",
+          "Indépendant",
+          "Micro-entrepreneur",
+          "Société",
+          "Autre",
+        ],
       },
     ],
   },
@@ -924,7 +951,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
 
   energieTelecoms: {
     label: "Énergie & Télécoms",
-    icon: "⚡",
+    icon: "⚡📱",
     description:
       "Électricité, gaz, téléphone et connexion Internet.",
     categories: [
@@ -955,7 +982,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
 
   autoMotoMobilite: {
     label: "Auto, Moto & Mobilité",
-    icon: "🚗",
+    icon: "🚗🏍️",
     description:
       "Assurances, entretien, équipement et nouvelles mobilités.",
     categories: [
@@ -982,7 +1009,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
 
   proNumerique: {
     label: "Pro & Numérique",
-    icon: "💼",
+    icon: "💼💻",
     description:
       "Solutions pour ton activité professionnelle et tes usages numériques.",
     categories: [
@@ -1492,6 +1519,11 @@ export default function AnalysePage() {
 
       if (selectedCategory === "rachatCredits") {
         router.push("/missions/rachat-credits");
+        return;
+      }
+
+      if (selectedCategory === "servicesEntreprises") {
+        router.push("/missions/services-entreprises");
         return;
       }
 

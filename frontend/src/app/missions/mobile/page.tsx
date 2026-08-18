@@ -46,48 +46,97 @@ const LYCA_1_MOIS =
 const LYCA_24_MOIS =
   "https://mkq.lycamobile.fr/?P513AB758C0F52111&redir=https%3A%2F%2Fwww.lycamobile.fr%2Fabo%2Ffr%2Fbundles%2Fsim-only-deals%2F%2324-mois";
 
+/* =========================
+   LEBARA
+========================= */
+
+const LEBARA_FORFAITS =
+  "https://track.effiliation.com/servlet/effi.redir?id_compteur=23304600&url=https%3A%2F%2Fwww.lebara.fr%2F";
+
 export default function MobileMissionPage() {
   return (
     <MissionLayout
       icon="📱"
       title="Trouver ton forfait mobile"
-      subtitle="Choisis simplement l’offre qui correspond à ton besoin."
+      subtitle="Choisis ton opérateur puis l’offre qui correspond à ton besoin."
       basePrice={0}
       recommendedPrice={0}
       recommendedName="Offre mobile adaptée"
-      advice="Pilo t’oriente directement vers le forfait ou la solution mobile qui correspond à ton besoin."
+      advice="Pilo t’oriente vers une solution mobile adaptée à ton besoin."
       fields={[
         {
-          name: "offerType",
-          label: "Quelle offre souhaites-tu consulter ?",
+          name: "operator",
+          label: "Quel opérateur souhaites-tu consulter ?",
+          type: "select",
+          defaultValue: "Auchan Télécom",
+          options: [
+            "Auchan Télécom",
+            "Lyca Mobile",
+            "Lebara",
+          ],
+        },
+        {
+          name: "auchanOffer",
+          label: "Quel forfait Auchan Télécom souhaites-tu consulter ?",
           type: "select",
           defaultValue:
             "Auchan Télécom – 200 Go 5G à 12,99 €",
+          showWhen: {
+            field: "operator",
+            equals: "Auchan Télécom",
+          },
           options: [
             "Auchan Télécom – 200 Go 5G à 12,99 €",
             "Auchan Télécom – 100 Go 5G à 9,99 €",
             "Auchan Télécom – 200 Go 5G international à 15,99 €",
             "Auchan Télécom – 10 Go 4G à 7,99 €",
             "Auchan Télécom – 1 Go 4G à 1,99 €",
-
             "Auchan Télécom – Acheter un mobile",
-
+            "Auchan Télécom – Programme de parrainage",
+          ],
+        },
+        {
+          name: "lycaOffer",
+          label: "Quelle offre Lyca Mobile souhaites-tu consulter ?",
+          type: "select",
+          defaultValue: "Lyca Mobile – eSIM",
+          showWhen: {
+            field: "operator",
+            equals: "Lyca Mobile",
+          },
+          options: [
             "Lyca Mobile – eSIM",
             "Lyca Mobile – Forfait international",
             "Lyca Mobile – Forfait prépayé",
             "Lyca Mobile – Forfait SIM 1 mois",
             "Lyca Mobile – Forfait SIM 24 mois",
-
-            "Auchan Télécom – Programme de parrainage",
           ],
         },
       ]}
-      dynamicOfferField="offerType"
-      dynamicOffers={{
-        /* =========================
-           AUCHAN TÉLÉCOM
-        ========================= */
+      dynamicOfferResolver={(values) => {
+        const operator = String(
+          values.operator ?? ""
+        );
 
+        if (operator === "Auchan Télécom") {
+          return String(
+            values.auchanOffer ?? ""
+          );
+        }
+
+        if (operator === "Lyca Mobile") {
+          return String(
+            values.lycaOffer ?? ""
+          );
+        }
+
+        if (operator === "Lebara") {
+          return "Lebara – Voir les forfaits";
+        }
+
+        return "";
+      }}
+      dynamicOffers={{
         "Auchan Télécom – 200 Go 5G à 12,99 €": {
           href: AUCHAN_200,
           buttonLabel:
@@ -165,10 +214,6 @@ export default function MobileMissionPage() {
           external: true,
         },
 
-        /* =========================
-           LYCA MOBILE
-        ========================= */
-
         "Lyca Mobile – eSIM": {
           href: LYCA_ESIM,
           buttonLabel:
@@ -221,6 +266,17 @@ export default function MobileMissionPage() {
             "Lyca Mobile – Forfaits SIM 24 mois",
           advice:
             "Découvre les forfaits SIM Lyca Mobile proposés sur une durée de 24 mois.",
+          external: true,
+        },
+
+        "Lebara – Voir les forfaits": {
+          href: LEBARA_FORFAITS,
+          buttonLabel:
+            "Découvrir les forfaits Lebara →",
+          recommendedName:
+            "Lebara – Forfaits mobiles",
+          advice:
+            "Consulte les forfaits mobiles Lebara et choisis directement l’offre correspondant à ton besoin et à ton budget.",
           external: true,
         },
       }}

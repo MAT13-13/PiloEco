@@ -47,21 +47,21 @@ const missionUniverses: MissionUniverse[] = [
     ],
   },
   {
-    id: "energie-telecoms",
-    label: "Énergie & Télécoms",
-    icon: "⚡",
-    description: "Électricité, gaz, téléphone et connexion Internet.",
-    slugs: [
-      "electricite",
-      "gaz",
-      "mobile",
-      "telephone",
-      "telephone-senior",
-      "internet",
-    ],
-  },
-  {
-    id: "maison-immobilier",
+  id: "energie-telecoms",
+  label: "Énergie & Télécoms",
+  icon: "⚡📱",
+  description: "Électricité, gaz, téléphone et connexion Internet.",
+  slugs: [
+    "electricite",
+    "gaz",
+    "mobile",
+    "telephone",
+    "telephone-senior",
+    "internet",
+  ],
+},
+{
+  id: "maison-immobilier",
     label: "Maison & Immobilier",
     icon: "🏠",
     description: "Logement, immobilier, travaux, sécurité et déménagement.",
@@ -88,7 +88,7 @@ const missionUniverses: MissionUniverse[] = [
   {
     id: "auto-moto-mobilite",
     label: "Auto, Moto & Mobilité",
-    icon: "🚗",
+    icon: "🚗🏍️",
     description: "Assurances, entretien, équipement et nouvelles mobilités.",
     slugs: [
       "auto",
@@ -116,7 +116,7 @@ const missionUniverses: MissionUniverse[] = [
   {
     id: "pro-numerique",
     label: "Pro & Numérique",
-    icon: "💼",
+    icon: "💼💻",
     description: "Solutions professionnelles et services numériques.",
     slugs: [
       "site-internet-pro",
