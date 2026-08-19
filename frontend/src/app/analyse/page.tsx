@@ -255,7 +255,7 @@ const categories: Record<
   },
 
   mobilitesDouces: {
-    label: "Mobilités douces",
+    label: "Assurance mobilité douce",
     icon: "🚲",
     message:
       "Je vais analyser l’assurance de ton vélo ou de ta trottinette électrique.",
@@ -895,13 +895,14 @@ type AnalyseCatalogEntry = {
 };
 
 type AnalyseUniverse =
-  | "familleQuotidien"
-  | "santeProtection"
-  | "energieTelecoms"
+  | "assurancesProtection"
+  | "energie"
+  | "telecomsNumerique"
   | "maisonImmobilier"
-  | "autoMotoMobilite"
+  | "servicesQuotidien"
   | "financePatrimoine"
-  | "proNumerique"
+  | "proEntreprises"
+  | "beauteArtisanat"
   | "voyagesLoisirs";
 
 type UniverseConfig = {
@@ -912,54 +913,61 @@ type UniverseConfig = {
 };
 
 const universeOrder: AnalyseUniverse[] = [
-  "familleQuotidien",
-  "santeProtection",
-  "energieTelecoms",
+  "assurancesProtection",
+  "energie",
+  "telecomsNumerique",
   "maisonImmobilier",
-  "autoMotoMobilite",
+  "servicesQuotidien",
   "financePatrimoine",
-  "proNumerique",
+  "proEntreprises",
+  "beauteArtisanat",
   "voyagesLoisirs",
 ];
 
 const universes: Record<AnalyseUniverse, UniverseConfig> = {
-  familleQuotidien: {
-    label: "Beauté & Artisanat",
-    icon: "🌸",
+  assurancesProtection: {
+    label: "Assurances & Protection",
+    icon: "🛡️",
     description:
-      "Beauté, créations artisanales et idées faites main.",
-    categories: [
-      "beauteArtisanat",
-    ],
-  },
-
-  santeProtection: {
-    label: "Santé & Protection",
-    icon: "❤️",
-    description:
-      "Santé, assurances et solutions de protection pour toi et tes proches.",
+      "Assurances, mutuelles et solutions pour protéger ton quotidien.",
     categories: [
       "mutuelle",
       "mutuelleSenior",
       "mutuelleProfessionnelle",
       "animaux",
+      "auto",
+      "moto",
+      "mobilitesDouces",
+      "habitation",
       "assuranceEmprunteur",
       "assuranceObseques",
       "ambassadeur",
     ],
   },
 
-  energieTelecoms: {
-    label: "Énergie & Télécoms",
-    icon: "⚡📱",
+  energie: {
+    label: "Énergie",
+    icon: "⚡",
     description:
-      "Électricité, gaz, téléphone et connexion Internet.",
+      "Électricité et gaz pour mieux maîtriser tes factures d’énergie.",
     categories: [
       "electricite",
       "gaz",
+    ],
+  },
+
+  telecomsNumerique: {
+    label: "Télécoms & Numérique",
+    icon: "📱",
+    description:
+      "Téléphone, Internet et solutions numériques pour ton quotidien.",
+    categories: [
       "telephone",
       "telephoneSenior",
       "internet",
+      "cybersecurite",
+      "logiciels",
+      "streaming",
     ],
   },
 
@@ -967,30 +975,26 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     label: "Maison & Immobilier",
     icon: "🏠",
     description:
-      "Logement, immobilier, travaux, sécurité et déménagement.",
+      "Immobilier, logement, travaux et solutions pour ta maison.",
     categories: [
       "creditImmobilier",
       "diagnosticImmobilier",
       "locationMeublee",
-      "habitation",
       "travaux",
       "securite",
-      "demenagement",
-      "debarras",
     ],
   },
 
-  autoMotoMobilite: {
-    label: "Auto, Moto & Mobilité",
-    icon: "🚗🏍️",
+  servicesQuotidien: {
+    label: "Services du quotidien",
+    icon: "🧰",
     description:
-      "Assurances, entretien, équipement et nouvelles mobilités.",
+      "Déménagement, débarras, auto et services pratiques du quotidien.",
     categories: [
-      "auto",
-      "moto",
+      "demenagement",
+      "debarras",
       "servicesAuto",
       "motoEquipement",
-      "mobilitesDouces",
     ],
   },
 
@@ -1007,18 +1011,25 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     ],
   },
 
-  proNumerique: {
-    label: "Pro & Numérique",
-    icon: "💼💻",
+  proEntreprises: {
+    label: "Pro & Entreprises",
+    icon: "💼",
     description:
-      "Solutions pour ton activité professionnelle et tes usages numériques.",
+      "Solutions et services pour les professionnels et les entreprises.",
     categories: [
       "siteInternetPro",
       "formation",
-      "cybersecurite",
       "servicesEntreprises",
-      "logiciels",
-      "streaming",
+    ],
+  },
+
+  beauteArtisanat: {
+    label: "Beauté & Artisanat",
+    icon: "🌸",
+    description:
+      "Beauté, créations artisanales et idées faites main.",
+    categories: [
+      "beauteArtisanat",
     ],
   },
 
@@ -1026,7 +1037,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     label: "Voyages & Loisirs",
     icon: "✈️",
     description:
-      "Prépare tes voyages et trouve les solutions adaptées à tes projets.",
+      "Voyages et solutions adaptées à tes projets de loisirs.",
     categories: [
       "voyage",
     ],
@@ -1690,7 +1701,7 @@ export default function AnalysePage() {
           </div>
 
           {!selectedUniverseConfig ? (
-            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {universeOrder.map((universeKey) => {
                 const universe = universes[universeKey];
 
@@ -1755,7 +1766,7 @@ export default function AnalysePage() {
                 </button>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {selectedUniverseEntries.map(
                   (entry) => {
                     const item = entry.config;

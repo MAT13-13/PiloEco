@@ -10,98 +10,188 @@ const mainItems = [
   { label: "📈 Mon évolution", href: "/evolution" },
 ];
 
-const universeItems = [
-  { label: "👨‍👩‍👧 Famille & aides", href: "/missions/famille" },
-  { label: "🌸 Beauté & Artisanat", href: "/missions/beaute-artisanat" },
-  { label: "✈️ Voyage", href: "/missions/voyage" },
+const universeGroups = [
   {
-  label: "⚡ Électricité",
-  href: "/missions/electricite",
-},
-  { label: "📱 Téléphone", href: "/missions/mobile" },
-  { label: "👵 Téléphone senior", href: "/missions/telephone-senior" },
-  { label: "🌐 Site internet pro", href: "/missions/site-internet-pro" },
-  { label: "🐶 Assurance animaux", href: "/missions/animaux" },
-  {
-    label: "🏦 Assurance emprunteur",
-    href: "/missions/assurance-emprunteur",
+    id: "assurances",
+    label: "🛡️ Assurances & Protection",
+    items: [
+      {
+        label: "🐶 Assurance animaux",
+        href: "/missions/animaux",
+      },
+      {
+        label: "🏦 Assurance emprunteur",
+        href: "/missions/assurance-emprunteur",
+      },
+      {
+        label: "🏠 Assurance habitation",
+        href: "/missions/habitation",
+      },
+      {
+        label: "🚗 Assurance auto",
+        href: "/missions/auto",
+      },
+      {
+        label: "🏍️ Assurance moto",
+        href: "/missions/moto",
+      },
+      {
+        label: "🚲 Assurance mobilité douce",
+        href: "/missions/mobilites-douces",
+      },
+      {
+        label: "👵 Mutuelle Senior",
+        href: "/missions/mutuelle-senior",
+      },
+      {
+        label: "🕊️ Assurance obsèques",
+        href: "/missions/assurance-obseques",
+      },
+      {
+        label: "💼 Ambassadeur GSelect",
+        href: "/missions/ambassadeur",
+      },
+    ],
   },
-  { label: "💼 Ambassadeur GSelect", href: "/missions/ambassadeur" },
+
   {
-    label: "🕊️ Assurance obsèques",
-    href: "/missions/assurance-obseques",
+    id: "energie",
+    label: "⚡ Énergie",
+    items: [
+      {
+        label: "⚡ Électricité",
+        href: "/missions/electricite",
+      },
+      {
+        label: "🔥 Gaz",
+        href: "/missions/gaz",
+      },
+    ],
   },
+
   {
-    label: "🏠 Crédit immobilier",
-    href: "/missions/credit-immobilier",
+    id: "telecoms",
+    label: "📱 Télécoms & Numérique",
+    items: [
+      {
+        label: "📱 Téléphone",
+        href: "/missions/mobile",
+      },
+      {
+        label: "👵 Téléphone senior",
+        href: "/missions/telephone-senior",
+      },
+      {
+        label: "🛡️ Cybersécurité",
+        href: "/missions/cybersecurite",
+      },
+    ],
   },
+
   {
-    label: "📋 Diagnostic immobilier",
-    href: "/missions/diagnostic-immobilier",
+    id: "maison",
+    label: "🏠 Maison & Immobilier",
+    items: [
+      {
+        label: "🏠 Crédit immobilier",
+        href: "/missions/credit-immobilier",
+      },
+      {
+        label: "📋 Diagnostic immobilier",
+        href: "/missions/diagnostic-immobilier",
+      },
+      {
+        label: "🏘️ Location meublée & LMNP",
+        href: "/missions/location-meublee",
+      },
+      {
+        label: "🛠️ Travaux & rénovation",
+        href: "/missions/travaux",
+      },
+      {
+        label: "🔐 Alarme & sécurité",
+        href: "/missions/securite",
+      },
+    ],
   },
+
   {
-    label: "🏠 Assurance habitation",
-    href: "/missions/habitation",
+    id: "services",
+    label: "🧰 Services du quotidien",
+    items: [
+      {
+        label: "🔧 Services auto",
+        href: "/missions/services-auto",
+      },
+      {
+        label: "🏍️ Moto & équipement",
+        href: "/missions/moto-equipement",
+      },
+      {
+        label: "🚚 Déménagement",
+        href: "/missions/demenagement",
+      },
+      {
+        label: "📦 Débarras",
+        href: "/missions/debarras",
+      },
+    ],
   },
+
   {
-    label: "🛠️ Travaux & rénovation",
-    href: "/missions/travaux",
+    id: "finance",
+    label: "💰 Finance & Patrimoine",
+    items: [
+      {
+        label: "💰 Épargne & retraite",
+        href: "/missions/epargne-retraite",
+      },
+      {
+        label: "₿ Cryptomonnaies",
+        href: "/missions/crypto",
+      },
+    ],
   },
+
   {
-    label: "👵 Mutuelle Senior",
-    href: "/missions/mutuelle-senior",
+    id: "pro",
+    label: "💼 Pro & Entreprises",
+    items: [
+      {
+        label: "🌐 Site internet pro",
+        href: "/missions/site-internet-pro",
+      },
+      {
+        label: "🎓 Formation",
+        href: "/missions/formation",
+      },
+      {
+        label: "🏢 Services aux entreprises",
+        href: "/missions/services-entreprises",
+      },
+    ],
   },
+
   {
-    label: "💰 Épargne & retraite",
-    href: "/missions/epargne-retraite",
+    id: "beaute",
+    label: "🌸 Beauté & Artisanat",
+    items: [
+      {
+        label: "🌸 Beauté & Artisanat",
+        href: "/missions/beaute-artisanat",
+      },
+    ],
   },
+
   {
-    label: "🚗 Assurance auto",
-    href: "/missions/auto",
-  },
-  {
-    label: "🏍️ Assurance moto",
-    href: "/missions/moto",
-  },
-  {
-    label: "🚲 Mobilités douces",
-    href: "/missions/mobilites-douces",
-  },
-  {
-    label: "🔧 Services auto",
-    href: "/missions/services-auto",
-  },
-  {
-    label: "🏍️ Moto & équipement",
-    href: "/missions/moto-equipement",
-  },
-  {
-    label: "🎓 Formation",
-    href: "/missions/formation",
-  },
-  {
-    label: "🔐 Alarme & sécurité",
-    href: "/missions/securite",
-  },
-  {
-    label: "₿ Cryptomonnaies",
-    href: "/missions/crypto",
-  },
-  {
-    label: "🛡️ Cybersécurité",
-    href: "/missions/cybersecurite",
-  },
-  {
-    label: "🏢 Services aux entreprises",
-    href: "/missions/services-entreprises",
-  },
-  {
-    label: "🚚 Déménagement",
-    href: "/missions/demenagement",
-  },
-  {
-    label: "📦 Débarras",
-    href: "/missions/debarras",
+    id: "voyages",
+    label: "✈️ Voyages & Loisirs",
+    items: [
+      {
+        label: "✈️ Voyage",
+        href: "/missions/voyage",
+      },
+    ],
   },
 ];
 
@@ -116,6 +206,17 @@ const upcomingItems = [
 export default function Sidebar() {
   const [universOpen, setUniversOpen] = useState(true);
   const [upcomingOpen, setUpcomingOpen] = useState(false);
+
+  const [openGroups, setOpenGroups] = useState<
+    Record<string, boolean>
+  >({});
+
+  function toggleGroup(groupId: string) {
+    setOpenGroups((current) => ({
+      ...current,
+      [groupId]: !current[groupId],
+    }));
+  }
 
   return (
     <aside className="fixed left-0 top-0 hidden h-screen w-64 overflow-y-auto border-r border-slate-800 bg-slate-950 p-5 text-white lg:block">
@@ -180,7 +281,7 @@ export default function Sidebar() {
 
             <Link
               href="/pilolife"
-              className="mt-2 block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
+              className="block w-full rounded-xl border border-purple-500/20 bg-slate-950/40 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-purple-500/10"
             >
               🌿 PiloLife
             </Link>
@@ -210,16 +311,46 @@ export default function Sidebar() {
         </button>
 
         {universOpen && (
-          <div className="mt-3 space-y-1">
-            {universeItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div className="mt-3 space-y-2">
+           
+
+            {universeGroups.map((group) => {
+              const isOpen = Boolean(openGroups[group.id]);
+
+              return (
+                <div key={group.id}>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.id)}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-bold transition ${
+                      isOpen
+                        ? "bg-slate-800 text-green-400"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
+                  >
+                    <span>{group.label}</span>
+
+                    <span className="ml-2 text-xs text-slate-500">
+                      {isOpen ? "−" : "+"}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="ml-3 mt-1 space-y-1 border-l border-slate-800 pl-2">
+                      {group.items.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold leading-5 text-slate-400 transition hover:bg-slate-800 hover:text-green-300"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -227,7 +358,9 @@ export default function Sidebar() {
 
         <button
           type="button"
-          onClick={() => setUpcomingOpen((value) => !value)}
+          onClick={() =>
+            setUpcomingOpen((value) => !value)
+          }
           className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-slate-900"
         >
           <div>

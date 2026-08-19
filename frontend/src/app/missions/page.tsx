@@ -27,85 +27,112 @@ type MissionUniverse = {
 };
 
 const missionUniverses: MissionUniverse[] = [
- 
   {
-    id: "sante-protection",
-    label: "Santé & Protection",
-    icon: "❤️",
-    description: "Santé, assurances et solutions de protection.",
+    id: "assurances-protection",
+    label: "Assurances & Protection",
+    icon: "🛡️",
+    description:
+      "Assurances, mutuelles et solutions pour protéger ton quotidien.",
     slugs: [
       "mutuelle",
       "mutuelle-sante",
       "mutuelle-senior",
       "mutuelle-professionnelle",
+
       "animaux",
       "assurance-animaux",
+
+      "auto",
+      "assurance-auto",
+
+      "moto",
+      "assurance-moto",
+
+      "mobilites-douces",
+
+      "habitation",
+      "assurance-habitation",
+
       "assurance-emprunteur",
       "assurance-obseques",
+
       "ambassadeur",
       "ambassadeur-gselect",
     ],
   },
+
   {
-  id: "energie-telecoms",
-  label: "Énergie & Télécoms",
-  icon: "⚡📱",
-  description: "Électricité, gaz, téléphone et connexion Internet.",
-  slugs: [
-    "electricite",
-    "gaz",
-    "mobile",
-    "telephone",
-    "telephone-senior",
-    "internet",
-  ],
-},
-{
-  id: "maison-immobilier",
+    id: "energie",
+    label: "Énergie",
+    icon: "⚡",
+    description:
+      "Électricité et gaz pour mieux maîtriser tes factures d’énergie.",
+    slugs: [
+      "electricite",
+      "gaz",
+    ],
+  },
+
+  {
+    id: "telecoms-numerique",
+    label: "Télécoms & Numérique",
+    icon: "📱",
+    description:
+      "Téléphone, Internet et solutions numériques pour ton quotidien.",
+    slugs: [
+      "mobile",
+      "telephone",
+      "telephone-senior",
+      "internet",
+      "cybersecurite",
+      "logiciels",
+      "streaming",
+    ],
+  },
+
+  {
+    id: "maison-immobilier",
     label: "Maison & Immobilier",
     icon: "🏠",
-    description: "Logement, immobilier, travaux, sécurité et déménagement.",
+    description:
+      "Immobilier, logement, travaux et solutions pour ta maison.",
     slugs: [
       "credit-immobilier",
       "diagnostic-immobilier",
       "location-meublee",
-      "habitation",
-      "assurance-habitation",
       "travaux",
       "securite",
       "alarme-securite",
+    ],
+  },
+
+  {
+    id: "services-quotidien",
+    label: "Services du quotidien",
+    icon: "🧰",
+    description:
+      "Déménagement, débarras, auto et services pratiques du quotidien.",
+    slugs: [
       "demenagement",
       "debarras",
-    ],
-  },
-   {
-  id: "beaute-artisanat",
-  label: "Beauté & Artisanat",
-  icon: "🌸",
-  description: "Beauté, créations artisanales et idées faites main.",
-  slugs: ["beaute-artisanat"],
-},
-  {
-    id: "auto-moto-mobilite",
-    label: "Auto, Moto & Mobilité",
-    icon: "🚗🏍️",
-    description: "Assurances, entretien, équipement et nouvelles mobilités.",
-    slugs: [
-      "auto",
-      "assurance-auto",
-      "moto",
-      "assurance-moto",
+
       "services-auto",
       "service-auto",
+
       "moto-equipement",
-      "mobilites-douces",
+
+      "pieces-auto",
+      "piece-auto",
+      "pneus",
     ],
   },
+
   {
     id: "finance-patrimoine",
     label: "Finance & Patrimoine",
     icon: "💰",
-    description: "Épargne, patrimoine, banque et solutions financières.",
+    description:
+      "Épargne, patrimoine, banque et solutions financières.",
     slugs: [
       "epargne-retraite",
       "crypto",
@@ -113,26 +140,40 @@ const missionUniverses: MissionUniverse[] = [
       "banque",
     ],
   },
+
   {
-    id: "pro-numerique",
-    label: "Pro & Numérique",
-    icon: "💼💻",
-    description: "Solutions professionnelles et services numériques.",
+    id: "pro-entreprises",
+    label: "Pro & Entreprises",
+    icon: "💼",
+    description:
+      "Solutions et services pour les professionnels et les entreprises.",
     slugs: [
       "site-internet-pro",
       "formation",
-      "cybersecurite",
       "services-entreprises",
-      "logiciels",
-      "streaming",
     ],
   },
+
+  {
+    id: "beaute-artisanat",
+    label: "Beauté & Artisanat",
+    icon: "🌸",
+    description:
+      "Beauté, créations artisanales et idées faites main.",
+    slugs: [
+      "beaute-artisanat",
+    ],
+  },
+
   {
     id: "voyages-loisirs",
     label: "Voyages & Loisirs",
     icon: "✈️",
-    description: "Voyages et solutions adaptées à tes projets de loisirs.",
-    slugs: ["voyage"],
+    description:
+      "Voyages et solutions adaptées à tes projets de loisirs.",
+    slugs: [
+      "voyage",
+    ],
   },
 ];
 
@@ -201,7 +242,6 @@ export default function MissionsPage() {
               mission.status === "available"
           )
         );
-
       } catch (error) {
         console.error(
           "Erreur inattendue mission_catalog :",
@@ -314,7 +354,7 @@ export default function MissionsPage() {
               Seules les missions actuellement disponibles sont affichées.
             </p>
 
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {missionUniverses.map((universe) => {
                 const count = availableMissions.filter(
                   (mission) =>
@@ -395,6 +435,11 @@ export default function MissionsPage() {
                     mission.route ||
                     `/missions/${mission.slug}`;
 
+                  const missionTitle =
+                    mission.slug === "mobilites-douces"
+                      ? "Assurance mobilité douce"
+                      : mission.title;
+
                   return (
                     <Link
                       key={mission.id}
@@ -415,7 +460,7 @@ export default function MissionsPage() {
                         </div>
 
                         <h3 className="mt-4 pr-16 text-lg font-black leading-6 sm:text-xl">
-                          {mission.title}
+                          {missionTitle}
                         </h3>
 
                         <p className="mt-2 text-xs leading-5 text-slate-500 transition group-hover:text-green-300 sm:text-sm">
