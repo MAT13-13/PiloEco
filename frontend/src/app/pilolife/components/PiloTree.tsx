@@ -124,53 +124,194 @@ function formatEuro(value: number) {
 function getProjectIcon(
   project: PiloLifeProject
 ) {
-  const value =
-    `${project.category} ${project.title}`.toLowerCase();
+  const title = (project.title ?? "").toLowerCase();
+  const category = (project.category ?? "").toLowerCase();
 
+  // 💰 Pouvoir d'achat / budget
   if (
-    value.includes("bébé") ||
-    value.includes("bebe")
+    title.includes("pouvoir d'achat") ||
+    title.includes("pouvoir d’achat") ||
+    title.includes("budget") ||
+    title.includes("économie") ||
+    title.includes("economie")
+  ) {
+    return "💰";
+  }
+
+  // 🍼 Bébé / naissance
+  if (
+    title.includes("bébé") ||
+    title.includes("bebe") ||
+    title.includes("naissance")
   ) {
     return "🍼";
   }
 
-  if (value.includes("maison")) {
+  // 🏡 Maison / logement
+  if (
+    title.includes("maison") ||
+    title.includes("logement") ||
+    title.includes("appartement") ||
+    title.includes("immobilier")
+  ) {
+    return "🏡";
+  }
+
+  // 🔨 Travaux / rénovation
+  if (
+    title.includes("travaux") ||
+    title.includes("rénovation") ||
+    title.includes("renovation")
+  ) {
+    return "🔨";
+  }
+
+  // ✈️ Voyage / vacances
+  if (
+    title.includes("voyage") ||
+    title.includes("vacance") ||
+    title.includes("week-end") ||
+    title.includes("weekend")
+  ) {
+    return "✈️";
+  }
+
+  // 🚗 Voiture / véhicule
+  if (
+    title.includes("voiture") ||
+    title.includes("véhicule") ||
+    title.includes("vehicule") ||
+    title.includes("auto")
+  ) {
+    return "🚗";
+  }
+
+  // 🏍️ Moto
+  if (
+    title.includes("moto") ||
+    title.includes("scooter")
+  ) {
+    return "🏍️";
+  }
+
+  // 🐾 Animaux
+  if (
+    title.includes("animal") ||
+    title.includes("chien") ||
+    title.includes("chat")
+  ) {
+    return "🐾";
+  }
+
+  // 💍 Mariage
+  if (
+    title.includes("mariage") ||
+    title.includes("noces")
+  ) {
+    return "💍";
+  }
+
+  // 🎓 Études / formation
+  if (
+    title.includes("étude") ||
+    title.includes("etude") ||
+    title.includes("formation") ||
+    title.includes("école") ||
+    title.includes("ecole")
+  ) {
+    return "🎓";
+  }
+
+  // 💼 Entreprise / projet professionnel
+  if (
+    title.includes("entreprise") ||
+    title.includes("professionnel") ||
+    title.includes("projet pro") ||
+    title.includes("business")
+  ) {
+    return "💼";
+  }
+
+  // 📈 Épargne / investissement
+  if (
+    title.includes("épargne") ||
+    title.includes("epargne") ||
+    title.includes("investissement")
+  ) {
+    return "📈";
+  }
+
+  // 🎁 Achat / cadeau
+  if (
+    title.includes("cadeau") ||
+    title.includes("achat")
+  ) {
+    return "🎁";
+  }
+
+  // Si le titre ne permet pas d'identifier le projet,
+  // on utilise alors sa catégorie.
+
+  if (
+    category.includes("pouvoir") ||
+    category.includes("budget")
+  ) {
+    return "💰";
+  }
+
+  if (
+    category.includes("bébé") ||
+    category.includes("bebe") ||
+    category.includes("famille")
+  ) {
+    return "🍼";
+  }
+
+  if (
+    category.includes("maison") ||
+    category.includes("logement")
+  ) {
     return "🏡";
   }
 
   if (
-    value.includes("voyage") ||
-    value.includes("vacance")
+    category.includes("voyage") ||
+    category.includes("vacance")
   ) {
     return "✈️";
   }
 
   if (
-    value.includes("voiture") ||
-    value.includes("véhicule") ||
-    value.includes("vehicule")
+    category.includes("voiture") ||
+    category.includes("auto")
   ) {
     return "🚗";
   }
 
   if (
-    value.includes("animal") ||
-    value.includes("chien") ||
-    value.includes("chat")
+    category.includes("moto")
   ) {
-    return "🐶";
+    return "🏍️";
   }
 
   if (
-    value.includes("entreprise") ||
-    value.includes("professionnel")
+    category.includes("animal") ||
+    category.includes("chien") ||
+    category.includes("chat")
+  ) {
+    return "🐾";
+  }
+
+  if (
+    category.includes("entreprise") ||
+    category.includes("professionnel")
   ) {
     return "💼";
   }
 
   if (
-    value.includes("épargne") ||
-    value.includes("epargne")
+    category.includes("épargne") ||
+    category.includes("epargne")
   ) {
     return "📈";
   }
