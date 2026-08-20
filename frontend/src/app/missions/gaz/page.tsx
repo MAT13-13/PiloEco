@@ -13,7 +13,7 @@ export default function GazMissionPage() {
       recommendedName="Offre gaz adaptée"
       advice="Consulte la solution proposée et compare le tarif, l’abonnement et les conditions avec ton contrat actuel avant de changer."
       fields={[]}
-      offerPath="/offres/gaz"
+      offerPath="https://dte.ohm-energie.com/?P512BA758C0F5191&redir=https%3A%2F%2Fohm-energie.com%2Foffre%2Foffre-gaz"
     />
   );
 }

@@ -3,6 +3,15 @@
 import Link from "next/link";
 
 const assurances = [
+  
+  {
+    icon: "🐶",
+    title: "Assurance animaux",
+    description:
+      "Analyse la protection de ton chien ou chat et compare les solutions disponibles.",
+    saving: "Opportunité d'économie",
+    href: "/missions/animaux",
+  },
   {
     icon: "🚗",
     title: "Assurance auto",
@@ -27,14 +36,7 @@ const assurances = [
     saving: "Opportunité d'économie",
     href: "/missions/habitation",
   },
-  {
-    icon: "🐶",
-    title: "Assurance animaux",
-    description:
-      "Analyse la protection de ton chien ou chat et compare les solutions disponibles.",
-    saving: "Opportunité d'économie",
-    href: "/missions/animaux",
-  },
+  
   {
     icon: "🏦",
     title: "Assurance emprunteur",

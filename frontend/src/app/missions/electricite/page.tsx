@@ -12,7 +12,7 @@ export default function ElectriciteMissionPage() {
       recommendedPrice={0}
       recommendedName="Optimisation électricité"
       advice="Consulte la solution proposée et compare le tarif et les conditions avec ton contrat actuel avant de changer."
-      offerPath="/offres/electricite"
+      offerPath="https://dte.ohm-energie.com/?P512BA758C0F5191&redir=https%3A%2F%2Fohm-energie.com%2Foffre%2Felectricite"
       fields={[]}
     />
   );

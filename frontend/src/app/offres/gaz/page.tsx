@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 
+const OHM_GAZ_URL =
+  "https://dte.ohm-energie.com/?P512BA758C0F5191&redir=https%3A%2F%2Fohm-energie.com%2Foffre%2Foffre-gaz";
+
 export default function OffreGazPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
@@ -10,9 +13,7 @@ export default function OffreGazPage() {
           PiloEco
         </p>
 
-        <h1 className="mt-3 text-4xl font-black">
-          🔥 Offre Gaz
-        </h1>
+        <h1 className="mt-3 text-4xl font-black">🔥 Offre Gaz</h1>
 
         <div className="mt-8 rounded-3xl border border-green-500/20 bg-slate-900 p-8">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
@@ -35,17 +36,28 @@ export default function OffreGazPage() {
             et de l&apos;offre proposée par le partenaire.
           </p>
 
-          <div className="mt-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
-            <p className="font-bold text-amber-300">
-              🔗 Accès à l&apos;offre bientôt disponible
+          <div className="mt-6 rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
+            <p className="font-black text-green-300">🔥 OHM Énergie</p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-300">
+              Consulte l&apos;offre gaz proposée par OHM Énergie et compare-la
+              avec ton contrat actuel avant de prendre ta décision.
             </p>
 
-            <p className="mt-2 text-sm leading-6 text-slate-400">
-              Pilo finalise actuellement l&apos;intégration du lien partenaire.
-              Tu pourras bientôt accéder directement à l&apos;offre depuis
-              cette page.
-            </p>
+            <a
+              href={OHM_GAZ_URL}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="mt-5 inline-flex rounded-xl bg-green-500 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-green-400"
+            >
+              Voir l&apos;offre OHM Énergie →
+            </a>
           </div>
+
+          <p className="mt-4 text-xs leading-5 text-slate-500">
+            PiloEco peut percevoir une rémunération si tu souscris auprès de ce
+            partenaire, sans coût supplémentaire pour toi.
+          </p>
 
           <Link
             href="/missions"
