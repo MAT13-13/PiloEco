@@ -7,25 +7,22 @@ import MissionLayout from "../../components/MissionLayout";
 ========================= */
 
 const AUCHAN_200_INTL =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fespace-client.auchantelecom.fr%2Fpanier%3Fcommande%3DU3PKqtq%252F%252BbaAUzZN5Gn0kYkkXJE4SypBa0GsSpklfq9esfR5qY1qtV1xEbVoj0srG45Bl24kIKEHOtajKIe65g%253D%253D";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F51137";
 
 const AUCHAN_200 =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fespace-client.auchantelecom.fr%2Fpanier%3Fcommande%3DTpxqkxGcMm%252BOeuBgz77zp2czoS9Pq5fVVUk9ZY2LktIH9%252BqdFm%252FmunWg6LqOsKr52YQGd5JJavXEgHnp70pUPg%253D%253D";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5111";
 
 const AUCHAN_100 =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fespace-client.auchantelecom.fr%2Fpanier%3Fcommande%3Day897OqWufpOu%252Flrk6xw1yDk%252BgGsv0F6xO6or2wtFcQkeiTxJNcjbCphLBte8Us34NQajPpzeNKpxb47fAVSgA%253D%253D";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5117";
 
 const AUCHAN_10 =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fespace-client.auchantelecom.fr%2Fpanier%3Fcommande%3DdOGhtAHoAWMHHTEYpSYU9rBT7PvJnpAp9E%252Fu1JYN4oq%252Bg6chj96dt%252F2Y%252FMjH6Ej%252FZWN4gyH9dOIdGwkkyau4lQ%253D%253D";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F51155";
 
 const AUCHAN_1 =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fespace-client.auchantelecom.fr%2Fpanier%3Fcommande%3DbTuOVPicbffUHIqTMHWV4wUrukuwo1X4TFhMHZz5cGU%252BPxrAWEt8FVChsVfAK07wWsqOVcm3MQiwOcNKK69i%252FQ%253D%253D";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F51153";
 
 const AUCHAN_MOBILES =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fwww.auchantelecom.fr%2Fmobiles";
-
-const AUCHAN_PARRAINAGE =
-  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F5191&redir=https%3A%2F%2Fwww.auchantelecom.fr%2Fservice%2Fprogramme-de-parrainage%3Futm_medium%3Dpartners%26utm_source%3Daklamio%26utm_campaign%3Dparrainage%26source%3Dmenu";
+  "https://action.metaffiliation.com/trk.php?mclic=P51234F58C0F51149";
 
 /* =========================
    LYCA MOBILE
@@ -79,8 +76,7 @@ export default function MobileMissionPage() {
           name: "auchanOffer",
           label: "Quel forfait Auchan Télécom souhaites-tu consulter ?",
           type: "select",
-          defaultValue:
-            "Auchan Télécom – 200 Go 5G à 12,99 €",
+          defaultValue: "Auchan Télécom – 200 Go 5G à 12,99 €",
           showWhen: {
             field: "operator",
             equals: "Auchan Télécom",
@@ -92,7 +88,6 @@ export default function MobileMissionPage() {
             "Auchan Télécom – 10 Go 4G à 7,99 €",
             "Auchan Télécom – 1 Go 4G à 1,99 €",
             "Auchan Télécom – Acheter un mobile",
-            "Auchan Télécom – Programme de parrainage",
           ],
         },
         {
@@ -114,20 +109,14 @@ export default function MobileMissionPage() {
         },
       ]}
       dynamicOfferResolver={(values) => {
-        const operator = String(
-          values.operator ?? ""
-        );
+        const operator = String(values.operator ?? "");
 
         if (operator === "Auchan Télécom") {
-          return String(
-            values.auchanOffer ?? ""
-          );
+          return String(values.auchanOffer ?? "");
         }
 
         if (operator === "Lyca Mobile") {
-          return String(
-            values.lycaOffer ?? ""
-          );
+          return String(values.lycaOffer ?? "");
         }
 
         if (operator === "Lebara") {
@@ -139,10 +128,8 @@ export default function MobileMissionPage() {
       dynamicOffers={{
         "Auchan Télécom – 200 Go 5G à 12,99 €": {
           href: AUCHAN_200,
-          buttonLabel:
-            "Choisir le forfait 200 Go →",
-          recommendedName:
-            "Auchan Télécom – 200 Go 5G",
+          buttonLabel: "Choisir le forfait 200 Go →",
+          recommendedName: "Auchan Télécom – 200 Go 5G",
           advice:
             "200 Go en 5G en France métropolitaine, dont 25 Go utilisables depuis l’Europe et les DOM. Appels et SMS/MMS illimités.",
           external: true,
@@ -150,10 +137,8 @@ export default function MobileMissionPage() {
 
         "Auchan Télécom – 100 Go 5G à 9,99 €": {
           href: AUCHAN_100,
-          buttonLabel:
-            "Choisir le forfait 100 Go →",
-          recommendedName:
-            "Auchan Télécom – 100 Go 5G",
+          buttonLabel: "Choisir le forfait 100 Go →",
+          recommendedName: "Auchan Télécom – 100 Go 5G",
           advice:
             "100 Go en 5G en France métropolitaine, dont 22 Go utilisables depuis l’Europe et les DOM. Appels et SMS/MMS illimités.",
           external: true,
@@ -161,8 +146,7 @@ export default function MobileMissionPage() {
 
         "Auchan Télécom – 200 Go 5G international à 15,99 €": {
           href: AUCHAN_200_INTL,
-          buttonLabel:
-            "Choisir le forfait international →",
+          buttonLabel: "Choisir le forfait international →",
           recommendedName:
             "Auchan Télécom – 200 Go 5G international",
           advice:
@@ -172,10 +156,8 @@ export default function MobileMissionPage() {
 
         "Auchan Télécom – 10 Go 4G à 7,99 €": {
           href: AUCHAN_10,
-          buttonLabel:
-            "Choisir le forfait 10 Go →",
-          recommendedName:
-            "Auchan Télécom – 10 Go 4G",
+          buttonLabel: "Choisir le forfait 10 Go →",
+          recommendedName: "Auchan Télécom – 10 Go 4G",
           advice:
             "10 Go en 4G en France métropolitaine et 10 Go depuis l’Europe et les DOM. Appels et SMS/MMS illimités.",
           external: true,
@@ -183,10 +165,8 @@ export default function MobileMissionPage() {
 
         "Auchan Télécom – 1 Go 4G à 1,99 €": {
           href: AUCHAN_1,
-          buttonLabel:
-            "Choisir le forfait 1 Go →",
-          recommendedName:
-            "Auchan Télécom – 1 Go 4G",
+          buttonLabel: "Choisir le forfait 1 Go →",
+          recommendedName: "Auchan Télécom – 1 Go 4G",
           advice:
             "Une offre adaptée aux petits usages avec 1 Go en France métropolitaine et depuis l’Europe et les DOM.",
           external: true,
@@ -194,32 +174,17 @@ export default function MobileMissionPage() {
 
         "Auchan Télécom – Acheter un mobile": {
           href: AUCHAN_MOBILES,
-          buttonLabel:
-            "Voir les mobiles Auchan Télécom →",
-          recommendedName:
-            "Auchan Télécom – Mobiles",
+          buttonLabel: "Voir les mobiles Auchan Télécom →",
+          recommendedName: "Auchan Télécom – Mobiles",
           advice:
             "Découvre les téléphones proposés par Auchan Télécom et consulte les modèles actuellement disponibles.",
           external: true,
         },
 
-        "Auchan Télécom – Programme de parrainage": {
-          href: AUCHAN_PARRAINAGE,
-          buttonLabel:
-            "Découvrir le programme de parrainage →",
-          recommendedName:
-            "Auchan Télécom – Parrainage",
-          advice:
-            "Découvre le programme de parrainage Auchan Télécom et consulte directement les conditions et avantages proposés.",
-          external: true,
-        },
-
         "Lyca Mobile – eSIM": {
           href: LYCA_ESIM,
-          buttonLabel:
-            "Découvrir l’eSIM Lyca Mobile →",
-          recommendedName:
-            "Lyca Mobile – eSIM",
+          buttonLabel: "Découvrir l’eSIM Lyca Mobile →",
+          recommendedName: "Lyca Mobile – eSIM",
           advice:
             "Découvre l’eSIM Lyca Mobile et vérifie sa compatibilité avec ton téléphone.",
           external: true,
@@ -227,10 +192,8 @@ export default function MobileMissionPage() {
 
         "Lyca Mobile – Forfait international": {
           href: LYCA_INTERNATIONAL,
-          buttonLabel:
-            "Voir les forfaits internationaux →",
-          recommendedName:
-            "Lyca Mobile – International",
+          buttonLabel: "Voir les forfaits internationaux →",
+          recommendedName: "Lyca Mobile – International",
           advice:
             "Découvre les forfaits Lyca Mobile adaptés aux appels et aux usages internationaux.",
           external: true,
@@ -238,10 +201,8 @@ export default function MobileMissionPage() {
 
         "Lyca Mobile – Forfait prépayé": {
           href: LYCA_PREPAYE,
-          buttonLabel:
-            "Voir les forfaits prépayés →",
-          recommendedName:
-            "Lyca Mobile – Forfaits prépayés",
+          buttonLabel: "Voir les forfaits prépayés →",
+          recommendedName: "Lyca Mobile – Forfaits prépayés",
           advice:
             "Découvre les offres prépayées Lyca Mobile sans abonnement mobile classique.",
           external: true,
@@ -249,10 +210,8 @@ export default function MobileMissionPage() {
 
         "Lyca Mobile – Forfait SIM 1 mois": {
           href: LYCA_1_MOIS,
-          buttonLabel:
-            "Découvrir les forfaits 1 mois →",
-          recommendedName:
-            "Lyca Mobile – Forfaits SIM 1 mois",
+          buttonLabel: "Découvrir les forfaits 1 mois →",
+          recommendedName: "Lyca Mobile – Forfaits SIM 1 mois",
           advice:
             "Découvre les forfaits SIM Lyca Mobile proposés sur une durée d’un mois.",
           external: true,
@@ -260,10 +219,8 @@ export default function MobileMissionPage() {
 
         "Lyca Mobile – Forfait SIM 24 mois": {
           href: LYCA_24_MOIS,
-          buttonLabel:
-            "Découvrir les forfaits 24 mois →",
-          recommendedName:
-            "Lyca Mobile – Forfaits SIM 24 mois",
+          buttonLabel: "Découvrir les forfaits 24 mois →",
+          recommendedName: "Lyca Mobile – Forfaits SIM 24 mois",
           advice:
             "Découvre les forfaits SIM Lyca Mobile proposés sur une durée de 24 mois.",
           external: true,
@@ -271,10 +228,8 @@ export default function MobileMissionPage() {
 
         "Lebara – Voir les forfaits": {
           href: LEBARA_FORFAITS,
-          buttonLabel:
-            "Découvrir les forfaits Lebara →",
-          recommendedName:
-            "Lebara – Forfaits mobiles",
+          buttonLabel: "Découvrir les forfaits Lebara →",
+          recommendedName: "Lebara – Forfaits mobiles",
           advice:
             "Consulte les forfaits mobiles Lebara et choisis directement l’offre correspondant à ton besoin et à ton budget.",
           external: true,
