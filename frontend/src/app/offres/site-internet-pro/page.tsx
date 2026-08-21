@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
 
+const SITE_INTERNET_PRO_TRACKING_URL =
+  "https://stella-2.com/clc/HiDB9AmyJd8RYxs4lukr7g";
+
 export default function SiteInternetProOffersPage() {
   return (
     <Suspense
@@ -35,9 +38,7 @@ function SiteInternetProOffersContent() {
 
   const offer = getAffiliateCampaignById(13961);
 
-  const offerDisponible =
-    offer?.published === true &&
-    Boolean(offer.trackingUrl);
+  const offerDisponible = offer?.published === true;
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
@@ -140,7 +141,7 @@ function SiteInternetProOffersContent() {
             </div>
 
             <a
-              href={offer.trackingUrl}
+              href={SITE_INTERNET_PRO_TRACKING_URL}
               target="_blank"
               rel="noopener noreferrer sponsored"
               className="mt-8 inline-flex rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-950 transition hover:bg-green-400"

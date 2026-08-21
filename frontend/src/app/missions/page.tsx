@@ -151,6 +151,7 @@ const missionUniverses: MissionUniverse[] = [
       "site-internet-pro",
       "formation",
       "services-entreprises",
+      "visibilite-google",
     ],
   },
 
