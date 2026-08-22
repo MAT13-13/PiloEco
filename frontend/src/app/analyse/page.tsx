@@ -43,6 +43,7 @@ type AnalyseCategory =
   | "crypto"
   | "cybersecurite"
   | "servicesEntreprises"
+  | "visibiliteGoogle"
   | "debarras"
   | "locationMeublee"
   | "gaz";
@@ -817,6 +818,47 @@ const categories: Record<
     ],
   },
 
+  visibiliteGoogle: {
+    label: "Visibilité Google",
+    icon: "📍",
+    message:
+      "Je vais identifier les besoins de visibilité locale de ton entreprise afin de t'orienter vers les recommandations adaptées.",
+    questions: [
+      {
+        key: "visibilityGoal",
+        type: "select",
+        emoji: "📍",
+        title: "Quel est ton objectif principal sur Google ?",
+        description:
+          "Choisis le besoin qui correspond le mieux à ton entreprise.",
+        options: [
+          "Être plus visible localement",
+          "Améliorer ma fiche Google",
+          "Obtenir davantage d'avis clients",
+          "Attirer plus de clients",
+          "Je souhaite être conseillé",
+        ],
+      },
+      {
+        key: "businessType",
+        type: "select",
+        emoji: "🏢",
+        title: "Quel type d'activité exerces-tu ?",
+        description:
+          "Cette information permettra de mieux adapter les recommandations à ton activité.",
+        options: [
+          "Commerce local",
+          "Artisan",
+          "Profession libérale",
+          "Restaurant ou établissement",
+          "Entreprise de services",
+          "Indépendant ou micro-entrepreneur",
+          "Autre",
+        ],
+      },
+    ],
+  },
+
   debarras: {
     label: "Débarras",
     icon: "📦",
@@ -1017,7 +1059,7 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     description:
       "Solutions et services pour les professionnels et les entreprises.",
     categories: [
-      "siteInternetPro",
+      "visibiliteGoogle",
       "formation",
       "servicesEntreprises",
     ],
@@ -1051,6 +1093,7 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "telephone",
   "telephoneSenior",
   "siteInternetPro",
+  "visibiliteGoogle",
   "mutuelleProfessionnelle",
   "animaux",
   "assuranceEmprunteur",
@@ -1092,6 +1135,7 @@ const missionSlugToAnalyseCategory: Record<
   "telephone": "telephone",
   "telephone-senior": "telephoneSenior",
   "site-internet-pro": "siteInternetPro",
+  "visibilite-google": "visibiliteGoogle",
   "animaux": "animaux",
   "assurance-animaux": "animaux",
   "assurance-emprunteur": "assuranceEmprunteur",
@@ -1535,6 +1579,11 @@ export default function AnalysePage() {
 
       if (selectedCategory === "servicesEntreprises") {
         router.push("/missions/services-entreprises");
+        return;
+      }
+
+      if (selectedCategory === "visibiliteGoogle") {
+        router.push("/missions/visibilite-google");
         return;
       }
 

@@ -84,7 +84,7 @@ export default function MentionsLegalesPage() {
                 <strong className="text-white">
                   Adresse :
                 </strong>{" "}
-               Canton de Levens, 06690 Tourrette-Levens, France
+               06690 Tourrette-Levens, France
                 <br />
 
                 <strong className="text-white">
