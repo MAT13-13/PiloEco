@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getAffiliateCampaignsForNeed } from "../../lib/affiliate-campaigns";
 
+const ASSURANCE_VIE_URL =
+  "https://stella-2.com/clc/HJ-PaEO0_bkX1Fz0mo-eGw";
+
 export default function FintechOffersPage() {
   return (
     <Suspense
@@ -28,8 +31,27 @@ function FintechOffersContent() {
   const serviceType =
     searchParams.get("serviceType") ?? "Gestion du budget";
 
-  const allOffers =
+  const affiliateOffers =
     getAffiliateCampaignsForNeed(serviceType);
+
+  const assuranceVieOffers =
+    serviceType === "Assurance vie"
+      ? [
+          {
+            id: 23305840,
+            title: "Comparer les assurances vie",
+            description:
+              "Compare des solutions d’assurance vie pour constituer un capital, préparer ta retraite ou organiser la transmission de ton patrimoine.",
+            trackingUrl: ASSURANCE_VIE_URL,
+            buttonLabel: "Comparer les assurances vie →",
+          },
+        ]
+      : [];
+
+  const allOffers =
+    serviceType === "Assurance vie"
+      ? assuranceVieOffers
+      : affiliateOffers;
 
   const offers =
     serviceType === "Regroupement de crédits"
@@ -61,8 +83,8 @@ function FintechOffersContent() {
             </h2>
 
             <p className="mt-3 text-slate-300">
-              Pilo recherche actuellement une solution partenaire
-              adaptée à ce besoin.
+              Pilo recherche actuellement une solution partenaire adaptée à ce
+              besoin.
             </p>
           </div>
         ) : (
@@ -93,8 +115,8 @@ function FintechOffersContent() {
                 </p>
 
                 <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-                  Tu seras redirigé vers le site du partenaire.
-                  Tu restes libre de poursuivre ou non ta demande.
+                  Tu seras redirigé vers le site du partenaire. Tu restes libre
+                  de poursuivre ou non ta demande.
                 </div>
 
                 <a

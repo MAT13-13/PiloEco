@@ -21,6 +21,7 @@ export default function FintechMissionPage() {
           options: [
             "Crédit immobilier",
             "Épargne",
+            "Assurance vie",
             "Gestion du budget",
             "Investissement",
             "Paiements",

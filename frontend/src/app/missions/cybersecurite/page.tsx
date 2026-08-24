@@ -6,11 +6,11 @@ export default function CyberSecuritePage() {
   return (
     <MissionLayout
       icon="🛡️"
-      title="Protéger ta vie numérique"
-      subtitle="Choisis simplement ce que tu souhaites protéger."
+      title="Cybersécurité & logiciels"
+      subtitle="Choisis la solution numérique correspondant à ton besoin."
       basePrice={0}
       recommendedPrice={0}
-      recommendedName="Solution de cybersécurité"
+      recommendedName="Solution numérique"
       advice="Pilo t’oriente vers la solution correspondant à ton besoin."
       fields={[
         {
@@ -21,6 +21,8 @@ export default function CyberSecuritePage() {
           options: [
             "Sécuriser ma connexion Internet",
             "Protéger ma vie privée en ligne",
+            "Comparer des logiciels",
+            "Acheter des logiciels ou équipements professionnels",
           ],
         },
       ]}
@@ -42,6 +44,26 @@ export default function CyberSecuritePage() {
           recommendedName: "Abelssoft – AntiBrowserSpy",
           advice:
             "Réduis le suivi en ligne et protège davantage tes données personnelles et ta confidentialité.",
+          external: true,
+          completionType: "none",
+        },
+
+        "Comparer des logiciels": {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23305834",
+          buttonLabel: "Comparer les logiciels →",
+          recommendedName: "MonLogiciel.fr",
+          advice:
+            "Compare les logiciels disponibles et trouve l’outil numérique le plus adapté à tes besoins.",
+          external: true,
+          completionType: "none",
+        },
+
+        "Acheter des logiciels ou équipements professionnels": {
+          href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23305838",
+          buttonLabel: "Découvrir CoffeeSoft →",
+          recommendedName: "CoffeeSoft",
+          advice:
+            "Découvre des logiciels, solutions informatiques et équipements adaptés aux besoins des professionnels.",
           external: true,
           completionType: "none",
         },

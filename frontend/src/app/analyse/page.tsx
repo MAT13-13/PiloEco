@@ -39,6 +39,7 @@ type AnalyseCategory =
   | "mutuelleSenior"
   | "mutuelleProfessionnelle"
   | "epargneRetraite"
+  | "assuranceVie"
   | "motoEquipement"
   | "crypto"
   | "cybersecurite"
@@ -80,75 +81,42 @@ const categories: Record<
   CategoryConfig
 > = {
   famille: {
-    label: "Famille & aides",
+    label: "Famille & scolarité",
     icon: "👨‍👩‍👧",
     message:
-      "Je vais rechercher les aides de l’État et les dispositifs adaptés à ton foyer.",
+      "Je vais t’aider à trouver une solution adaptée à la scolarité de ton enfant.",
     questions: [
-      {
-        key: "householdStatus",
-        type: "select",
-        emoji: "👨‍👩‍👧",
-        title: "Quelle est la situation de ton foyer ?",
-        description:
-          "Choisis la situation qui correspond le mieux à ton foyer.",
-        options: [
-          "Personne seule",
-          "Couple sans enfant",
-          "Famille avec enfant(s)",
-          "Famille monoparentale",
-          "Autre situation",
-        ],
-      },
       {
         key: "childrenCount",
         type: "number",
         emoji: "👶",
-        title: "Combien d’enfants vivent dans ton foyer ?",
+        title: "Combien d’enfants souhaites-tu accompagner ?",
         description:
-          "Indique 0 si aucun enfant ne vit dans ton foyer.",
-        placeholder: "Ex : 2",
+          "Indique le nombre d’enfants concernés par ta recherche.",
+        placeholder: "Ex : 1",
       },
       {
-        key: "housingStatus",
+        key: "schoolLevel",
         type: "select",
-        emoji: "🏠",
-        title: "Quelle est ta situation de logement ?",
+        emoji: "🎓",
+        title: "Quel est le niveau scolaire concerné ?",
         description:
-          "Cette information aide Pilo à repérer les aides au logement possibles.",
-        options: [
-          "Locataire",
-          "Propriétaire",
-          "Hébergé gratuitement",
-          "Logement social",
-          "Autre",
-        ],
+          "Choisis le niveau correspondant à ton enfant.",
+        options: ["Primaire", "Collège"],
       },
       {
-        key: "employmentStatus",
+        key: "schoolNeed",
         type: "select",
-        emoji: "💼",
-        title: "Quelle est ta situation professionnelle ?",
+        emoji: "📚",
+        title: "Quel accompagnement recherches-tu ?",
         description:
-          "Choisis ta situation principale actuelle.",
+          "Choisis la solution correspondant le mieux à ton besoin.",
         options: [
-          "Salarié",
-          "Indépendant",
-          "Demandeur d’emploi",
-          "Étudiant",
-          "Retraité",
-          "Sans activité",
-          "Autre",
+          "Cours à distance",
+          "Soutien scolaire",
+          "Supports pédagogiques",
+          "École à distance depuis l’étranger",
         ],
-      },
-      {
-        key: "monthlyHouseholdIncome",
-        type: "number",
-        emoji: "💶",
-        title: "Quel est le revenu mensuel approximatif du foyer ?",
-        description:
-          "Indique une estimation du revenu net total du foyer.",
-        placeholder: "Ex : 2800",
       },
     ],
   },
@@ -723,6 +691,39 @@ const categories: Record<
     ],
   },
 
+  assuranceVie: {
+    label: "Assurance vie",
+    icon: "💰",
+    message:
+      "Je vais t’aider à préciser ton objectif afin de t’orienter vers une solution d’assurance vie adaptée.",
+    questions: [
+      {
+        key: "investmentGoal",
+        type: "select",
+        emoji: "🎯",
+        title: "Quel est ton objectif principal ?",
+        description:
+          "Choisis l’objectif correspondant le mieux à ton projet.",
+        options: [
+          "Constituer un capital",
+          "Préparer ma retraite",
+          "Transmettre mon patrimoine",
+          "Faire fructifier mon épargne",
+          "Découvrir l’assurance vie",
+        ],
+      },
+      {
+        key: "budget",
+        type: "number",
+        emoji: "💶",
+        title: "Quel montant souhaites-tu épargner chaque mois ?",
+        description:
+          "Indique une estimation de ton effort d’épargne mensuel.",
+        placeholder: "Ex : 100",
+      },
+    ],
+  },
+
   motoEquipement: {
     label: "Moto & équipement",
     icon: "🏍️",
@@ -944,6 +945,7 @@ type AnalyseUniverse =
   | "servicesQuotidien"
   | "financePatrimoine"
   | "proEntreprises"
+  | "familleScolarite"
   | "beauteArtisanat"
   | "voyagesLoisirs";
 
@@ -962,6 +964,7 @@ const universeOrder: AnalyseUniverse[] = [
   "servicesQuotidien",
   "financePatrimoine",
   "proEntreprises",
+  "familleScolarite",
   "beauteArtisanat",
   "voyagesLoisirs",
 ];
@@ -1046,11 +1049,12 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     description:
       "Épargne, patrimoine, banque et solutions financières.",
     categories: [
-      "epargneRetraite",
-      "rachatCredits",
-      "crypto",
-      "banque",
-    ],
+  "epargneRetraite",
+  "assuranceVie",
+  "rachatCredits",
+  "crypto",
+  "banque",
+],
   },
 
   proEntreprises: {
@@ -1063,6 +1067,14 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
       "formation",
       "servicesEntreprises",
     ],
+  },
+
+  familleScolarite: {
+    label: "Famille & Scolarité",
+    icon: "👨‍👩‍👧",
+    description:
+      "Scolarité, accompagnement éducatif et solutions utiles pour la famille.",
+    categories: ["famille"],
   },
 
   beauteArtisanat: {
@@ -1106,6 +1118,7 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "travaux",
   "mutuelleSenior",
   "epargneRetraite",
+  "assuranceVie",
   "rachatCredits",
   "auto",
   "moto",
@@ -1129,6 +1142,8 @@ const missionSlugToAnalyseCategory: Record<
   AnalyseCategory
 > = {
   "famille": "famille",
+  "famille-aides": "famille",
+  "famille-scolarite": "famille",
   "beaute-artisanat": "beauteArtisanat",
   "voyage": "voyage",
   "mobile": "telephone",
@@ -1152,6 +1167,7 @@ const missionSlugToAnalyseCategory: Record<
   "mutuelle-senior": "mutuelleSenior",
   "mutuelle-professionnelle": "mutuelleProfessionnelle",
   "epargne-retraite": "epargneRetraite",
+  "assurance-vie": "assuranceVie",
   "auto": "auto",
   "assurance-auto": "auto",
   "moto": "moto",

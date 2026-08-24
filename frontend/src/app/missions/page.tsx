@@ -38,24 +38,17 @@ const missionUniverses: MissionUniverse[] = [
       "mutuelle-sante",
       "mutuelle-senior",
       "mutuelle-professionnelle",
-
       "animaux",
       "assurance-animaux",
-
       "auto",
       "assurance-auto",
-
       "moto",
       "assurance-moto",
-
       "mobilites-douces",
-
       "habitation",
       "assurance-habitation",
-
       "assurance-emprunteur",
       "assurance-obseques",
-
       "ambassadeur",
       "ambassadeur-gselect",
     ],
@@ -67,10 +60,7 @@ const missionUniverses: MissionUniverse[] = [
     icon: "⚡",
     description:
       "Électricité et gaz pour mieux maîtriser tes factures d’énergie.",
-    slugs: [
-      "electricite",
-      "gaz",
-    ],
+    slugs: ["electricite", "gaz"],
   },
 
   {
@@ -115,12 +105,9 @@ const missionUniverses: MissionUniverse[] = [
     slugs: [
       "demenagement",
       "debarras",
-
       "services-auto",
       "service-auto",
-
       "moto-equipement",
-
       "pieces-auto",
       "piece-auto",
       "pneus",
@@ -133,12 +120,15 @@ const missionUniverses: MissionUniverse[] = [
     icon: "💰",
     description:
       "Épargne, patrimoine, banque et solutions financières.",
-    slugs: [
-      "epargne-retraite",
-      "crypto",
-      "cryptomonnaies",
-      "banque",
-    ],
+   slugs: [
+  "epargne-retraite",
+  "assurance-vie",
+  "rachat-credits",
+  "crypto",
+  "cryptomonnaies",
+  "banque",
+],
+    
   },
 
   {
@@ -156,14 +146,25 @@ const missionUniverses: MissionUniverse[] = [
   },
 
   {
+    id: "famille-scolarite",
+    label: "Famille & Scolarité",
+    icon: "👨‍👩‍👧",
+    description:
+      "Scolarité, accompagnement éducatif et solutions utiles pour la famille.",
+    slugs: [
+      "famille",
+      "famille-aides",
+      "famille-scolarite",
+    ],
+  },
+
+  {
     id: "beaute-artisanat",
     label: "Beauté & Artisanat",
     icon: "🌸",
     description:
       "Beauté, créations artisanales et idées faites main.",
-    slugs: [
-      "beaute-artisanat",
-    ],
+    slugs: ["beaute-artisanat"],
   },
 
   {
@@ -172,9 +173,7 @@ const missionUniverses: MissionUniverse[] = [
     icon: "✈️",
     description:
       "Voyages et solutions adaptées à tes projets de loisirs.",
-    slugs: [
-      "voyage",
-    ],
+    slugs: ["voyage"],
   },
 ];
 
@@ -292,7 +291,8 @@ export default function MissionsPage() {
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-          Choisis un univers pour retrouver rapidement les missions et solutions disponibles.
+          Choisis un univers pour retrouver rapidement les missions et
+          solutions disponibles.
         </p>
 
         <PiloNavigation />
@@ -366,9 +366,14 @@ export default function MissionsPage() {
                   <button
                     key={universe.id}
                     type="button"
-                    onClick={() =>
-                      setSelectedUniverse(universe.id)
-                    }
+                    onClick={() => {
+  if (universe.id === "famille-scolarite") {
+    window.location.href = "/missions/famille";
+    return;
+  }
+
+  setSelectedUniverse(universe.id);
+}}
                     className="group rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -439,7 +444,11 @@ export default function MissionsPage() {
                   const missionTitle =
                     mission.slug === "mobilites-douces"
                       ? "Assurance mobilité douce"
-                      : mission.title;
+                      : mission.slug === "famille" ||
+                          mission.slug === "famille-aides" ||
+                          mission.slug === "famille-scolarite"
+                        ? "Famille & scolarité"
+                        : mission.title;
 
                   return (
                     <Link
