@@ -116,6 +116,29 @@ const universeGroups = [
   },
 
   {
+    id: "finance",
+    label: "💰 Finance & Patrimoine",
+    items: [
+      {
+        label: "💰 Épargne & retraite",
+        href: "/missions/epargne-retraite",
+      },
+      {
+        label: "💰 Assurance vie",
+        href: "/missions/assurance-vie",
+      },
+      {
+        label: "💳 Rachat de crédits",
+        href: "/missions/rachat-credits",
+      },
+      {
+        label: "₿ Cryptomonnaies",
+        href: "/missions/crypto",
+      },
+    ],
+  },
+
+  {
     id: "services",
     label: "🧰 Services du quotidien",
     items: [
@@ -139,35 +162,39 @@ const universeGroups = [
   },
 
   {
-    id: "finance",
-    label: "💰 Finance & Patrimoine",
-    items: [
-      {
-        label: "💰 Épargne & retraite",
-        href: "/missions/epargne-retraite",
-      },
-      {
-        label: "₿ Cryptomonnaies",
-        href: "/missions/crypto",
-      },
-    ],
-  },
-
-  {
     id: "pro",
     label: "💼 Pro & Entreprises",
     items: [
       {
-        label: "🌐 Site internet pro",
-        href: "/missions/site-internet-pro",
+        label: "💼 Mutuelle professionnelle",
+        href: "/missions/mutuelle-professionnelle",
+      },
+      {
+        label: "🏗️ Assurance décennale",
+        href: "/missions/assurance-decennale",
+      },
+      {
+        label: "🧾 Expert-comptable",
+        href: "/missions/expert-comptable",
       },
       {
         label: "🎓 Formation",
         href: "/missions/formation",
       },
       {
-        label: "🏢 Services aux entreprises",
-        href: "/missions/services-entreprises",
+        label: "📍 Visibilité Google",
+        href: "/missions/visibilite-google",
+      },
+    ],
+  },
+
+  {
+    id: "famille",
+    label: "👨‍👩‍👧 Famille & Scolarité",
+    items: [
+      {
+        label: "👨‍👩‍👧 Famille & Scolarité",
+        href: "/missions/famille",
       },
     ],
   },

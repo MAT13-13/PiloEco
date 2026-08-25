@@ -43,6 +43,8 @@ type AnalyseCategory =
   | "motoEquipement"
   | "crypto"
   | "cybersecurite"
+  | "assuranceDecennale"
+  | "expertComptable"
   | "servicesEntreprises"
   | "visibiliteGoogle"
   | "debarras"
@@ -775,6 +777,72 @@ const categories: Record<
     ],
   },
 
+  assuranceDecennale: {
+    label: "Assurance décennale",
+    icon: "🏗️",
+    message:
+      "Je vais t’aider à trouver une assurance décennale adaptée à ton activité professionnelle.",
+    questions: [
+      {
+        key: "activity",
+        type: "select",
+        emoji: "💼",
+        title: "Quelle est ton activité principale ?",
+        description:
+          "Choisis ton métier pour identifier une assurance adaptée.",
+        options: [
+          "Artisan du bâtiment",
+          "Maçon",
+          "Charpentier",
+          "Plombier",
+          "Électricien",
+          "Architecte",
+          "Entreprise générale du bâtiment",
+          "Autre",
+        ],
+      },
+    ],
+  },
+
+  expertComptable: {
+    label: "Expert-comptable",
+    icon: "🧾",
+    message:
+      "Je vais t’aider à trouver un accompagnement comptable adapté à ton entreprise.",
+    questions: [
+      {
+        key: "expertType",
+        type: "select",
+        emoji: "🧾",
+        title: "Quel accompagnement recherches-tu ?",
+        description:
+          "Choisis la solution correspondant à ton besoin.",
+        options: [
+          "Comparer plusieurs cabinets",
+          "Accompagnement comptable",
+        ],
+      },
+      {
+        key: "activity",
+        type: "select",
+        emoji: "💼",
+        title: "Quel est ton statut professionnel ?",
+        description:
+          "Cette information permettra de mieux orienter ta recherche.",
+        options: [
+          "Micro-entrepreneur",
+          "Indépendant",
+          "Profession libérale",
+          "Commerce",
+          "Artisan",
+          "Société",
+          "Association",
+          "Autre",
+        ],
+      },
+    ],
+  },
+
   servicesEntreprises: {
     label: "Services aux entreprises",
     icon: "🏢",
@@ -961,8 +1029,8 @@ const universeOrder: AnalyseUniverse[] = [
   "energie",
   "telecomsNumerique",
   "maisonImmobilier",
-  "servicesQuotidien",
   "financePatrimoine",
+  "servicesQuotidien",
   "proEntreprises",
   "familleScolarite",
   "beauteArtisanat",
@@ -978,7 +1046,6 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     categories: [
       "mutuelle",
       "mutuelleSenior",
-      "mutuelleProfessionnelle",
       "animaux",
       "auto",
       "moto",
@@ -1063,9 +1130,12 @@ const universes: Record<AnalyseUniverse, UniverseConfig> = {
     description:
       "Solutions et services pour les professionnels et les entreprises.",
     categories: [
-      "visibiliteGoogle",
+      "mutuelleProfessionnelle",
+      "assuranceDecennale",
+      "expertComptable",
+      "siteInternetPro",
       "formation",
-      "servicesEntreprises",
+      "visibiliteGoogle",
     ],
   },
 
@@ -1107,6 +1177,8 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "siteInternetPro",
   "visibiliteGoogle",
   "mutuelleProfessionnelle",
+  "assuranceDecennale",
+  "expertComptable",
   "animaux",
   "assuranceEmprunteur",
   "ambassadeur",
@@ -1129,7 +1201,6 @@ const fallbackAvailableCategoryOrder: AnalyseCategory[] = [
   "securite",
   "crypto",
   "cybersecurite",
-  "servicesEntreprises",
   "demenagement",
   "debarras",
   "electricite",
@@ -1166,6 +1237,8 @@ const missionSlugToAnalyseCategory: Record<
   "travaux": "travaux",
   "mutuelle-senior": "mutuelleSenior",
   "mutuelle-professionnelle": "mutuelleProfessionnelle",
+  "assurance-decennale": "assuranceDecennale",
+  "expert-comptable": "expertComptable",
   "epargne-retraite": "epargneRetraite",
   "assurance-vie": "assuranceVie",
   "auto": "auto",
@@ -1595,6 +1668,16 @@ export default function AnalysePage() {
 
       if (selectedCategory === "servicesEntreprises") {
         router.push("/missions/services-entreprises");
+        return;
+      }
+
+      if (selectedCategory === "assuranceDecennale") {
+        router.push("/missions/assurance-decennale");
+        return;
+      }
+
+      if (selectedCategory === "expertComptable") {
+        router.push("/missions/expert-comptable");
         return;
       }
 

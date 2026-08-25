@@ -37,7 +37,6 @@ const missionUniverses: MissionUniverse[] = [
       "mutuelle",
       "mutuelle-sante",
       "mutuelle-senior",
-      "mutuelle-professionnelle",
       "animaux",
       "assurance-animaux",
       "auto",
@@ -96,6 +95,23 @@ const missionUniverses: MissionUniverse[] = [
     ],
   },
 
+{
+    id: "finance-patrimoine",
+    label: "Finance & Patrimoine",
+    icon: "💰",
+    description:
+      "Épargne, patrimoine, banque et solutions financières.",
+   slugs: [
+  "epargne-retraite",
+  "assurance-vie",
+  "rachat-credits",
+  "crypto",
+  "cryptomonnaies",
+  "banque",
+],
+    
+  },
+
   {
     id: "services-quotidien",
     label: "Services du quotidien",
@@ -115,34 +131,19 @@ const missionUniverses: MissionUniverse[] = [
   },
 
   {
-    id: "finance-patrimoine",
-    label: "Finance & Patrimoine",
-    icon: "💰",
-    description:
-      "Épargne, patrimoine, banque et solutions financières.",
-   slugs: [
-  "epargne-retraite",
-  "assurance-vie",
-  "rachat-credits",
-  "crypto",
-  "cryptomonnaies",
-  "banque",
-],
-    
-  },
-
-  {
     id: "pro-entreprises",
     label: "Pro & Entreprises",
     icon: "💼",
     description:
       "Solutions et services pour les professionnels et les entreprises.",
-    slugs: [
-      "site-internet-pro",
-      "formation",
-      "services-entreprises",
-      "visibilite-google",
-    ],
+   slugs: [
+  "mutuelle-professionnelle",
+  "assurance-decennale",
+  "expert-comptable",
+  "site-internet-pro",
+  "formation",
+  "visibilite-google",
+],
   },
 
   {

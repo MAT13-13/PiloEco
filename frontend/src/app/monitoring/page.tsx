@@ -425,14 +425,17 @@ function MonitoringDashboard() {
             </p>
 
             <p className="mt-3 text-4xl font-black">
-              {summary.totalSaving.toLocaleString(
-                "fr-FR"
-              )}{" "}
-              €
+              {summary.totalSaving > 0
+                ? `${summary.totalSaving.toLocaleString(
+                    "fr-FR"
+                  )} €`
+                : "À comparer"}
             </p>
 
             <p className="mt-2 text-sm text-slate-400">
-              par an
+              {summary.totalSaving > 0
+                ? "par an"
+                : "Aucune économie chiffrée pour le moment"}
             </p>
           </div>
 
@@ -512,9 +515,13 @@ function MonitoringDashboard() {
                     alert.alert ??
                     "Aucune alerte détectée"
                   }
-                  saving={`${alert.yearlySaving.toLocaleString(
-                    "fr-FR"
-                  )} €/an`}
+                  saving={
+                    alert.yearlySaving > 0
+                      ? `${alert.yearlySaving.toLocaleString(
+                          "fr-FR"
+                        )} €/an`
+                      : "À comparer"
+                  }
                   color={alert.color}
                   href={
                     alert.href ??

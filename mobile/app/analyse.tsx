@@ -33,14 +33,22 @@ const analyseSlugMap: Record<string, string> = {
   telephone: "telephone",
   "telephone-senior": "telephoneSenior",
   "site-internet-pro": "siteInternetPro",
+
+  // Mutuelle professionnelle
+  "mutuelle-professionnelle":
+    "mutuelleProfessionnelle",
+
   animaux: "animaux",
   "assurance-animaux": "animaux",
-  "assurance-emprunteur": "assuranceEmprunteur",
+  "assurance-emprunteur":
+    "assuranceEmprunteur",
   ambassadeur: "ambassadeur",
   "ambassadeur-gselect": "ambassadeur",
   "assurance-obseques": "assuranceObseques",
   "credit-immobilier": "creditImmobilier",
-  "diagnostic-immobilier": "diagnosticImmobilier",
+  "diagnostic-immobilier":
+    "diagnosticImmobilier",
+  "location-meublee": "locationMeublee",
   habitation: "habitation",
   "assurance-habitation": "habitation",
   travaux: "travaux",
@@ -60,7 +68,8 @@ const analyseSlugMap: Record<string, string> = {
   crypto: "crypto",
   cryptomonnaies: "crypto",
   cybersecurite: "cybersecurite",
-  "services-entreprises": "servicesEntreprises",
+  "services-entreprises":
+    "servicesEntreprises",
   demenagement: "demenagement",
   debarras: "debarras",
   electricite: "electricite",
@@ -75,16 +84,86 @@ const analyseSlugMap: Record<string, string> = {
   logiciels: "logiciels",
 };
 
+
+type AnalyseUniverse = {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  slugs: string[];
+};
+
+const analyseUniverses: AnalyseUniverse[] = [
+  {
+    id: "famille-quotidien",
+    label: "Famille & Quotidien",
+    icon: "👨‍👩‍👧",
+    description: "Aides, quotidien et solutions utiles pour la famille.",
+    slugs: ["famille", "beaute-artisanat"],
+  },
+  {
+    id: "sante-protection",
+    label: "Santé & Protection",
+    icon: "❤️",
+    description: "Santé, assurances et solutions de protection.",
+    slugs: ["mutuelle", "mutuelle-sante", "mutuelle-senior", "mutuelle-professionnelle", "animaux", "assurance-animaux", "assurance-emprunteur", "assurance-obseques", "ambassadeur", "ambassadeur-gselect"],
+  },
+  {
+    id: "energie-telecoms",
+    label: "Énergie & Télécoms",
+    icon: "⚡",
+    description: "Électricité, gaz, téléphone et connexion Internet.",
+    slugs: ["electricite", "gaz", "mobile", "telephone", "telephone-senior", "internet"],
+  },
+  {
+    id: "maison-immobilier",
+    label: "Maison & Immobilier",
+    icon: "🏠",
+    description: "Logement, immobilier, travaux, sécurité et déménagement.",
+    slugs: ["credit-immobilier", "diagnostic-immobilier", "location-meublee", "habitation", "assurance-habitation", "travaux", "securite", "alarme-securite", "demenagement", "debarras"],
+  },
+  {
+    id: "auto-moto-mobilite",
+    label: "Auto, Moto & Mobilité",
+    icon: "🚗",
+    description: "Assurances, entretien, équipement et nouvelles mobilités.",
+    slugs: ["auto", "assurance-auto", "moto", "assurance-moto", "services-auto", "service-auto", "moto-equipement", "mobilites-douces"],
+  },
+  {
+    id: "finance-patrimoine",
+    label: "Finance & Patrimoine",
+    icon: "💰",
+    description: "Épargne, patrimoine, banque et solutions financières.",
+    slugs: ["epargne-retraite", "crypto", "cryptomonnaies", "banque"],
+  },
+  {
+    id: "pro-numerique",
+    label: "Pro & Numérique",
+    icon: "💼",
+    description: "Solutions professionnelles et services numériques.",
+    slugs: ["site-internet-pro", "formation", "cybersecurite", "services-entreprises", "logiciels", "streaming"],
+  },
+  {
+    id: "voyages-loisirs",
+    label: "Voyages & Loisirs",
+    icon: "✈️",
+    description: "Voyages et solutions adaptées à tes projets de loisirs.",
+    slugs: ["voyage"],
+  },
+];
+
 export default function AnalyseScreen() {
-  const [availableCategories, setAvailableCategories] = useState<
-    MissionCatalog[]
-  >([]);
-  const [pendingCategories, setPendingCategories] = useState<
-    MissionCatalog[]
-  >([]);
+  const [availableCategories, setAvailableCategories] =
+    useState<MissionCatalog[]>([]);
+
+  const [selectedUniverse, setSelectedUniverse] =
+    useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [refreshing, setRefreshing] =
+    useState(false);
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   async function loadCategories() {
     try {
@@ -138,12 +217,6 @@ export default function AnalyseScreen() {
         )
       );
 
-      setPendingCategories(
-        analyses.filter(
-          (mission) =>
-            mission.status === "pending"
-        )
-      );
     } catch (error) {
       console.error(
         "Erreur chargement analyses :",
@@ -199,23 +272,30 @@ export default function AnalyseScreen() {
     }
   }
 
+  const activeUniverse = selectedUniverse
+    ? analyseUniverses.find(
+        (universe) => universe.id === selectedUniverse
+      ) ?? null
+    : null;
+
+  const activeCategories = activeUniverse
+    ? availableCategories.filter((category) =>
+        activeUniverse.slugs.includes(category.slug)
+      )
+    : [];
+
   if (loading) {
     return (
       <View style={styles.loadingScreen}>
-        <Text style={styles.loadingIcon}>
-          🐦
-        </Text>
-
+        <Text style={styles.loadingIcon}>🐦</Text>
         <ActivityIndicator
           size="large"
           color="#22c55e"
           style={styles.loader}
         />
-
         <Text style={styles.loadingTitle}>
           Pilo prépare tes analyses...
         </Text>
-
         <Text style={styles.loadingText}>
           Synchronisation des catégories disponibles.
         </Text>
@@ -226,12 +306,8 @@ export default function AnalyseScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={
-        styles.content
-      }
-      showsVerticalScrollIndicator={
-        false
-      }
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -241,95 +317,31 @@ export default function AnalyseScreen() {
         />
       }
     >
-      <Text style={styles.kicker}>
-        🔎 ANALYSE PILO
-      </Text>
+      <Text style={styles.kicker}>🔎 ANALYSE PILO</Text>
 
       <Text style={styles.title}>
-        Que veux-tu analyser ?
+        {activeUniverse
+          ? activeUniverse.label
+          : "Que veux-tu analyser ?"}
       </Text>
 
       <Text style={styles.subtitle}>
-        Choisis une catégorie disponible.
-        Pilo te posera directement les
-        questions utiles à ton besoin.
+        {activeUniverse
+          ? "Choisis maintenant l’analyse qui correspond à ton besoin."
+          : "Choisis d’abord un univers. Pilo t’affichera uniquement les analyses disponibles dans ce domaine."}
       </Text>
-
-      {/* HERO */}
-
-      <View style={styles.heroCard}>
-        <Text style={styles.heroIcon}>
-          🐦
-        </Text>
-
-        <View style={styles.heroContent}>
-          <Text style={styles.heroLabel}>
-            ÉTAPE 1
-          </Text>
-
-          <Text style={styles.heroTitle}>
-            Commence par ton analyse
-          </Text>
-
-          <Text style={styles.heroText}>
-            Pilo analyse ta situation puis
-            t'oriente vers les missions et
-            solutions déjà disponibles.
-          </Text>
-        </View>
-      </View>
-
-      {/* ANALYSE COMPLETE */}
-
-      <TouchableOpacity
-        style={styles.startButton}
-        activeOpacity={0.85}
-        onPress={() =>
-          void openAnalyse()
-        }
-      >
-        <View>
-          <Text
-            style={
-              styles.startButtonLabel
-            }
-          >
-            ANALYSE PILO
-          </Text>
-
-          <Text
-            style={
-              styles.startButtonText
-            }
-          >
-            🔎 Voir toutes les analyses
-          </Text>
-        </View>
-
-        <Text
-          style={
-            styles.startButtonArrow
-          }
-        >
-          →
-        </Text>
-      </TouchableOpacity>
 
       {errorMessage ? (
         <View style={styles.errorCard}>
           <Text style={styles.errorTitle}>
             Impossible de charger les analyses
           </Text>
-
           <Text style={styles.errorText}>
             {errorMessage}
           </Text>
-
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() =>
-              void loadCategories()
-            }
+            onPress={() => void loadCategories()}
           >
             <Text style={styles.retryButtonText}>
               Réessayer
@@ -338,167 +350,129 @@ export default function AnalyseScreen() {
         </View>
       ) : null}
 
-      {/* DISPONIBLES */}
-
-      <View style={styles.sectionHeader}>
-        <View style={styles.greenDot} />
-
-        <Text
-          style={styles.availableLabel}
-        >
-          DISPONIBLES MAINTENANT
-        </Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>
-        Choisis ton analyse
-      </Text>
-
-      <Text style={styles.sectionText}>
-        Ces catégories disposent déjà
-        d'une solution ou d'un partenaire
-        sélectionné par Pilo.
-      </Text>
-
-      <View style={styles.grid}>
-        {availableCategories.map(
-          (category) => (
-            <TouchableOpacity
-              key={category.slug}
-              style={styles.card}
-              activeOpacity={0.8}
-              onPress={() =>
-                void openAnalyse(
-                  analyseSlugMap[category.slug]
-                )
-              }
-            >
-              <Text
-                style={styles.icon}
-              >
-                {category.icon}
+      {!errorMessage && !activeUniverse ? (
+        <>
+          <View style={styles.heroCard}>
+            <Text style={styles.heroIcon}>🐦</Text>
+            <View style={styles.heroContent}>
+              <Text style={styles.heroLabel}>ÉTAPE 1</Text>
+              <Text style={styles.heroTitle}>
+                Choisis ton univers
               </Text>
-
-              <Text
-                style={
-                  styles.cardTitle
-                }
-              >
-                {category.title}
+              <Text style={styles.heroText}>
+                Pilo organise les analyses par domaine pour aller plus vite vers la bonne solution.
               </Text>
+            </View>
+          </View>
 
-              <Text
-                style={
-                  styles.cardText
-                }
-              >
-                Analyser →
-              </Text>
-            </TouchableOpacity>
-          )
-        )}
-      </View>
+          <View style={styles.grid}>
+            {analyseUniverses.map((universe) => {
+              const count = availableCategories.filter(
+                (category) =>
+                  universe.slugs.includes(category.slug)
+              ).length;
 
-      {/* EN COURS */}
-
-      <View style={styles.pendingSection}>
-        <View
-          style={styles.sectionHeader}
-        >
-          <View style={styles.amberDot} />
-
-          <Text
-            style={
-              styles.pendingLabel
-            }
-          >
-            PROCHAINEMENT
-          </Text>
-        </View>
-
-        <Text style={styles.sectionTitle}>
-          En cours de partenariat
-        </Text>
-
-        <Text style={styles.sectionText}>
-          Pilo prépare actuellement des
-          solutions pour ces catégories.
-          Elles seront activées dès qu'un
-          partenaire adapté sera
-          disponible.
-        </Text>
-
-        <View style={styles.grid}>
-          {pendingCategories.map(
-            (category) => (
-              <View
-                key={category.slug}
-                style={styles.pendingCard}
-              >
-                <View
-                  style={
-                    styles.pendingBadge
+              return (
+                <TouchableOpacity
+                  key={universe.id}
+                  style={styles.universeCard}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    setSelectedUniverse(universe.id)
                   }
                 >
-                  <Text
-                    style={
-                      styles.pendingBadgeText
-                    }
-                  >
-                    EN COURS
+                  <View style={styles.universeTop}>
+                    <Text style={styles.universeIcon}>
+                      {universe.icon}
+                    </Text>
+                    <View style={styles.countBadge}>
+                      <Text style={styles.countText}>
+                        {count}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.universeTitle}>
+                    {universe.label}
                   </Text>
-                </View>
 
-                <Text
-                  style={
-                    styles.pendingIcon
+                  <Text style={styles.universeDescription}>
+                    {universe.description}
+                  </Text>
+
+                  <Text style={styles.cardText}>
+                    Voir les analyses →
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      ) : null}
+
+      {!errorMessage && activeUniverse ? (
+        <>
+          <TouchableOpacity
+            style={styles.backButton}
+            activeOpacity={0.8}
+            onPress={() => setSelectedUniverse(null)}
+          >
+            <Text style={styles.backButtonText}>
+              ← Retour aux univers
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.sectionHeader}>
+            <View style={styles.greenDot} />
+            <Text style={styles.availableLabel}>
+              DISPONIBLES MAINTENANT
+            </Text>
+          </View>
+
+          <Text style={styles.sectionTitle}>
+            {activeUniverse.icon} {activeUniverse.label}
+          </Text>
+
+          <Text style={styles.sectionText}>
+            Seules les analyses actuellement disponibles sont affichées.
+          </Text>
+
+          {activeCategories.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>
+                Aucune analyse disponible actuellement.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.grid}>
+              {activeCategories.map((category) => (
+                <TouchableOpacity
+                  key={category.slug}
+                  style={styles.card}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    void openAnalyse(
+                      analyseSlugMap[category.slug]
+                    )
                   }
                 >
-                  {category.icon}
-                </Text>
-
-                <Text
-                  style={
-                    styles.pendingCardTitle
-                  }
-                >
-                  {category.title}
-                </Text>
-
-                <Text
-                  style={
-                    styles.pendingCardText
-                  }
-                >
-                  Solution en préparation
-                </Text>
-              </View>
-            )
+                  <Text style={styles.icon}>
+                    {category.icon}
+                  </Text>
+                  <Text style={styles.cardTitle}>
+                    {category.title}
+                  </Text>
+                  <Text style={styles.cardText}>
+                    Analyser →
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           )}
-        </View>
-      </View>
+        </>
+      ) : null}
 
-      {/* INFO */}
-
-      <View style={styles.infoCard}>
-        <Text
-          style={styles.infoTitle}
-        >
-          🐦 Pilo s'adapte
-        </Text>
-
-        <Text
-          style={styles.infoText}
-        >
-          Une catégorie en préparation
-          devient accessible dès qu'une
-          solution adaptée est disponible.
-        </Text>
-      </View>
-
-      <View
-        style={styles.bottomSpace}
-      />
+      <View style={styles.bottomSpace} />
     </ScrollView>
   );
 }
@@ -511,15 +485,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 30,
   },
-
-  loadingIcon: {
-    fontSize: 55,
-  },
-
-  loader: {
-    marginTop: 20,
-  },
-
+  loadingIcon: { fontSize: 55 },
+  loader: { marginTop: 20 },
   loadingTitle: {
     marginTop: 18,
     color: "#ffffff",
@@ -527,76 +494,36 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textAlign: "center",
   },
-
   loadingText: {
     marginTop: 7,
     color: "#64748b",
     textAlign: "center",
   },
-
-  errorCard: {
-    marginTop: 22,
-    padding: 18,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#7f1d1d",
-    backgroundColor: "#450a0a",
-  },
-
-  errorTitle: {
-    color: "#fecaca",
-    fontWeight: "900",
-  },
-
-  errorText: {
-    marginTop: 6,
-    color: "#fca5a5",
-    fontSize: 11,
-  },
-
-  retryButton: {
-    marginTop: 13,
-    paddingVertical: 11,
-    alignItems: "center",
-    borderRadius: 12,
-    backgroundColor: "#ef4444",
-  },
-
-  retryButtonText: {
-    color: "#ffffff",
-    fontWeight: "900",
-  },
-
   screen: {
     flex: 1,
     backgroundColor: "#020617",
   },
-
   content: {
     padding: 20,
   },
-
   kicker: {
     color: "#22c55e",
     fontWeight: "900",
     fontSize: 10,
     letterSpacing: 2,
   },
-
   title: {
     marginTop: 9,
     color: "#ffffff",
     fontSize: 30,
     fontWeight: "900",
   },
-
   subtitle: {
     marginTop: 10,
     color: "#94a3b8",
     lineHeight: 21,
     fontSize: 13,
   },
-
   heroCard: {
     marginTop: 24,
     padding: 18,
@@ -607,129 +534,153 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 13,
   },
-
-  heroIcon: {
-    fontSize: 35,
-  },
-
-  heroContent: {
-    flex: 1,
-  },
-
+  heroIcon: { fontSize: 35 },
+  heroContent: { flex: 1 },
   heroLabel: {
     color: "#4ade80",
     fontSize: 8,
     fontWeight: "900",
     letterSpacing: 1.5,
   },
-
   heroTitle: {
     marginTop: 5,
     color: "#ffffff",
     fontSize: 18,
     fontWeight: "900",
   },
-
   heroText: {
     marginTop: 6,
     color: "#bbf7d0",
     fontSize: 10,
     lineHeight: 17,
   },
-
-  startButton: {
-    marginTop: 15,
-    minHeight: 68,
-    paddingHorizontal: 17,
-    paddingVertical: 12,
+  errorCard: {
+    marginTop: 22,
+    padding: 18,
     borderRadius: 18,
-    backgroundColor: "#22c55e",
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+    backgroundColor: "#450a0a",
+  },
+  errorTitle: {
+    color: "#fecaca",
+    fontWeight: "900",
+  },
+  errorText: {
+    marginTop: 6,
+    color: "#fca5a5",
+    fontSize: 11,
+  },
+  retryButton: {
+    marginTop: 13,
+    paddingVertical: 11,
+    alignItems: "center",
+    borderRadius: 12,
+    backgroundColor: "#ef4444",
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontWeight: "900",
+  },
+  grid: {
+    marginTop: 20,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  universeCard: {
+    width: "48%",
+    marginBottom: 12,
+    minHeight: 185,
+    padding: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0f172a",
+  },
+  universeTop: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
   },
-
-  startButtonLabel: {
-    color: "#14532d",
-    fontSize: 8,
-    fontWeight: "900",
-    letterSpacing: 1.3,
+  universeIcon: { fontSize: 31 },
+  countBadge: {
+    minWidth: 28,
+    height: 28,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#166534",
+    backgroundColor: "#052e16",
   },
-
-  startButtonText: {
-    marginTop: 3,
-    color: "#020617",
-    fontSize: 13,
-    fontWeight: "900",
-  },
-
-  startButtonArrow: {
-    color: "#020617",
-    fontSize: 22,
+  countText: {
+    color: "#4ade80",
+    fontSize: 10,
     fontWeight: "900",
   },
-
+  universeTitle: {
+    marginTop: 13,
+    color: "#ffffff",
+    fontWeight: "900",
+    fontSize: 14,
+    lineHeight: 19,
+  },
+  universeDescription: {
+    marginTop: 7,
+    color: "#64748b",
+    fontSize: 9,
+    lineHeight: 14,
+  },
+  backButton: {
+    marginTop: 24,
+    alignSelf: "flex-start",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0f172a",
+  },
+  backButtonText: {
+    color: "#cbd5e1",
+    fontSize: 11,
+    fontWeight: "900",
+  },
   sectionHeader: {
-    marginTop: 32,
+    marginTop: 28,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-
   greenDot: {
     width: 8,
     height: 8,
     borderRadius: 100,
     backgroundColor: "#22c55e",
   },
-
-  amberDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 100,
-    backgroundColor: "#f59e0b",
-  },
-
   availableLabel: {
     color: "#22c55e",
     fontSize: 9,
     fontWeight: "900",
     letterSpacing: 1.6,
   },
-
-  pendingLabel: {
-    color: "#f59e0b",
-    fontSize: 9,
-    fontWeight: "900",
-    letterSpacing: 1.6,
-  },
-
   sectionTitle: {
     marginTop: 7,
     color: "#ffffff",
     fontSize: 21,
     fontWeight: "900",
   },
-
   sectionText: {
     marginTop: 6,
-    marginBottom: 4,
     color: "#64748b",
     fontSize: 11,
     lineHeight: 17,
   },
-
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent:
-      "space-between",
-  },
-
   card: {
     width: "48%",
-    marginTop: 12,
+    marginBottom: 12,
     minHeight: 130,
     padding: 15,
     borderRadius: 18,
@@ -737,11 +688,7 @@ const styles = StyleSheet.create({
     borderColor: "#1e293b",
     backgroundColor: "#0f172a",
   },
-
-  icon: {
-    fontSize: 27,
-  },
-
+  icon: { fontSize: 27 },
   cardTitle: {
     marginTop: 9,
     color: "#ffffff",
@@ -749,93 +696,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-
   cardText: {
-    marginTop: 7,
+    marginTop: 9,
     color: "#22c55e",
     fontSize: 9,
     fontWeight: "800",
   },
-
-  pendingSection: {
-    marginTop: 15,
-    paddingTop: 5,
-  },
-
-  pendingCard: {
-    position: "relative",
-    width: "48%",
-    marginTop: 12,
-    minHeight: 130,
-    padding: 15,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#78350f",
-    backgroundColor: "#0f172a",
-    opacity: 0.7,
-  },
-
-  pendingBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#92400e",
-    backgroundColor: "#451a03",
-  },
-
-  pendingBadgeText: {
-    color: "#fbbf24",
-    fontSize: 6,
-    fontWeight: "900",
-  },
-
-  pendingIcon: {
-    fontSize: 27,
-  },
-
-  pendingCardTitle: {
-    marginTop: 9,
-    paddingRight: 35,
-    color: "#cbd5e1",
-    fontWeight: "900",
-    fontSize: 13,
-    lineHeight: 18,
-  },
-
-  pendingCardText: {
-    marginTop: 7,
-    color: "#64748b",
-    fontSize: 9,
-    lineHeight: 14,
-  },
-
-  infoCard: {
-    marginTop: 28,
-    padding: 16,
+  emptyCard: {
+    marginTop: 20,
+    padding: 18,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "#1e293b",
     backgroundColor: "#0f172a",
   },
-
-  infoTitle: {
+  emptyTitle: {
     color: "#ffffff",
     fontSize: 12,
     fontWeight: "900",
   },
-
-  infoText: {
-    marginTop: 7,
-    color: "#94a3b8",
-    fontSize: 10,
-    lineHeight: 17,
-  },
-
-  bottomSpace: {
-    height: 50,
-  },
+  bottomSpace: { height: 50 },
 });
