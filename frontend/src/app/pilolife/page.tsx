@@ -359,11 +359,55 @@ console.log("✅ settings OK");
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white lg:ml-64">
+    <main className="min-h-screen bg-slate-950 px-3 pb-28 pt-3 text-white sm:px-6 sm:py-10 lg:ml-64">
       <div className="mx-auto max-w-6xl">
-        <PiloLifeHero />
+        <div className="sm:hidden">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-400">
+                🌿 PiloLife
+              </p>
+              <h1 className="mt-1 text-2xl font-black">
+                Mes projets
+              </h1>
+              <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                Transforme tes économies en objectifs concrets.
+              </p>
+            </div>
 
-        <PiloNavigation />
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="rounded-xl bg-green-500 px-3 py-2 text-[10px] font-black text-slate-950"
+            >
+              + Projet
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-2.5">
+              <p className="text-[8px] font-black uppercase text-green-400">Cagnotte</p>
+              <p className="mt-1 text-sm font-black">
+                {Number(wallet?.balance ?? 0).toLocaleString("fr-FR")} €
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-slate-900 p-2.5">
+              <p className="text-[8px] font-black uppercase text-slate-500">Projets</p>
+              <p className="mt-1 text-sm font-black">{projects.length}</p>
+            </div>
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-2.5">
+              <p className="text-[8px] font-black uppercase text-blue-300">Mode</p>
+              <p className="mt-1 truncate text-[10px] font-black">
+                {currentModeDetails.title}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden sm:block">
+          <PiloLifeHero />
+          <PiloNavigation />
+        </div>
 
         {errorMessage && (
           <div className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-200">
@@ -392,7 +436,7 @@ console.log("✅ settings OK");
         projects.length > 0 ? (
           <>
             {primaryProject && (
-              <section className="mt-10">
+              <section className="mt-4 sm:mt-10">
                 <PiloTree
                   project={primaryProject}
                   walletBalance={Number(
@@ -405,9 +449,9 @@ console.log("✅ settings OK");
                   onInvest={handleInvest}
                 />
 
-                <article className="mt-6 flex flex-col gap-5 rounded-[2rem] border border-blue-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/20 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+                <article className="mt-3 flex flex-col gap-3 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950/20 p-3.5 sm:mt-6 sm:gap-5 sm:rounded-[2rem] sm:p-7 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-3xl">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-xl sm:h-14 sm:w-14 sm:rounded-2xl sm:text-3xl">
                       {
                         currentModeDetails.icon
                       }
@@ -496,7 +540,7 @@ console.log("✅ settings OK");
               </section>
             )}
 
-            <section className="mt-12">
+            <section className="mt-6 sm:mt-12">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-bold uppercase tracking-widest text-green-400">
@@ -522,13 +566,13 @@ console.log("✅ settings OK");
                   onClick={() =>
                     setModalOpen(true)
                   }
-                  className="rounded-2xl bg-green-500 px-5 py-3 font-bold text-black transition hover:bg-green-400"
+                  className="hidden rounded-2xl bg-green-500 px-5 py-3 font-bold text-black transition hover:bg-green-400 sm:block"
                 >
                   + Nouvel objectif
                 </button>
               </div>
 
-              <div className="mt-7 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-3 grid gap-3 sm:mt-7 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {projects.map(
                   (project) => (
                     <ProjectCard
@@ -680,6 +724,26 @@ console.log("✅ settings OK");
           </section>
         </div>
       )}
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-slate-950/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          <a href="/dashboard" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🏠</span><span className="text-[9px] font-bold">Accueil</span>
+          </a>
+          <a href="/analyse" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🔎</span><span className="text-[9px] font-bold">Analyse</span>
+          </a>
+          <a href="/missions" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🎯</span><span className="text-[9px] font-bold">Missions</span>
+          </a>
+          <a href="/monitoring" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">📊</span><span className="text-[9px] font-bold">Suivi</span>
+          </a>
+          <a href="/pilolife" className="flex flex-col items-center gap-1 rounded-xl bg-green-500/10 py-2 text-green-400">
+            <span className="text-lg">🌿</span><span className="text-[9px] font-black">PiloLife</span>
+          </a>
+        </div>
+      </nav>
     </main>
   );
 }

@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -1708,7 +1708,7 @@ export default function AnalysePage() {
 
     if (question.type === "select") {
       return (
-        <div className="mt-8 grid gap-3">
+        <div className="mt-4 grid gap-2 sm:mt-8 sm:gap-3">
           {question.options?.map((option) => {
             const active =
               currentValue === option;
@@ -1754,7 +1754,7 @@ export default function AnalysePage() {
 
                   setErrorMessage("");
                 }}
-                className={`w-full min-w-0 rounded-2xl border px-4 py-4 text-left text-sm font-bold leading-5 transition sm:p-4 sm:text-base ${
+                className={`w-full min-w-0 rounded-xl border px-3 py-3 text-left text-xs font-bold leading-4 transition sm:rounded-2xl sm:p-4 sm:text-base sm:leading-5 ${
                   active
                     ? "border-green-400 bg-green-500/20 text-green-300"
                     : "border-white/10 bg-white/5 text-white hover:border-green-500/40"
@@ -1799,19 +1799,19 @@ export default function AnalysePage() {
           }
         }}
         placeholder={question.placeholder}
-        className="mt-6 w-full min-w-0 rounded-2xl bg-white px-4 py-4 text-center text-base font-bold text-slate-950 placeholder:text-slate-400 sm:mt-8 sm:p-5 sm:text-2xl"
+        className="mt-4 w-full min-w-0 rounded-xl bg-white px-3 py-3 text-center text-sm font-bold text-slate-950 placeholder:text-slate-400 sm:mt-8 sm:rounded-2xl sm:p-5 sm:text-2xl"
       />
     );
   }
 
   return (
-    <main className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden bg-slate-950 px-4 pb-10 pt-24 text-white sm:px-6 sm:py-20 md:justify-center">
+    <main className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden bg-slate-950 px-3 pb-28 pt-16 text-white sm:px-6 sm:py-20 md:justify-center">
       <button
         type="button"
         onClick={() =>
           router.push("/dashboard")
         }
-        className="absolute left-4 top-4 z-20 max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-green-500/40 hover:text-green-400 sm:left-6 sm:top-6 sm:px-4 sm:py-3 sm:text-base"
+        className="absolute left-3 top-3 z-20 rounded-lg border border-white/10 bg-slate-900/90 px-2.5 py-1.5 text-[10px] font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400 sm:left-6 sm:top-6 sm:rounded-xl sm:px-4 sm:py-3 sm:text-base"
       >
         ← Retour au dashboard
       </button>
@@ -1819,17 +1819,17 @@ export default function AnalysePage() {
       {!selectedCategory ? (
         <section className="w-full max-w-5xl">
           <div className="text-center">
-            <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-400 sm:text-sm sm:tracking-[0.3em]">
               Analyse Pilo
             </p>
 
-            <h1 className="mt-4 text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
+            <h1 className="mt-1.5 text-2xl font-black leading-tight sm:mt-4 sm:text-4xl md:text-5xl">
               {selectedUniverseConfig
                 ? selectedUniverseConfig.label
                 : "Que veux-tu analyser ?"}
             </h1>
 
-            <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+            <p className="mx-auto mt-1.5 max-w-2xl text-[11px] leading-4 text-slate-500 sm:mt-4 sm:text-base sm:text-slate-400">
               {selectedUniverseConfig
                 ? "Choisis maintenant la mission qui correspond à ton besoin."
                 : "Choisis d’abord un univers. Pilo t’affichera uniquement les missions disponibles dans ce domaine."}
@@ -1849,7 +1849,7 @@ export default function AnalysePage() {
           </div>
 
           {!selectedUniverseConfig ? (
-            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-10 sm:gap-4 lg:grid-cols-3">
               {universeOrder.map((universeKey) => {
                 const universe = universes[universeKey];
 
@@ -1868,28 +1868,28 @@ export default function AnalysePage() {
                     onClick={() =>
                       setSelectedUniverse(universeKey)
                     }
-                    className="group w-full rounded-3xl border border-white/10 bg-white/5 p-6 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10"
+                    className="group w-full rounded-2xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6 sm:hover:-translate-y-1"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <span className="text-5xl">
+                      <span className="text-2xl sm:text-5xl">
                         {universe.icon}
                       </span>
 
-                      <span className="rounded-full border border-white/10 bg-slate-950/60 px-3 py-1 text-xs font-bold text-slate-400 transition group-hover:border-green-500/30 group-hover:text-green-300">
+                      <span className="rounded-full border border-white/10 bg-slate-950/60 px-2 py-1 text-[8px] font-bold text-slate-500 transition group-hover:border-green-500/30 group-hover:text-green-300 sm:px-3 sm:text-xs sm:text-slate-400">
                         {missionCount} mission
                         {missionCount > 1 ? "s" : ""}
                       </span>
                     </div>
 
-                    <h2 className="mt-5 text-xl font-black text-white">
+                    <h2 className="mt-2 text-[13px] font-black leading-4 text-white sm:mt-5 sm:text-xl">
                       {universe.label}
                     </h2>
 
-                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                    <p className="mt-1 line-clamp-2 text-[9px] leading-3 text-slate-500 sm:mt-2 sm:text-sm sm:leading-6 sm:text-slate-400">
                       {universe.description}
                     </p>
 
-                    <p className="mt-5 text-sm font-bold text-green-400">
+                    <p className="mt-2 text-[9px] font-black text-green-400 sm:mt-5 sm:text-sm">
                       Voir les missions →
                     </p>
                   </button>
@@ -2073,6 +2073,24 @@ export default function AnalysePage() {
       <div className="hidden md:block">
         <PiloMascot />
       </div>
-    </main>
+    
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-slate-950/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          {[
+            ["/dashboard","🏠","Accueil"],
+            ["/analyse","🔎","Analyse"],
+            ["/missions","🎯","Missions"],
+            ["/monitoring","📊","Suivi"],
+            ["/pilolife","🌿","PiloLife"],
+          ].map(([href, icon, label]) => (
+            <button key={href} type="button" onClick={() => router.push(href)}
+              className={`flex flex-col items-center gap-1 rounded-xl py-2 ${href === "/analyse" ? "bg-green-500/10 text-green-400" : "text-slate-500"}`}>
+              <span className="text-lg">{icon}</span>
+              <span className="text-[9px] font-bold">{label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+</main>
    );
 }

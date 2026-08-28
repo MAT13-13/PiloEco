@@ -83,6 +83,308 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen overflow-hidden bg-slate-950 text-white">
+      {/* MOBILE - ACCUEIL COMPACT */}
+      <div className="min-h-screen sm:hidden">
+        <header className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/95 px-4 py-3 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-md items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <img
+                src="/pilo.png"
+                alt="PiloEco"
+                className="h-9 w-9 object-contain"
+              />
+              <span className="text-lg font-black">
+                Pilo<span className="text-green-400">Eco</span>
+              </span>
+            </Link>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/login"
+                className="rounded-xl border border-white/10 px-3 py-2 text-[10px] font-black text-slate-300"
+              >
+                Connexion
+              </Link>
+
+              <Link
+                href="/analyse"
+                className="rounded-xl bg-green-500 px-3.5 py-2 text-[10px] font-black text-slate-950"
+              >
+                Commencer
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-md px-3 pb-8 pt-4">
+          <section className="overflow-hidden rounded-3xl border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/40 p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-400">
+              🐦 Ton copilote d&apos;économies
+            </p>
+
+            <h1 className="mt-2 text-[28px] font-black leading-[1.05]">
+              Et si tu pouvais payer{" "}
+              <span className="text-green-400">moins</span> sans te compliquer la vie ?
+            </h1>
+
+            <p className="mt-3 text-xs leading-5 text-slate-400">
+              Pilo analyse tes dépenses et t&apos;aide à repérer rapidement les
+              économies qui peuvent vraiment compter.
+            </p>
+
+            <div className="mt-4 grid grid-cols-[1fr_105px] items-center gap-3">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">
+                <p className="text-[9px] font-black uppercase tracking-wide text-slate-500">
+                  Exemple d&apos;économie
+                </p>
+                <p className="mt-1 text-2xl font-black text-green-400">
+                  {count} €<span className="text-[10px] text-slate-500"> / an</span>
+                </p>
+                <p className="mt-1 text-[9px] leading-4 text-slate-500">
+                  Quelques réponses suffisent pour commencer.
+                </p>
+              </div>
+
+              <div className="relative flex h-28 items-center justify-center">
+                <div className="absolute h-20 w-20 rounded-full bg-green-500/20 blur-2xl" />
+                <img
+                  src="/pilo.png"
+                  alt="Mascotte Pilo"
+                  className="relative z-10 h-28 w-28 object-contain"
+                />
+              </div>
+            </div>
+
+            <Link
+              href="/analyse"
+              className="mt-4 block rounded-2xl bg-green-500 px-4 py-3.5 text-center text-sm font-black text-slate-950"
+            >
+              💚 Lancer mon analyse gratuite
+            </Link>
+
+            <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+              <div className="rounded-xl border border-white/10 bg-white/5 px-1 py-2">
+                <p className="text-base">💚</p>
+                <p className="mt-0.5 text-[8px] font-bold text-slate-400">
+                  Gratuit
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 px-1 py-2">
+                <p className="text-base">⏱</p>
+                <p className="mt-0.5 text-[8px] font-bold text-slate-400">
+                  ~ 2 min
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 px-1 py-2">
+                <p className="text-base">🛡️</p>
+                <p className="mt-0.5 text-[8px] font-bold text-slate-400">
+                  Tu décides
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-3 rounded-2xl border border-white/10 bg-slate-900 p-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500/10 text-xl">
+                🛡️
+              </div>
+              <div>
+                <h2 className="text-sm font-black">
+                  Pas de démarchage imposé
+                </h2>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500">
+                  Tes coordonnées ne sont transmises que si tu choisis clairement
+                  d&apos;aller plus loin.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-5">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-green-400">
+                  Simple & rapide
+                </p>
+                <h2 className="mt-1 text-lg font-black">
+                  Comment ça marche ?
+                </h2>
+              </div>
+              <span className="text-[9px] font-bold text-slate-600">
+                3 étapes
+              </span>
+            </div>
+
+            <div className="mt-2.5 grid grid-cols-3 gap-2">
+              {[
+                ["01", "📱", "Réponds", "Quelques infos"],
+                ["02", "🔎", "Pilo analyse", "Il repère les pistes"],
+                ["03", "🎯", "Tu choisis", "Tu gardes la main"],
+              ].map(([number, emoji, title, text]) => (
+                <div
+                  key={number}
+                  className="rounded-2xl border border-white/10 bg-slate-900 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg">{emoji}</span>
+                    <span className="text-[8px] font-black text-green-400">
+                      {number}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[11px] font-black">{title}</p>
+                  <p className="mt-0.5 text-[8px] leading-3 text-slate-500">
+                    {text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-5">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-green-400">
+              Où Pilo peut t&apos;aider
+            </p>
+            <h2 className="mt-1 text-lg font-black">
+              Tes dépenses du quotidien
+            </h2>
+
+            <div className="mt-2.5 grid grid-cols-2 gap-2">
+              {savingIdeas.map((item) => (
+                <div
+                  key={item.title}
+                  className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-slate-900 p-3"
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black">{item.title}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[8px] text-slate-500">
+                      {item.text}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section
+            id="monitoring-mobile"
+            className="mt-5 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3.5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-purple-300">
+                  💎 Premium
+                </p>
+                <h2 className="mt-1 text-base font-black">
+                  Pilo veille même quand tu n&apos;es pas là.
+                </h2>
+              </div>
+              <span className="rounded-full bg-purple-500/10 px-2 py-1 text-[8px] font-black text-purple-300">
+                4,99 €/mois
+              </span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-xl bg-slate-950/60 p-2.5">
+                <p className="text-lg">📊</p>
+                <p className="mt-1 text-[10px] font-black">Monitoring</p>
+                <p className="mt-0.5 text-[8px] text-slate-500">
+                  Contrats & prix
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-950/60 p-2.5">
+                <p className="text-lg">🌿</p>
+                <p className="mt-1 text-[10px] font-black">PiloLife</p>
+                <p className="mt-0.5 text-[8px] text-slate-500">
+                  Économies → projets
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/premium"
+              className="mt-3 block rounded-xl border border-purple-500/30 px-3 py-2.5 text-center text-[10px] font-black text-purple-200"
+            >
+              Découvrir Premium →
+            </Link>
+          </section>
+
+          <section className="mt-5">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-green-400">
+              Questions fréquentes
+            </p>
+
+            <div className="mt-2.5 space-y-2">
+              {faqItems.map((item, index) => {
+                const isOpened = openedFaq === index;
+
+                return (
+                  <div
+                    key={item.question}
+                    className="overflow-hidden rounded-xl border border-white/10 bg-slate-900"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenedFaq(isOpened ? null : index)}
+                      className="flex w-full items-center justify-between gap-3 px-3 py-3 text-left"
+                    >
+                      <span className="text-[10px] font-black">
+                        {item.question}
+                      </span>
+                      <span className="text-sm font-black text-green-400">
+                        {isOpened ? "−" : "+"}
+                      </span>
+                    </button>
+
+                    {isOpened && (
+                      <p className="border-t border-white/10 px-3 py-3 text-[9px] leading-4 text-slate-400">
+                        {item.answer}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mt-5 rounded-3xl border border-green-500/20 bg-green-500/10 p-4 text-center">
+            <img
+              src="/pilo.png"
+              alt="Pilo"
+              className="mx-auto h-16 w-16 object-contain"
+            />
+            <h2 className="mt-2 text-lg font-black">
+              Prêt à voir où tu peux économiser ?
+            </h2>
+            <p className="mt-1 text-[10px] leading-4 text-slate-400">
+              Gratuit, rapide et sans engagement.
+            </p>
+            <Link
+              href="/analyse"
+              className="mt-3 block rounded-xl bg-green-500 px-4 py-3 text-xs font-black text-slate-950"
+            >
+              Commencer avec Pilo
+            </Link>
+          </section>
+
+          <footer className="px-2 pb-4 pt-6 text-center text-[9px] text-slate-600">
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link href="/login">Connexion</Link>
+              <Link href="/premium">Premium</Link>
+              <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/confidentialite">Confidentialité</Link>
+            </div>
+            <p className="mt-3">
+              © {new Date().getFullYear()} PiloEco
+            </p>
+          </footer>
+        </div>
+      </div>
+
+      {/* VERSION TABLETTE / DESKTOP EXISTANTE */}
+      <div className="hidden sm:block">
+
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link
@@ -844,6 +1146,7 @@ export default function HomePage() {
           </p>
         </div>
       </footer>
+      </div>
     </main>
   );
 }

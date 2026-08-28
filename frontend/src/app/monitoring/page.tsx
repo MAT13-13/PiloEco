@@ -384,47 +384,70 @@ function MonitoringDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white lg:ml-64">
+    <main className="min-h-screen bg-slate-950 px-3 pb-28 pt-3 text-white sm:px-6 sm:py-10 lg:ml-64">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-sm font-bold uppercase tracking-[0.3em] text-green-400">
-          PiloEco Premium
-        </p>
+        <div className="sm:hidden">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-400">
+                💎 PiloEco Premium
+              </p>
+              <h1 className="mt-1 text-2xl font-black">
+                📊 Monitoring
+              </h1>
+              <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                Pilo surveille tes contrats et tes économies.
+              </p>
+            </div>
 
-        <h1 className="text-4xl font-black">
-          🦜 Pilo Monitoring
-        </h1>
-
-        <p className="mt-3 text-slate-400">
-          Pilo surveille tes contrats,
-          tes hausses de prix et tes
-          économies.
-        </p>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black text-white transition hover:border-green-400/40 hover:bg-white/10 hover:text-green-300"
-          >
-            ← Retour au dashboard
-          </Link>
-
-          <Link
-            href="/monitoring/add"
-            className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-green-400"
-          >
-            ➕ Ajouter un contrat
-          </Link>
+            <Link
+              href="/monitoring/add"
+              className="rounded-xl bg-green-500 px-3 py-2 text-[10px] font-black text-slate-950"
+            >
+              + Contrat
+            </Link>
+          </div>
         </div>
 
-        <PiloNavigation />
+        <div className="hidden sm:block">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.3em] text-green-400">
+            PiloEco Premium
+          </p>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl border border-green-500/20 bg-green-500/10 p-6">
-            <p className="text-sm font-bold uppercase tracking-wider text-green-400">
+          <h1 className="text-4xl font-black">
+            🦜 Pilo Monitoring
+          </h1>
+
+          <p className="mt-3 text-slate-400">
+            Pilo surveille tes contrats, tes hausses de prix et tes économies.
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-black text-white transition hover:border-green-400/40 hover:bg-white/10 hover:text-green-300"
+            >
+              ← Retour au dashboard
+            </Link>
+
+            <Link
+              href="/monitoring/add"
+              className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-green-400"
+            >
+              ➕ Ajouter un contrat
+            </Link>
+          </div>
+
+          <PiloNavigation />
+        </div>
+
+        <section className="mt-4 grid grid-cols-3 gap-2 sm:mt-8 sm:gap-4">
+          <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-2.5 sm:rounded-3xl sm:p-6">
+            <p className="text-[8px] font-black uppercase leading-3 text-green-400 sm:text-sm sm:tracking-wider">
               Économies détectées
             </p>
 
-            <p className="mt-3 text-4xl font-black">
+            <p className="mt-1 text-lg font-black sm:mt-3 sm:text-4xl">
               {summary.totalSaving > 0
                 ? `${summary.totalSaving.toLocaleString(
                     "fr-FR"
@@ -432,23 +455,23 @@ function MonitoringDashboard() {
                 : "À comparer"}
             </p>
 
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-1 text-[8px] leading-3 text-slate-500 sm:mt-2 sm:text-sm sm:text-slate-400">
               {summary.totalSaving > 0
                 ? "par an"
                 : "Aucune économie chiffrée pour le moment"}
             </p>
           </div>
 
-          <div className="rounded-3xl border border-orange-500/20 bg-orange-500/10 p-6">
-            <p className="text-sm font-bold uppercase tracking-wider text-orange-300">
+          <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-2.5 sm:rounded-3xl sm:p-6">
+            <p className="text-[8px] font-black uppercase leading-3 text-orange-300 sm:text-sm sm:tracking-wider">
               Alertes actives
             </p>
 
-            <p className="mt-3 text-4xl font-black">
+            <p className="mt-1 text-lg font-black sm:mt-3 sm:text-4xl">
               {summary.activeAlerts}
             </p>
 
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-1 text-[8px] leading-3 text-slate-500 sm:mt-2 sm:text-sm sm:text-slate-400">
               action
               {summary.activeAlerts > 1
                 ? "s"
@@ -457,18 +480,18 @@ function MonitoringDashboard() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-blue-500/20 bg-blue-500/10 p-6">
-            <p className="text-sm font-bold uppercase tracking-wider text-blue-300">
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-2.5 sm:rounded-3xl sm:p-6">
+            <p className="text-[8px] font-black uppercase leading-3 text-blue-300 sm:text-sm sm:tracking-wider">
               Contrats surveillés
             </p>
 
-            <p className="mt-3 text-4xl font-black">
+            <p className="mt-1 text-lg font-black sm:mt-3 sm:text-4xl">
               {
                 summary.monitoredContracts
               }
             </p>
 
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="mt-1 text-[8px] leading-3 text-slate-500 sm:mt-2 sm:text-sm sm:text-slate-400">
               univers suivis par Pilo
             </p>
           </div>
@@ -490,7 +513,7 @@ function MonitoringDashboard() {
 
         {!errorMessage &&
           alerts.length === 0 && (
-            <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-center sm:mt-8 sm:rounded-3xl sm:p-8">
               <p className="text-xl font-black">
                 Aucun contrat surveillé
               </p>
@@ -505,7 +528,7 @@ function MonitoringDashboard() {
 
         {!errorMessage &&
           alerts.length > 0 && (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid gap-3 sm:mt-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
               {alerts.map((alert) => (
                 <MonitoringCard
                   key={alert.id}
@@ -625,6 +648,26 @@ function MonitoringDashboard() {
           setRewardOpen(false)
         }
       />
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-slate-950/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          <Link href="/dashboard" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🏠</span><span className="text-[9px] font-bold">Accueil</span>
+          </Link>
+          <Link href="/analyse" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🔎</span><span className="text-[9px] font-bold">Analyse</span>
+          </Link>
+          <Link href="/missions" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🎯</span><span className="text-[9px] font-bold">Missions</span>
+          </Link>
+          <Link href="/monitoring" className="flex flex-col items-center gap-1 rounded-xl bg-green-500/10 py-2 text-green-400">
+            <span className="text-lg">📊</span><span className="text-[9px] font-black">Suivi</span>
+          </Link>
+          <Link href="/pilolife" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🌿</span><span className="text-[9px] font-bold">PiloLife</span>
+          </Link>
+        </div>
+      </nav>
     </main>
   );
 }
