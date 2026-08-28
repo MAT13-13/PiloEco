@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -1910,13 +1908,13 @@ export default function AnalysePage() {
                     setValues({});
                     setErrorMessage("");
                   }}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400"
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold text-slate-300 transition hover:border-green-500/40 hover:text-green-400 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm"
                 >
                   ← Retour aux univers
                 </button>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-4 lg:grid-cols-3">
                 {selectedUniverseEntries.map(
                   (entry) => {
                     const item = entry.config;
@@ -1928,20 +1926,20 @@ export default function AnalysePage() {
                         onClick={() =>
                           openCatalogMission(entry)
                         }
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-green-500/50 hover:bg-green-500/10 sm:rounded-3xl sm:p-6 sm:hover:-translate-y-1"
                       >
-                        <span className="text-5xl">
+                        <span className="text-2xl sm:text-5xl">
                           {entry.mission.icon ||
                             item?.icon ||
                             "🎯"}
                         </span>
 
-                        <h2 className="mt-5 text-xl font-black">
+                        <h2 className="mt-2 text-[12px] font-black leading-4 sm:mt-5 sm:text-xl">
                           {entry.mission.title ||
                             item?.label}
                         </h2>
 
-                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                        <p className="mt-1 line-clamp-2 text-[9px] leading-3 text-slate-500 sm:mt-2 sm:text-sm sm:leading-6 sm:text-slate-400">
                           {item?.message ??
                             "Cette mission est disponible. Ouvre-la pour découvrir la solution proposée par Pilo."}
                         </p>
