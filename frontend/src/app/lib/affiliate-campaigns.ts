@@ -119,7 +119,7 @@ export type AffiliateCampaign = {
  * published: true
  */
 
-export const affiliateCampaigns: AffiliateCampaign[] = [
+const rawAffiliateCampaigns: AffiliateCampaign[] = [
   {
     id: 13982,
     provider: "91m2",
@@ -1093,6 +1093,23 @@ export const affiliateCampaigns: AffiliateCampaign[] = [
     },
   },
 ];
+
+/**
+ * Catalogue public utilisé par les pages Pilo.
+ *
+ * destinationUrl conserve le véritable lien fourni par la plateforme.
+ * trackingUrl devient le lien interne Pilo qui enregistre le clic avant
+ * de rediriger l'utilisateur vers la plateforme d'affiliation.
+ */
+export const affiliateCampaigns = rawAffiliateCampaigns.map(
+  (campaign) => ({
+    ...campaign,
+    destinationUrl: campaign.trackingUrl,
+    trackingUrl: campaign.trackingUrl
+      ? `/go/${campaign.id}`
+      : "",
+  })
+);
 
 /**
  * ============================================================

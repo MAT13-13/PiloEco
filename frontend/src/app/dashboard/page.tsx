@@ -586,10 +586,236 @@ export default function DashboardPage() {
   return (
     <>
       <Sidebar />
-      <MobileMenu />
 
-      <main className="min-h-screen bg-slate-950 p-4 text-white sm:p-6 lg:ml-64">
+      <main className="min-h-screen bg-slate-950 px-3 pb-0 pt-3 text-white sm:p-6 lg:ml-64">
         <section className="mx-auto w-full max-w-6xl">
+          {/* MOBILE APP - COMPACT */}
+          <div className="sm:hidden">
+            <div className="flex items-center justify-between py-1">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-green-400">
+                  🐦 Ton copilote d&apos;économies
+                </p>
+                <h1 className="mt-1 text-2xl font-black">
+                  {displayName ? `Bonjour ${displayName} 👋` : "Bonjour 👋"}
+                </h1>
+              </div>
+
+              <button
+                onClick={deconnexion}
+                aria-label="Se déconnecter"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-sm text-slate-400"
+              >
+                ↪
+              </button>
+            </div>
+
+            {profile?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="mt-3 flex items-center justify-between rounded-xl bg-green-500 px-3 py-2 text-xs font-black text-slate-950"
+              >
+                <span>🛠 Administration</span>
+                <span>→</span>
+              </Link>
+            )}
+
+            <section className="mt-3 overflow-hidden rounded-2xl border border-green-500/20 bg-gradient-to-br from-slate-900 via-slate-950 to-green-950/30 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-400">
+                    Économies suivies par Pilo
+                  </p>
+                  <p className="mt-1 text-3xl font-black text-green-400">
+                    {economieAnnuelleAffichee.toLocaleString("fr-FR")} €
+                    <span className="ml-1 text-xs font-bold text-slate-500">/ an</span>
+                  </p>
+                </div>
+
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-500/10 text-xl">
+                  {piloSituation.emoji}
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/50 px-3 py-2.5">
+                <p className="text-sm font-black text-white">{piloSituation.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-slate-400">
+                  {piloSituation.message}
+                </p>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-white/10 bg-slate-950/40 px-2 py-2 text-center">
+                  <p className="text-[9px] font-bold uppercase text-slate-500">Niveau</p>
+                  <p className="mt-0.5 text-xs font-black">{niveau}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-slate-950/40 px-2 py-2 text-center">
+                  <p className="text-[9px] font-bold uppercase text-slate-500">Missions</p>
+                  <p className="mt-0.5 text-xs font-black">{missionsTerminees.length}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-slate-950/40 px-2 py-2 text-center">
+                  <p className="text-[9px] font-bold uppercase text-slate-500">Score</p>
+                  <p className="mt-0.5 text-xs font-black text-green-400">{scoreProgression}%</p>
+                </div>
+              </div>
+            </section>
+
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
+              <Link
+                href="/analyse"
+                className="rounded-2xl border border-green-500/30 bg-green-500/10 p-3.5"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="text-2xl">🔎</span>
+                  <span className="text-xs font-black text-green-400">→</span>
+                </div>
+                <p className="mt-3 text-sm font-black">Analyse</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500">Trouver où économiser</p>
+              </Link>
+
+              <Link
+                href="/missions"
+                className="rounded-2xl border border-slate-800 bg-slate-900 p-3.5"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="text-2xl">🎯</span>
+                  <span className="rounded-full bg-slate-950 px-2 py-1 text-[9px] font-black text-slate-400">
+                    {missionsRestantes}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm font-black">Missions</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500">Tes actions à faire</p>
+              </Link>
+
+              <Link
+                href="/monitoring"
+                className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3.5"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="text-2xl">📊</span>
+                  {!premiumActif && (
+                    <span className="rounded-full bg-purple-500/10 px-2 py-1 text-[8px] font-black uppercase text-purple-300">
+                      Premium
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3 text-sm font-black">Monitoring</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500">Contrats & échéances</p>
+              </Link>
+
+              <Link
+                href="/pilolife"
+                className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3.5"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="text-2xl">🌿</span>
+                  {!premiumActif && (
+                    <span className="rounded-full bg-purple-500/10 px-2 py-1 text-[8px] font-black uppercase text-purple-300">
+                      Premium
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3 text-sm font-black">PiloLife</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-slate-500">Transformer en projets</p>
+              </Link>
+            </div>
+
+            {missionPrioritaire && (
+              <section className="mt-3 rounded-2xl border border-green-500/20 bg-slate-900 p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-green-400">
+                      🎯 Priorité de Pilo
+                    </p>
+                    <p className="mt-1 truncate text-sm font-black">{missionPrioritaire.title}</p>
+                    {Number(missionPrioritaire.saving || 0) > 0 && (
+                      <p className="mt-0.5 text-[11px] font-bold text-green-300">
+                        Jusqu&apos;à {Number(missionPrioritaire.saving || 0).toLocaleString("fr-FR")} € / an
+                      </p>
+                    )}
+                  </div>
+                  <Link
+                    href={`/missions/${missionPrioritaire.mission_id}`}
+                    className="shrink-0 rounded-xl bg-green-500 px-3 py-2 text-[10px] font-black text-slate-950"
+                  >
+                    Voir →
+                  </Link>
+                </div>
+              </section>
+            )}
+
+            {premiumActif ? (
+              <section className="mt-3 rounded-2xl border border-purple-400/30 bg-gradient-to-r from-purple-500/10 to-slate-900 p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-black text-purple-200">💎 Pilo Premium actif</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">Monitoring, alertes et PiloLife actifs.</p>
+                  </div>
+                  <span className="rounded-full bg-purple-500/10 px-2 py-1 text-[9px] font-black text-purple-300">ACTIF</span>
+                </div>
+              </section>
+            ) : (
+              <Link
+                href="/premium"
+                className="mt-3 flex items-center justify-between rounded-2xl border border-purple-400/30 bg-purple-500/10 p-3.5"
+              >
+                <div>
+                  <p className="text-sm font-black text-purple-200">💎 Pilo Premium</p>
+                  <p className="mt-0.5 text-[10px] text-slate-500">Pilo veille même quand tu n&apos;es pas là.</p>
+                </div>
+                <span className="text-sm font-black text-purple-300">→</span>
+              </Link>
+            )}
+
+            <section className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 p-3.5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">Progression</p>
+                  <p className="mt-0.5 text-sm font-black">Tu avances avec Pilo</p>
+                </div>
+                <p className="text-sm font-black text-green-400">{scoreProgression}%</p>
+              </div>
+
+              <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-green-500 transition-all duration-500"
+                  style={{ width: `${scoreProgression}%` }}
+                />
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl bg-slate-950/60 p-2.5">
+                  <p className="text-[9px] text-slate-500">Validées</p>
+                  <p className="mt-1 text-sm font-black text-green-400">
+                    {economiesRealisees.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-950/60 p-2.5">
+                  <p className="text-[9px] text-slate-500">Potentiel</p>
+                  <p className="mt-1 text-sm font-black">{potentielRestant.toLocaleString("fr-FR")} €</p>
+                </div>
+                <div className="rounded-xl bg-slate-950/60 p-2.5">
+                  <p className="text-[9px] text-slate-500">Terminées</p>
+                  <p className="mt-1 text-sm font-black">{missionsTerminees.length}/{missions.length}</p>
+                </div>
+              </div>
+            </section>
+
+            {chargement && (
+              <div className="mt-3 rounded-xl border border-green-500/20 bg-green-500/5 px-3 py-2 text-[10px] font-bold text-green-300">
+                🐦 Pilo met ton analyse à jour...
+              </div>
+            )}
+
+            {message && !chargement && (
+              <p className="mt-3 text-center text-[10px] text-slate-600">{message}</p>
+            )}
+
+            <div className="h-24" />
+          </div>
+
+          {/* VERSION TABLETTE / DESKTOP INCHANGÉE */}
+          <div className="hidden sm:block">
           {/* TOPBAR */}
           <div className="flex items-center justify-end">
             <button
@@ -1143,8 +1369,34 @@ export default function DashboardPage() {
           )}
 
           <div className="h-10" />
+          </div>
         </section>
       </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-slate-950/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl sm:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          <Link href="/dashboard" className="flex flex-col items-center gap-1 rounded-xl bg-green-500/10 py-2 text-green-400">
+            <span className="text-lg">🏠</span>
+            <span className="text-[9px] font-black">Accueil</span>
+          </Link>
+          <Link href="/analyse" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🔎</span>
+            <span className="text-[9px] font-bold">Analyse</span>
+          </Link>
+          <Link href="/missions" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🎯</span>
+            <span className="text-[9px] font-bold">Missions</span>
+          </Link>
+          <Link href="/monitoring" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">📊</span>
+            <span className="text-[9px] font-bold">Suivi</span>
+          </Link>
+          <Link href="/pilolife" className="flex flex-col items-center gap-1 rounded-xl py-2 text-slate-500">
+            <span className="text-lg">🌿</span>
+            <span className="text-[9px] font-bold">PiloLife</span>
+          </Link>
+        </div>
+      </nav>
     </>
   );
 }
