@@ -90,7 +90,7 @@ export default function HomePage() {
             <Link href="/" className="flex items-center gap-2">
               <img
                 src="/pilo.png"
-                alt="PiloEco"
+                alt="PiloEco - application pour faire des économies"
                 className="h-9 w-9 object-contain"
               />
               <span className="text-lg font-black">
@@ -123,14 +123,15 @@ export default function HomePage() {
             </p>
 
             <h1 className="mt-2 text-[28px] font-black leading-[1.05]">
-              Et si tu pouvais payer{" "}
-              <span className="text-green-400">moins</span> sans te compliquer la vie ?
-            </h1>
+  Réduis tes factures et{" "}
+  <span className="text-green-400">fais des économies</span>{" "}
+  sans te compliquer la vie.
+</h1>
 
-            <p className="mt-3 text-xs leading-5 text-slate-400">
-              Pilo analyse tes dépenses et t&apos;aide à repérer rapidement les
-              économies qui peuvent vraiment compter.
-            </p>
+<p className="mt-3 text-xs leading-5 text-slate-400">
+  PiloEco analyse tes dépenses et t&apos;aide à repérer les factures,
+  contrats et abonnements sur lesquels tu pourrais économiser.
+</p>
 
             <div className="mt-4 grid grid-cols-[1fr_105px] items-center gap-3">
               <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-3">
@@ -149,7 +150,7 @@ export default function HomePage() {
                 <div className="absolute h-20 w-20 rounded-full bg-green-500/20 blur-2xl" />
                 <img
                   src="/pilo.png"
-                  alt="Mascotte Pilo"
+                  alt="Pilo, mascotte de l'application PiloEco"
                   className="relative z-10 h-28 w-28 object-contain"
                 />
               </div>
@@ -351,7 +352,7 @@ export default function HomePage() {
           <section className="mt-5 rounded-3xl border border-green-500/20 bg-green-500/10 p-4 text-center">
             <img
               src="/pilo.png"
-              alt="Pilo"
+              alt="Pilo - copilote d'économies PiloEco"
               className="mx-auto h-16 w-16 object-contain"
             />
             <h2 className="mt-2 text-lg font-black">
@@ -393,7 +394,7 @@ export default function HomePage() {
           >
             <img
               src="/pilo.png"
-              alt="PiloEco"
+              alt="PiloEco - application pour faire des économies"
               className="h-11 w-11 object-contain"
             />
 
@@ -464,17 +465,17 @@ export default function HomePage() {
       </p>
 
       <h1 className="text-5xl font-black leading-tight md:text-7xl">
-        Pilo cherche où tu peux{" "}
-        <span className="text-green-400">
-          économiser.
-        </span>
-      </h1>
+  Fais des économies et{" "}
+  <span className="text-green-400">
+    réduis tes factures.
+  </span>
+</h1>
 
-      <p className="mt-6 max-w-xl text-xl leading-relaxed text-slate-300">
-        Réponds à quelques questions. Pilo analyse tes
-        dépenses, détecte les économies possibles et
-        t’aide à les transformer en projets de vie.
-      </p>
+<p className="mt-6 max-w-xl text-xl leading-relaxed text-slate-300">
+  PiloEco analyse tes dépenses, repère les factures et contrats
+  potentiellement trop chers et t&apos;aide à réduire tes dépenses
+  d&apos;énergie, télécom, assurances et services du quotidien.
+</p>
 
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
         <Link
@@ -521,7 +522,7 @@ export default function HomePage() {
 
           <img
             src="/pilo.png"
-            alt="Mascotte Pilo"
+            alt="Pilo, mascotte de l'application PiloEco"
             className="relative z-10 h-full w-full animate-pilo object-contain drop-shadow-[0_20px_80px_rgba(34,197,94,0.45)]"
           />
         </div>
@@ -558,7 +559,7 @@ export default function HomePage() {
             <div className="flex justify-center">
               <img
                 src="/pilo.png"
-                alt="Pilo"
+                alt="Pilo - copilote d'économies PiloEco"
                 className="h-64 w-64 object-contain transition duration-500 hover:scale-105 md:h-80 md:w-80"
               />
             </div>
@@ -1072,7 +1073,7 @@ export default function HomePage() {
           <div className="relative">
             <img
               src="/pilo.png"
-              alt="Pilo"
+              alt="Pilo - copilote d'économies PiloEco"
               className="mx-auto h-36 w-36 object-contain"
             />
 
