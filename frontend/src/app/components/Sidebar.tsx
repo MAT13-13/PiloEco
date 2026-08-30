@@ -8,6 +8,7 @@ const mainItems = [
   { label: "💰 Mes économies", href: "/economies" },
   { label: "🎯 Mes missions", href: "/missions" },
   { label: "📈 Mon évolution", href: "/evolution" },
+  { label: "🎓 Pilo Academy", href: "/academy" },
 ];
 
 const universeGroups = [
@@ -339,8 +340,6 @@ export default function Sidebar() {
 
         {universOpen && (
           <div className="mt-3 space-y-2">
-           
-
             {universeGroups.map((group) => {
               const isOpen = Boolean(openGroups[group.id]);
 

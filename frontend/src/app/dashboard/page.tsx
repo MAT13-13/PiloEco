@@ -477,13 +477,25 @@ export default function DashboardPage() {
                 </h1>
               </div>
 
-              <button
-                onClick={deconnexion}
-                aria-label="Se déconnecter"
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-sm text-slate-400"
-              >
-                ↪
-              </button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/parametres"
+                  aria-label="Ouvrir les paramètres"
+                  title="Paramètres"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-base text-slate-300 transition hover:border-green-500/40 hover:text-green-400"
+                >
+                  ⚙️
+                </Link>
+
+                <button
+                  onClick={deconnexion}
+                  aria-label="Se déconnecter"
+                  title="Se déconnecter"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-sm text-slate-400 transition hover:border-red-500/40 hover:text-red-300"
+                >
+                  ↪
+                </button>
+              </div>
             </div>
 
             {profile?.role === "admin" && (
@@ -617,6 +629,38 @@ export default function DashboardPage() {
                 </p>
               </Link>
             </div>
+
+            {/* PILO ACADEMY MOBILE */}
+            <Link
+              href="/academy"
+              className="group mt-3 block overflow-hidden rounded-2xl border border-emerald-400/30 bg-white p-4 text-slate-950 shadow-lg transition active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-emerald-50">
+                  <img
+                    src="/pilo-academy.png"
+                    alt="Pilo Academy"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-600">
+                    🎓 Nouveau
+                  </p>
+
+                  <h2 className="mt-1 text-base font-black">Pilo Academy</h2>
+
+                  <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                    Apprends des compétences concrètes avec l&apos;IA.
+                  </p>
+
+                  <p className="mt-2 text-[11px] font-black text-emerald-600">
+                    Découvrir →
+                  </p>
+                </div>
+              </div>
+            </Link>
 
             {missionPrioritaire && (
               <section className="mt-3 rounded-2xl border border-green-500/20 bg-slate-900 p-3.5">
@@ -926,6 +970,63 @@ export default function DashboardPage() {
                   </div>
                 </section>
               )}
+            </FadeIn>
+
+            {/* PILO ACADEMY */}
+            <FadeIn delay={0.12}>
+              <Link
+                href="/academy"
+                className="group relative mt-5 block overflow-hidden rounded-3xl border border-emerald-500/20 bg-white p-6 text-slate-950 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
+              >
+                <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-100 blur-3xl" />
+
+                <div className="relative grid items-center gap-6 lg:grid-cols-[1fr_210px]">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">
+                        🎓 Nouveau
+                      </span>
+
+                      <span className="text-xs font-black text-emerald-600">
+                        Pilo Academy
+                      </span>
+                    </div>
+
+                    <h2 className="mt-4 text-2xl font-black tracking-tight sm:text-3xl">
+                      Apprends une compétence.
+                      <span className="block text-emerald-600">
+                        Passe à l&apos;action.
+                      </span>
+                    </h2>
+
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+                      Des parcours simples et concrets autour de l&apos;IA et du digital.
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <span className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white transition group-hover:bg-emerald-500">
+                        Découvrir Pilo Academy →
+                      </span>
+
+                      <span className="text-xs font-bold text-slate-400">
+                        🌐 Premier parcours : Site IA
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="hidden justify-center lg:flex">
+                    <div className="relative h-40 w-40">
+                      <div className="absolute inset-5 rounded-full bg-emerald-200/70 blur-2xl" />
+
+                      <img
+                        src="/pilo-academy.png"
+                        alt="Pilo Academy"
+                        className="relative z-10 h-full w-full object-contain transition duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Link>
             </FadeIn>
 
             {/* LA MISSION DE PILO */}
