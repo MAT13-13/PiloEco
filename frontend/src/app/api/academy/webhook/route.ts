@@ -1,14 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
 import Stripe from "stripe";
 import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 import { stripe } from "@/app/lib/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const ACADEMY_BUCKET = "academy-private";
 
 type AcademyProductSlug =
   | "site-ia"
@@ -87,31 +91,71 @@ function getProduct(
   return PRODUCTS[slug];
 }
 
+function getSupabaseAdmin() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL est manquante."
+    );
+  }
+
+  if (!serviceRoleKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY est manquante."
+    );
+  }
+
+  return createClient(
+    supabaseUrl,
+    serviceRoleKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    }
+  );
+}
+
 async function buildAttachments(
   fileNames: string[]
 ) {
+  const supabase =
+    getSupabaseAdmin();
+
   return Promise.all(
     fileNames.map(async (fileName) => {
-      /*
-       * Les PDF restent hors du dossier /public :
-       * ils ne sont donc pas accessibles directement par URL.
-       *
-       * Arborescence attendue :
-       *
-       * frontend/
-       *   private/
-       *     academy/
-       *       ...pdf
-       */
-      const filePath = path.join(
-        process.cwd(),
-        "private",
-        "academy",
-        fileName
-      );
+      const {
+        data,
+        error,
+      } = await supabase.storage
+        .from(ACADEMY_BUCKET)
+        .download(fileName);
+
+      if (error || !data) {
+        console.error(
+          "Erreur téléchargement PDF Academy :",
+          {
+            fileName,
+            error,
+          }
+        );
+
+        throw new Error(
+          `Impossible de récupérer le fichier ${fileName}.`
+        );
+      }
+
+      const arrayBuffer =
+        await data.arrayBuffer();
 
       const content =
-        await readFile(filePath);
+        Buffer.from(arrayBuffer);
 
       return {
         filename: fileName,
@@ -129,6 +173,7 @@ function buildEmailHtml(
   return `
     <div style="background:#f8f4ec;padding:32px 16px;font-family:Arial,sans-serif;color:#12372f;">
       <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:24px;padding:32px;border:1px solid #e8eee9;">
+
         <div style="font-size:13px;font-weight:800;letter-spacing:1.5px;color:#07835f;text-transform:uppercase;">
           Pilo Academy
         </div>
@@ -145,6 +190,7 @@ function buildEmailHtml(
           <div style="font-size:12px;font-weight:800;color:#07835f;text-transform:uppercase;letter-spacing:1px;">
             Ta commande
           </div>
+
           <div style="font-size:20px;font-weight:900;color:#063f31;margin-top:5px;">
             ${productName}
           </div>
@@ -163,9 +209,15 @@ function buildEmailHtml(
         </p>
 
         <div style="margin-top:26px;padding-top:22px;border-top:1px solid #edf0ee;">
-          <strong style="color:#063f31;">Bonne lecture et surtout, passe à l'action 🚀</strong>
-          <div style="margin-top:8px;color:#07835f;font-weight:800;">Pilo Academy</div>
+          <strong style="color:#063f31;">
+            Bonne lecture et surtout, passe à l'action 🚀
+          </strong>
+
+          <div style="margin-top:8px;color:#07835f;font-weight:800;">
+            Pilo Academy
+          </div>
         </div>
+
       </div>
     </div>
   `;
@@ -194,24 +246,32 @@ async function sendAcademyPurchaseEmail(
   const product =
     getProduct(productSlug);
 
+  /*
+   * Les PDF sont téléchargés depuis
+   * le bucket Supabase privé.
+   */
   const attachments =
     await buildAttachments(
       product.files
     );
 
-  const result = await resend.emails.send({
-    from,
-    to: email,
-    subject:
-      productSlug === "pack"
-        ? "🎓 Ton Pack Pilo Academy est prêt"
-        : `🎓 Ton parcours ${product.name} est prêt`,
-    html: buildEmailHtml(
-      product.name,
-      productSlug === "pack"
-    ),
-    attachments,
-  });
+  const result =
+    await resend.emails.send({
+      from,
+      to: email,
+
+      subject:
+        productSlug === "pack"
+          ? "🎓 Ton Pack Pilo Academy est prêt"
+          : `🎓 Ton parcours ${product.name} est prêt`,
+
+      html: buildEmailHtml(
+        product.name,
+        productSlug === "pack"
+      ),
+
+      attachments,
+    });
 
   if (result.error) {
     throw new Error(
@@ -220,6 +280,53 @@ async function sendAcademyPurchaseEmail(
   }
 
   return result.data;
+}
+
+async function alreadyDelivered(
+  session: Stripe.Checkout.Session
+) {
+  if (!session.payment_intent) {
+    return false;
+  }
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent.id;
+
+  const paymentIntent =
+    await stripe.paymentIntents.retrieve(
+      paymentIntentId
+    );
+
+  return (
+    paymentIntent.metadata
+      .academy_delivered === "true"
+  );
+}
+
+async function markAsDelivered(
+  session: Stripe.Checkout.Session
+) {
+  if (!session.payment_intent) {
+    return;
+  }
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent.id;
+
+  await stripe.paymentIntents.update(
+    paymentIntentId,
+    {
+      metadata: {
+        academy_delivered: "true",
+        academy_delivered_at:
+          new Date().toISOString(),
+      },
+    }
+  );
 }
 
 export async function POST(
@@ -235,8 +342,13 @@ export async function POST(
     );
 
     return NextResponse.json(
-      { error: "Webhook non configuré." },
-      { status: 500 }
+      {
+        error:
+          "Webhook non configuré.",
+      },
+      {
+        status: 500,
+      }
     );
   }
 
@@ -247,8 +359,13 @@ export async function POST(
 
   if (!signature) {
     return NextResponse.json(
-      { error: "Signature Stripe absente." },
-      { status: 400 }
+      {
+        error:
+          "Signature Stripe absente.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
@@ -275,12 +392,15 @@ export async function POST(
         error:
           "Signature webhook invalide.",
       },
-      { status: 400 }
+      {
+        status: 400,
+      }
     );
   }
 
   /*
-   * On traite uniquement la validation d'un paiement Checkout.
+   * On ne traite que le paiement
+   * Checkout terminé.
    */
   if (
     event.type !==
@@ -295,8 +415,8 @@ export async function POST(
     event.data.object as Stripe.Checkout.Session;
 
   /*
-   * Protection :
-   * ce webhook ne livre que les produits Academy.
+   * Ce webhook ne doit livrer
+   * QUE les achats Academy.
    */
   if (
     session.metadata?.purchase_type !==
@@ -307,6 +427,9 @@ export async function POST(
     });
   }
 
+  /*
+   * Pas de livraison sans paiement.
+   */
   if (
     session.payment_status !== "paid"
   ) {
@@ -338,7 +461,9 @@ export async function POST(
         error:
           "Produit Academy invalide.",
       },
-      { status: 400 }
+      {
+        status: 400,
+      }
     );
   }
 
@@ -357,14 +482,45 @@ export async function POST(
         error:
           "E-mail client introuvable.",
       },
-      { status: 400 }
+      {
+        status: 400,
+      }
     );
   }
 
   try {
+    /*
+     * Stripe peut renvoyer un webhook
+     * plusieurs fois.
+     *
+     * On évite donc d'envoyer
+     * plusieurs fois le même ebook.
+     */
+    const delivered =
+      await alreadyDelivered(
+        session
+      );
+
+    if (delivered) {
+      console.log(
+        "Commande Academy déjà livrée :",
+        session.id
+      );
+
+      return NextResponse.json({
+        received: true,
+        delivered: true,
+        duplicate: true,
+      });
+    }
+
     await sendAcademyPurchaseEmail(
       customerEmail,
       productSlug
+    );
+
+    await markAsDelivered(
+      session
     );
 
     console.log(
@@ -382,9 +538,10 @@ export async function POST(
     });
   } catch (error) {
     /*
-     * Important :
-     * on renvoie 500 afin que Stripe puisse retenter
-     * automatiquement le webhook si l'envoi échoue.
+     * On renvoie 500 :
+     * Stripe pourra retenter automatiquement
+     * le webhook si Supabase ou Resend
+     * a un problème temporaire.
      */
     console.error(
       "Échec livraison Pilo Academy :",
@@ -401,7 +558,9 @@ export async function POST(
         error:
           "Échec de livraison Academy.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
