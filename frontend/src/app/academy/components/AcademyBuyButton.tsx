@@ -1,8 +1,6 @@
+"use client";
 
-
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 type AcademyProductSlug =
   | "site-ia"
@@ -22,47 +20,33 @@ export default function AcademyBuyButton({
   children,
   className = "",
 }: AcademyBuyButtonProps) {
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleCheckout() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "/api/academy/checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            productSlug,
-          }),
-        }
-      );
+      const response = await fetch("/api/academy/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productSlug,
+        }),
+      });
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
-      if (
-        !response.ok ||
-        !data?.url
-      ) {
+      if (!response.ok || !data?.url) {
         throw new Error(
-          data?.error ||
-            "Impossible de démarrer le paiement."
+          data?.error || "Impossible de démarrer le paiement."
         );
       }
 
-      window.location.href =
-        data.url;
+      window.location.href = data.url;
     } catch (error) {
-      console.error(
-        "Erreur paiement Academy :",
-        error
-      );
+      console.error("Erreur paiement Academy :", error);
 
       alert(
         error instanceof Error
@@ -81,9 +65,7 @@ export default function AcademyBuyButton({
       disabled={loading}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
-      {loading
-        ? "Ouverture du paiement..."
-        : children}
+      {loading ? "Ouverture du paiement..." : children}
     </button>
   );
 }
