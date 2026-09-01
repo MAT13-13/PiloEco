@@ -1,25 +1,22 @@
 "use client";
 
 import MissionLayout from "../../components/MissionLayout";
-import { getAffiliateCampaignById } from "../../lib/affiliate-campaigns";
+
+const LEocare_URL =
+  "https://track.effiliation.com/servlet/effi.click?id_compteur=23300139";
+
+const ASSURLAND_AUTO_URL =
+  "https://www.assurland.com/assurance-voiture/assurance-auto.aspx?partnerlinkid=943HL00&utm_medium=affiliation&utm_source=PiloEco&utm_campaign=auto_conversion_email_CPA_generique";
 
 export default function AutoMissionPage() {
-  const auto91m2 = getAffiliateCampaignById(13963);
-
-  const comparateurDisponible =
-    auto91m2?.published === true &&
-    Boolean(auto91m2.trackingUrl);
-
   const partnerOptions = [
     "Leocare",
-    ...(comparateurDisponible
-      ? ["Comparateur auto"]
-      : []),
+    "Comparateur Assurland",
   ];
 
   const dynamicOffers = {
     Leocare: {
-      href: "https://track.effiliation.com/servlet/effi.click?id_compteur=23300139",
+      href: LEocare_URL,
       buttonLabel: "Calculer mon tarif chez Leocare",
       recommendedName: "Devis personnalisé Leocare",
       advice:
@@ -27,17 +24,14 @@ export default function AutoMissionPage() {
       external: true,
     },
 
-    ...(comparateurDisponible && auto91m2
-      ? {
-          "Comparateur auto": {
-            href: auto91m2.trackingUrl,
-            buttonLabel: auto91m2.buttonLabel,
-            recommendedName: auto91m2.title,
-            advice: auto91m2.description,
-            external: true,
-          },
-        }
-      : {}),
+    "Comparateur Assurland": {
+      href: ASSURLAND_AUTO_URL,
+      buttonLabel: "Comparer avec Assurland",
+      recommendedName: "Comparateur d’assurances auto Assurland",
+      advice:
+        "Compare les assurances auto disponibles selon ton véhicule, ton profil et les garanties recherchées.",
+      external: true,
+    },
   };
 
   return (
@@ -48,7 +42,7 @@ export default function AutoMissionPage() {
       basePrice={0}
       recommendedPrice={0}
       recommendedName="Solution assurance auto"
-      advice="Pilo t’oriente vers une solution partenaire pour obtenir un tarif adapté à ton profil."
+      advice="Pilo t’oriente vers des partenaires pour obtenir un tarif adapté à ton véhicule et à ton profil."
       dynamicOfferField="offer"
       dynamicOffers={dynamicOffers}
       fields={[

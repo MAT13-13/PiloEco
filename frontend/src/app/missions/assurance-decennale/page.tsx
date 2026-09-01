@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import MissionLayout from "../../components/MissionLayout";
 
 const DECENNALE_URL =
-  "https://stella-2.com/clc/1xumfaIDKujvDbncH2H9xw";
+  "https://www.assurlandpro.com/decennale.html?partnerlinkid=120HL01&utm_medium=affiliation&utm_source=PiloEco&utm_campaign=garantiedecennale_conversion_email_CPA_generique";
 
 export default function AssuranceDecennaleMissionPage() {
   return (
@@ -22,11 +22,11 @@ export default function AssuranceDecennaleMissionPage() {
       <MissionLayout
         icon="🏗️"
         title="Trouver une assurance décennale"
-        subtitle="Protège ton activité avec une assurance décennale adaptée à ton métier et à tes travaux."
+        subtitle="Compare les assurances décennales adaptées à ton métier et à tes travaux."
         basePrice={0}
         recommendedPrice={0}
-        recommendedName="Assurance décennale professionnelle"
-        advice="Découvre les solutions d’assurance décennale proposées aux professionnels du bâtiment et vérifie les garanties adaptées à ton activité."
+        recommendedName="Comparateur Assurland Pro"
+        advice="Compare les garanties, les franchises, les activités couvertes et les exclusions avant de choisir ton assurance décennale."
         fields={[
           {
             name: "activity",
@@ -49,10 +49,10 @@ export default function AssuranceDecennaleMissionPage() {
         dynamicOffers={{
           decennale: {
             href: DECENNALE_URL,
-            buttonLabel: "Découvrir les assurances décennales →",
-            recommendedName: "Assurance décennale professionnelle",
+            buttonLabel: "Comparer avec Assurland Pro →",
+            recommendedName: "Assurland Pro – Garantie décennale",
             advice:
-              "Compare les solutions disponibles et vérifie les garanties, franchises et activités couvertes avant de souscrire.",
+              "Compare les solutions disponibles et vérifie les garanties, les franchises et les activités couvertes avant de souscrire.",
             external: true,
             completionType: "none",
           },

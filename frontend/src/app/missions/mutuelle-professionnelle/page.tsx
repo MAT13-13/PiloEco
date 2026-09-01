@@ -10,7 +10,7 @@ export default function MutuelleProfessionnelleMissionPage() {
       subtitle="Trouve une solution de mutuelle santé adaptée à ton activité professionnelle et à ta situation."
       basePrice={90}
       recommendedPrice={70}
-      recommendedName="Mutuelle santé TNS partenaire"
+      recommendedName="Comparateur Mutuelle santé TNS Assurland"
       offerPath="/offres/mutuelle-professionnelle"
       advice="Compare les garanties, les niveaux de remboursement, les exclusions et le tarif proposé avant de choisir ta mutuelle professionnelle."
       fields={[

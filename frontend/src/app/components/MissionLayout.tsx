@@ -558,12 +558,9 @@ export default function MissionLayout({
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-4xl">
-        <Link
-          href="/dashboard"
-          className="text-green-400 hover:underline"
-        >
-          ← Retour au dashboard
-        </Link>
+        <Link href="/missions" className="text-green-400 hover:underline">
+  ← Retour aux univers
+</Link>
 
         <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-8">
           <p className="text-sm font-bold uppercase tracking-[0.3em] text-green-400">
